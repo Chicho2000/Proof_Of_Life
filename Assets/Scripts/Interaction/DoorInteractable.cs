@@ -6,8 +6,7 @@ public class DoorInteractable : Interactable
     public bool isLocked = true;
     public bool isOpen = false;
 
-    [Header("Lockpick (simulado)")]
-    public bool simulatedHasLockpick = true;
+    [Header("Lockpick")]
     public float pickTime = 3f;
 
     [Header("Rotación")]
@@ -30,9 +29,9 @@ public class DoorInteractable : Interactable
             return;
         }
 
-        if (!simulatedHasLockpick)
+        if (!HasLockpickEquipped(interactor))
         {
-            Debug.Log("Necesitás una ganzúa para abrir esta puerta");
+            Debug.Log("Necesitás tener la ganzúa equipada para abrir esta puerta");
             return;
         }
 
@@ -43,6 +42,18 @@ public class DoorInteractable : Interactable
             pickProgress = 0f;
             Debug.Log("Empezando a ganzuear...");
         }
+    }
+
+    private bool HasLockpickEquipped(GameObject interactor)
+    {
+        PlayerHotbar hotbar = interactor.GetComponent<PlayerHotbar>();
+        if (hotbar == null)
+        {
+            return false;
+        }
+
+        ItemData selectedItem = hotbar.GetSelectedItem();
+        return selectedItem != null && selectedItem.ItemType == ItemType.Lockpick;
     }
 
     private void Update()
