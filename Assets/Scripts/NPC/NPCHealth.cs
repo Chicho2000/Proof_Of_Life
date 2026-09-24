@@ -7,6 +7,9 @@ public class NPCHealth : MonoBehaviour
     [SerializeField] private int maxHealth = 100;
     [SerializeField] private int currentHealth;
 
+    [Header("Orientacion")]
+    [SerializeField] private Transform facingReference;
+
     [Header("Audio")]
     [SerializeField] private AudioClip hurtSound;
     [SerializeField] private AudioClip deathSound;
@@ -21,6 +24,7 @@ public class NPCHealth : MonoBehaviour
     public int MaxHealth => maxHealth;
     public int CurrentHealth => currentHealth;
     public bool IsDead => isDead;
+    public Vector3 Forward => facingReference != null ? facingReference.forward : transform.forward;
 
     private void Awake()
     {

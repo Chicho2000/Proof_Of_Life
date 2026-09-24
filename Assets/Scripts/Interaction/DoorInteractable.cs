@@ -15,6 +15,7 @@ public class DoorInteractable : Interactable
     private float pickProgress = 0f;
     private bool isPicking = false;
     private PlayerInteraction playerInteraction;
+    private PlayerHotbar playerHotbar;
 
     private void Start()
     {
@@ -29,7 +30,8 @@ public class DoorInteractable : Interactable
             return;
         }
 
-        if (!HasLockpickEquipped(interactor))
+        PlayerHotbar hotbar = interactor.GetComponent<PlayerHotbar>();
+        if (!HasLockpickEquipped(hotbar))
         {
             Debug.Log("Necesitás tener la ganzúa equipada para abrir esta puerta");
             return;
@@ -38,15 +40,15 @@ public class DoorInteractable : Interactable
         if (!isPicking)
         {
             playerInteraction = interactor.GetComponent<PlayerInteraction>();
+            playerHotbar = hotbar;
             isPicking = true;
             pickProgress = 0f;
             Debug.Log("Empezando a ganzuear...");
         }
     }
 
-    private bool HasLockpickEquipped(GameObject interactor)
+    private bool HasLockpickEquipped(PlayerHotbar hotbar)
     {
-        PlayerHotbar hotbar = interactor.GetComponent<PlayerHotbar>();
         if (hotbar == null)
         {
             return false;
@@ -65,8 +67,9 @@ public class DoorInteractable : Interactable
 
         bool stillFocused = playerInteraction != null && playerInteraction.currentInteractable == this;
         bool keyHeld = playerInteraction != null && Input.GetKey(playerInteraction.interactKey);
+        bool lockpickStillEquipped = HasLockpickEquipped(playerHotbar);
 
-        if (!stillFocused || !keyHeld)
+        if (!stillFocused || !keyHeld || !lockpickStillEquipped)
         {
             CancelPicking();
             return;
@@ -76,6 +79,12 @@ public class DoorInteractable : Interactable
 
         if (pickProgress >= pickTime)
         {
+            if (!HasLockpickEquipped(playerHotbar))
+            {
+                CancelPicking();
+                return;
+            }
+
             FinishPicking();
         }
     }
@@ -95,6 +104,8 @@ public class DoorInteractable : Interactable
         isLocked = false;
         isPicking = false;
         pickProgress = 0f;
+        playerInteraction = null;
+        playerHotbar = null;
         Debug.Log("Puerta ganzuada con éxito");
         ToggleOpen();
     }
@@ -103,6 +114,8 @@ public class DoorInteractable : Interactable
     {
         isPicking = false;
         pickProgress = 0f;
+        playerInteraction = null;
+        playerHotbar = null;
         Debug.Log("Ganzúa cancelada");
     }
 

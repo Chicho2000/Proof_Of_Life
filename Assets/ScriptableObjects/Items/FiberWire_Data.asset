@@ -16,7 +16,7 @@ MonoBehaviour:
   itemType: 4
   description: Cuerda reforzada para noquear o neutralizar en silencio desde la espalda.
   icon: {fileID: 0}
-  worldPrefab: {fileID: 919132149155446097, guid: 3b0cda8124e71074482fc8d73fbdcaf5, type: 3}
+  worldPrefab: {fileID: 2004946617662530019, guid: dbfcba0d88a6c4042b5f6f8adf226bf6, type: 3}
   inHandPrefab: {fileID: 919132149155446097, guid: 3b0cda8124e71074482fc8d73fbdcaf5, type: 3}
   inHandPositionOffset: {x: 0.2, y: -0.18, z: 0.4}
   inHandRotationOffset: {x: 0, y: 0, z: 0}

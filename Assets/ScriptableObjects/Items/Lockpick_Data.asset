@@ -16,7 +16,7 @@ MonoBehaviour:
   itemType: 1
   description: "Herramienta t\xE1ctica para forzar cerraduras mec\xE1nicas."
   icon: {fileID: 0}
-  worldPrefab: {fileID: 919132149155446097, guid: 56f296c2e03ed71459f7770e1fb6f2da, type: 3}
+  worldPrefab: {fileID: 3383851856823853496, guid: 12ade0b6be3b348429f4ab60481d3714, type: 3}
   inHandPrefab: {fileID: 919132149155446097, guid: 56f296c2e03ed71459f7770e1fb6f2da, type: 3}
   inHandPositionOffset: {x: 0.2, y: -0.15, z: 0.35}
   inHandRotationOffset: {x: 0, y: 90, z: 0}

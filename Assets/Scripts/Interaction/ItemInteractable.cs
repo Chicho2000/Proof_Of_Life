@@ -12,6 +12,14 @@ public class ItemInteractable : Interactable
     public ItemData ItemData => itemData;
     public int Amount => amount;
 
+    public void Initialize(ItemData newItemData, int newAmount = 1)
+    {
+        itemData = newItemData;
+        amount = Mathf.Max(1, newAmount);
+        canInteract = itemData != null;
+        UpdatePrompt();
+    }
+
     private void Start()
     {
         UpdatePrompt();

@@ -16,7 +16,7 @@ MonoBehaviour:
   itemType: 3
   description: "Arma t\xE1ctica con supresor para eliminaci\xF3n silenciosa."
   icon: {fileID: 0}
-  worldPrefab: {fileID: 919132149155446097, guid: aa825bdeec009cd45bbab07537c88998, type: 3}
+  worldPrefab: {fileID: 6753802399519252793, guid: 204dff6f160980643813f481bb1ce6b2, type: 3}
   inHandPrefab: {fileID: 919132149155446097, guid: aa825bdeec009cd45bbab07537c88998, type: 3}
   inHandPositionOffset: {x: 0.25, y: -0.2, z: 0.45}
   inHandRotationOffset: {x: 0, y: -90, z: 0}

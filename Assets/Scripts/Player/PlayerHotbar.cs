@@ -67,6 +67,13 @@ public class PlayerHotbar : MonoBehaviour
     [SerializeField] private Transform handSocket;
     private GameObject currentInHandObject;
 
+    [Header("Soltar Ítems")]
+    [SerializeField] private KeyCode dropKey = KeyCode.G;
+    [SerializeField] private float dropDistance = 1.5f;
+    [SerializeField] private float dropHeight = 0.5f;
+    [SerializeField] private float dropClearanceRadius = 0.2f;
+    [SerializeField] private LayerMask dropCollisionMask = ~0;
+
     // Eventos desacoplados para UI / Sistemas
     public event Action<int, HotbarSlot> OnSlotUpdated;
     public event Action<int> OnSlotSelected;
@@ -90,6 +97,7 @@ public class PlayerHotbar : MonoBehaviour
     {
         HandleNumericInput();
         HandleScrollInput();
+        HandleDropInput();
     }
 
     private void InitializeSlots()
@@ -164,6 +172,184 @@ public class PlayerHotbar : MonoBehaviour
                 SelectSlot(prevIndex);
             }
         }
+    }
+
+    private void HandleDropInput()
+    {
+        if (Input.GetKeyDown(dropKey))
+        {
+            DropSelectedItem();
+        }
+    }
+
+    public bool DropSelectedItem()
+    {
+        HotbarSlot selectedSlot = GetSlot(selectedSlotIndex);
+        if (selectedSlot == null || selectedSlot.IsEmpty)
+        {
+            return false;
+        }
+
+        ItemData selectedItem = selectedSlot.Item;
+        GameObject worldPrefab = selectedItem.WorldPrefab;
+
+        if (worldPrefab == null)
+        {
+            Debug.LogWarning($"[Hotbar] No se puede soltar '{selectedItem.ItemName}': su ItemData no tiene WorldPrefab asignado.");
+            return false;
+        }
+
+        if (worldPrefab.GetComponent<ItemInteractable>() == null)
+        {
+            Debug.LogWarning($"[Hotbar] No se puede soltar '{selectedItem.ItemName}': el WorldPrefab debe tener ItemInteractable en el objeto raíz.");
+            return false;
+        }
+
+        if (worldPrefab.GetComponent<Collider>() == null)
+        {
+            Debug.LogWarning($"[Hotbar] No se puede soltar '{selectedItem.ItemName}': el WorldPrefab debe tener un Collider en el objeto raíz.");
+            return false;
+        }
+
+        if (!TryGetDropPosition(out Vector3 spawnPosition))
+        {
+            Debug.LogWarning($"[Hotbar] No hay espacio suficiente delante del jugador para soltar '{selectedItem.ItemName}'.");
+            return false;
+        }
+
+        GameObject droppedObject;
+
+        try
+        {
+            droppedObject = Instantiate(worldPrefab, spawnPosition, worldPrefab.transform.rotation);
+        }
+        catch (Exception exception)
+        {
+            Debug.LogWarning($"[Hotbar] Falló el spawn de '{selectedItem.ItemName}'. El ítem permanece en la hotbar. {exception.Message}");
+            return false;
+        }
+
+        if (droppedObject == null)
+        {
+            Debug.LogWarning($"[Hotbar] Falló el spawn de '{selectedItem.ItemName}'. El ítem permanece en la hotbar.");
+            return false;
+        }
+
+        ItemInteractable droppedInteractable = droppedObject.GetComponent<ItemInteractable>();
+        Collider droppedCollider = droppedObject.GetComponent<Collider>();
+
+        if (droppedInteractable == null || droppedCollider == null)
+        {
+            droppedObject.SetActive(false);
+            Destroy(droppedObject);
+            Debug.LogWarning($"[Hotbar] El objeto instanciado para '{selectedItem.ItemName}' no es un pickup válido. El ítem permanece en la hotbar.");
+            return false;
+        }
+
+        droppedInteractable.Initialize(selectedItem, 1);
+
+        if (!RemoveItem(selectedSlotIndex, 1))
+        {
+            droppedObject.SetActive(false);
+            Destroy(droppedObject);
+            Debug.LogWarning($"[Hotbar] No se pudo descontar '{selectedItem.ItemName}' de la hotbar. Se canceló el drop para evitar duplicados.");
+            return false;
+        }
+
+        Debug.Log($"[Hotbar] Se soltó '{selectedItem.ItemName}' desde el Slot {selectedSlotIndex + 1}.");
+        return true;
+    }
+
+    private bool TryGetDropPosition(out Vector3 spawnPosition)
+    {
+        Transform directionSource = transform;
+        Camera playerCamera = GetComponentInChildren<Camera>();
+
+        if (playerCamera == null)
+        {
+            playerCamera = Camera.main;
+        }
+
+        if (playerCamera != null)
+        {
+            directionSource = playerCamera.transform;
+        }
+
+        Vector3 up = transform.up;
+        Vector3 forward = Vector3.ProjectOnPlane(directionSource.forward, up).normalized;
+        if (forward.sqrMagnitude < 0.001f)
+        {
+            forward = transform.forward;
+        }
+
+        float clearanceRadius = Mathf.Max(0.01f, dropClearanceRadius);
+        float desiredDistance = Mathf.Max(0.1f, dropDistance);
+        Vector3 castOrigin = transform.position + up * Mathf.Max(clearanceRadius, dropHeight);
+
+        float availableDistance = desiredDistance;
+        RaycastHit[] hits = Physics.SphereCastAll(
+            castOrigin,
+            clearanceRadius,
+            forward,
+            desiredDistance,
+            dropCollisionMask,
+            QueryTriggerInteraction.Ignore
+        );
+
+        foreach (RaycastHit hit in hits)
+        {
+            if (IsPlayerCollider(hit.collider))
+            {
+                continue;
+            }
+
+            availableDistance = Mathf.Min(availableDistance, hit.distance - clearanceRadius);
+        }
+
+        CharacterController characterController = GetComponent<CharacterController>();
+        float playerRadius = characterController != null ? characterController.radius : 0.5f;
+        float minimumDistance = playerRadius + clearanceRadius + 0.1f;
+
+        if (availableDistance < minimumDistance)
+        {
+            spawnPosition = default;
+            return false;
+        }
+
+        spawnPosition = castOrigin + forward * availableDistance;
+        SnapDropPositionToGround(ref spawnPosition, up);
+        return true;
+    }
+
+    private void SnapDropPositionToGround(ref Vector3 spawnPosition, Vector3 up)
+    {
+        Vector3 rayOrigin = spawnPosition + up;
+        RaycastHit[] hits = Physics.RaycastAll(
+            rayOrigin,
+            -up,
+            2f,
+            dropCollisionMask,
+            QueryTriggerInteraction.Ignore
+        );
+
+        float closestDistance = float.PositiveInfinity;
+
+        foreach (RaycastHit hit in hits)
+        {
+            if (IsPlayerCollider(hit.collider) || hit.distance >= closestDistance)
+            {
+                continue;
+            }
+
+            closestDistance = hit.distance;
+            spawnPosition = hit.point + up * Mathf.Max(0.01f, dropClearanceRadius);
+        }
+    }
+
+    private bool IsPlayerCollider(Collider candidate)
+    {
+        return candidate != null
+            && (candidate.transform == transform || candidate.transform.IsChildOf(transform));
     }
 
     public void SelectSlot(int index)

@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class PlayerCombat : MonoBehaviour
 {
@@ -15,7 +16,9 @@ public class PlayerCombat : MonoBehaviour
 
     [Header("Configuración de Cable de Fibra (FiberWire)")]
     [SerializeField] private float fiberWireRange = 2.2f;
-    [SerializeField] private float behindAngleThreshold = 60f;
+    [FormerlySerializedAs("behindAngleThreshold")]
+    [Range(0f, 90f)]
+    [SerializeField] private float backstabAngle = 60f;
     [SerializeField] private AudioClip fiberWireKillSound;
 
     private Camera playerCamera;
@@ -112,14 +115,6 @@ public class PlayerCombat : MonoBehaviour
             Debug.Log("Pistola Silenciada: Impacto en " + hit.collider.name);
 
             NPCHealth npcHealth = hit.collider.GetComponentInParent<NPCHealth>();
-            if (npcHealth == null)
-            {
-                // Auto-asignar NPCHealth si es un NPC de la escena que aún no tenía el componente en el inspector
-                if (hit.collider.name.StartsWith("Guard") || hit.collider.name.Contains("Executive") || (hit.collider.transform.parent != null && hit.collider.transform.parent.name == "NPCs"))
-                {
-                    npcHealth = hit.collider.gameObject.AddComponent<NPCHealth>();
-                }
-            }
 
             if (npcHealth != null)
             {
@@ -172,23 +167,21 @@ public class PlayerCombat : MonoBehaviour
         if (Physics.Raycast(ray, out RaycastHit hit, fiberWireRange))
         {
             NPCHealth targetHealth = hit.collider.GetComponentInParent<NPCHealth>();
-            if (targetHealth == null)
-            {
-                if (hit.collider.name.StartsWith("Guard") || hit.collider.name.Contains("Executive") || (hit.collider.transform.parent != null && hit.collider.transform.parent.name == "NPCs"))
-                {
-                    targetHealth = hit.collider.gameObject.AddComponent<NPCHealth>();
-                }
-            }
 
             if (targetHealth != null && !targetHealth.IsDead)
             {
-                Transform targetTransform = targetHealth.transform;
-                Vector3 toNpc = (targetTransform.position - transform.position).normalized;
+                Vector3 targetForward = Vector3.ProjectOnPlane(targetHealth.Forward, Vector3.up).normalized;
+                Vector3 targetToPlayer = Vector3.ProjectOnPlane(
+                    transform.position - targetHealth.transform.position,
+                    Vector3.up
+                ).normalized;
 
-                // Verificación de ángulo: el jugador debe estar DETRÁS del NPC
-                // El vector 'forward' del NPC debe apuntar en la misma dirección general que 'toNpc'
-                float dotBehind = Vector3.Dot(targetTransform.forward, toNpc);
-                bool isBehind = dotBehind > Mathf.Cos(behindAngleThreshold * Mathf.Deg2Rad);
+                // Detrás significa estar dentro del cono opuesto al frente visual del NPC.
+                float requiredDotThreshold = -Mathf.Cos(backstabAngle * Mathf.Deg2Rad);
+                float playerPositionDot = Vector3.Dot(targetForward, targetToPlayer);
+                bool isBehind = targetForward.sqrMagnitude > 0f
+                    && targetToPlayer.sqrMagnitude > 0f
+                    && playerPositionDot <= requiredDotThreshold;
 
                 if (isBehind)
                 {

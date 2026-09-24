@@ -10,6 +10,16 @@ public class FPSPlayerController : MonoBehaviour
     [SerializeField] private float gravity = -20f;
     [SerializeField] private float jumpHeight = 1.2f;
 
+    [Header("Crouch")]
+    [SerializeField] private float standingHeight = 2f;
+    [SerializeField] private float crouchingHeight = 1.2f;
+    [SerializeField] private float standingCameraY = 1.65f;
+    [SerializeField] private float crouchingCameraY = 1f;
+    [SerializeField] private float crouchTransitionSpeed = 8f;
+    [SerializeField] private float ceilingCheckRadius = 0.35f;
+    [SerializeField] private float ceilingCheckDistance = 0.1f;
+    [SerializeField] private LayerMask obstacleMask = ~0;
+
     [Header("Mouse Look")]
     [SerializeField] private Transform cameraTransform;
     [SerializeField] private float mouseSensitivity = 2f;
@@ -21,6 +31,7 @@ public class FPSPlayerController : MonoBehaviour
 
     private CharacterController controller;
     private Vector3 velocity;
+    private Vector3 standingControllerCenter;
     private float cameraPitch;
     private bool isCrouching;
 
@@ -34,6 +45,8 @@ public class FPSPlayerController : MonoBehaviour
             if (mainCamera != null)
                 cameraTransform = mainCamera.transform;
         }
+
+        InitializeCrouchDimensions();
 
         // Asegurar que el jugador siempre cuente con sus componentes esenciales
         if (GetComponent<PlayerCombat>() == null)
@@ -84,7 +97,7 @@ public class FPSPlayerController : MonoBehaviour
         Vector3 move = transform.right * inputX + transform.forward * inputZ;
         move = Vector3.ClampMagnitude(move, 1f);
 
-        isCrouching = Input.GetKey(KeyCode.LeftControl);
+        UpdateCrouch();
         bool isRunning = Input.GetKey(KeyCode.LeftShift) && !isCrouching && inputZ > 0;
 
         float currentSpeed = walkSpeed;
@@ -108,6 +121,97 @@ public class FPSPlayerController : MonoBehaviour
         controller.Move(velocity * Time.deltaTime);
 
         UpdateAnimator(inputX, inputZ, isRunning, isGrounded);
+    }
+
+    private void InitializeCrouchDimensions()
+    {
+        standingHeight = Mathf.Max(standingHeight, controller.radius * 2f);
+        crouchingHeight = Mathf.Clamp(crouchingHeight, controller.radius * 2f, standingHeight);
+
+        float controllerBottom = controller.center.y - controller.height * 0.5f;
+        standingControllerCenter = controller.center;
+        standingControllerCenter.y = controllerBottom + standingHeight * 0.5f;
+
+        controller.height = standingHeight;
+        controller.center = standingControllerCenter;
+
+        if (cameraTransform != null)
+        {
+            Vector3 cameraPosition = cameraTransform.localPosition;
+            cameraPosition.y = standingCameraY;
+            cameraTransform.localPosition = cameraPosition;
+        }
+    }
+
+    private void UpdateCrouch()
+    {
+        bool crouchRequested = Input.GetKey(KeyCode.LeftControl);
+
+        if (crouchRequested)
+        {
+            isCrouching = true;
+        }
+        else if (controller.height < standingHeight - 0.01f)
+        {
+            isCrouching = !CanStandUp();
+        }
+        else
+        {
+            isCrouching = false;
+        }
+
+        float targetHeight = isCrouching ? crouchingHeight : standingHeight;
+        float transitionStep = Mathf.Max(0.01f, crouchTransitionSpeed) * Time.deltaTime;
+        float nextHeight = Mathf.MoveTowards(controller.height, targetHeight, transitionStep);
+
+        controller.height = nextHeight;
+
+        Vector3 nextCenter = standingControllerCenter;
+        nextCenter.y -= (standingHeight - nextHeight) * 0.5f;
+        controller.center = nextCenter;
+
+        if (cameraTransform != null)
+        {
+            float targetCameraY = isCrouching ? crouchingCameraY : standingCameraY;
+            Vector3 cameraPosition = cameraTransform.localPosition;
+            cameraPosition.y = Mathf.MoveTowards(cameraPosition.y, targetCameraY, transitionStep);
+            cameraTransform.localPosition = cameraPosition;
+        }
+    }
+
+    private bool CanStandUp()
+    {
+        float checkRadius = Mathf.Clamp(ceilingCheckRadius, 0.01f, controller.radius);
+        Vector3 up = transform.up;
+
+        Vector3 currentCenter = transform.TransformPoint(controller.center);
+        Vector3 currentTop = currentCenter
+            + up * Mathf.Max(0f, controller.height * 0.5f - checkRadius);
+
+        Vector3 standingCenter = transform.TransformPoint(standingControllerCenter);
+        Vector3 standingTop = standingCenter
+            + up * Mathf.Max(0f, standingHeight * 0.5f - checkRadius)
+            + up * Mathf.Max(0f, ceilingCheckDistance);
+
+        Collider[] obstacles = Physics.OverlapCapsule(
+            currentTop,
+            standingTop,
+            checkRadius,
+            obstacleMask,
+            QueryTriggerInteraction.Ignore
+        );
+
+        foreach (Collider obstacle in obstacles)
+        {
+            if (obstacle.transform == transform || obstacle.transform.IsChildOf(transform))
+            {
+                continue;
+            }
+
+            return false;
+        }
+
+        return true;
     }
 
     private void UpdateAnimator(float inputX, float inputZ, bool isRunning, bool isGrounded)
