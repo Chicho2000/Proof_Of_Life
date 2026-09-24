@@ -129,11 +129,13 @@ Assets/Scenes/Lea-Scene*
 # Scripts de utilidad local / MCP Setup tools
 Assets/Scripts/Editor/ItemDataSetupUtility*
 Assets/Scripts/Editor/HUDSetupUtility*
+Assets/Scripts/Editor/SecurityCameraSetupUtility*
 Assets/Scripts/Editor.meta
 
 # Archivos de configuración y documentación de agentes locales
 AGENT.md
 MCP_CONFIGURACION.md
+CONTEXTO_CONSOLIDADO.md
 Packages/com.coplaydev.unity-mcp/
 
 
