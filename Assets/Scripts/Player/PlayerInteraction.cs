@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 public class PlayerInteraction : MonoBehaviour
@@ -9,6 +10,9 @@ public class PlayerInteraction : MonoBehaviour
     public KeyCode interactKey = KeyCode.E;
 
     public Interactable currentInteractable;
+
+    // Evento para que la UI se entere instantáneamente de cambios de foco
+    public event Action<Interactable> OnInteractableChanged;
 
     private Camera playerCamera;
 
@@ -40,8 +44,7 @@ public class PlayerInteraction : MonoBehaviour
 
         if (detected != currentInteractable)
         {
-            // Si había algo enfocado antes, pierde el foco al cambiar,
-   
+            // Si había algo enfocado antes, pierde el foco al cambiar
             if (currentInteractable != null)
             {
                 currentInteractable.OnLoseFocus(gameObject);
@@ -56,12 +59,15 @@ public class PlayerInteraction : MonoBehaviour
             {
                 currentInteractable = null;
             }
+
+            OnInteractableChanged?.Invoke(currentInteractable);
         }
         else if (currentInteractable != null && !currentInteractable.canInteract)
         {
-            // Seguís apuntando al mismo objeto, pero cambió de estado mientras lo mirabas.
+            // Seguís apuntando al mismo objeto, pero cambió de estado mientras lo mirabas
             currentInteractable.OnLoseFocus(gameObject);
             currentInteractable = null;
+            OnInteractableChanged?.Invoke(null);
         }
     }
 }
