@@ -13,11 +13,23 @@ public class PlayerCombat : MonoBehaviour
     [SerializeField] private int maxAmmo = 12;
     [SerializeField] private int currentAmmo = 12;
 
+    [Header("Configuración de Cable de Fibra (FiberWire)")]
+    [SerializeField] private float fiberWireRange = 2.2f;
+    [SerializeField] private float behindAngleThreshold = 60f;
+    [SerializeField] private AudioClip fiberWireKillSound;
+
     private Camera playerCamera;
 
     private void Awake()
     {
-        playerCamera = Camera.main;
+        if (playerCamera == null)
+        {
+            playerCamera = Camera.main;
+            if (playerCamera == null)
+            {
+                playerCamera = GetComponentInChildren<Camera>();
+            }
+        }
 
         if (playerHotbar == null)
         {
@@ -29,16 +41,27 @@ public class PlayerCombat : MonoBehaviour
 
     private void Update()
     {
-        // Disparar con Click Izquierdo
+        // Disparar o Atacar con Click Izquierdo según el ítem equipado
         if (Input.GetMouseButtonDown(0))
         {
-            if (CanShootSilencedPistol())
+            if (IsSilencedPistolEquipped())
             {
-                Shoot();
+                if (CanShootSilencedPistol())
+                {
+                    Shoot();
+                }
+                else if (currentAmmo <= 0)
+                {
+                    Debug.Log("Pistola Silenciada: ¡Sin munición! Presiona R para recargar.");
+                }
             }
-            else if (currentAmmo <= 0 && IsSilencedPistolEquipped())
+            else if (IsFiberWireEquipped())
             {
-                Debug.Log("Pistola Silenciada: ¡Sin municion! Presiona R para recargar.");
+                TryFiberWireTakedown();
+            }
+            else
+            {
+                Debug.Log("[PlayerCombat] Para atacar necesitas tener seleccionada la Pistola Silenciada o el Cable de Fibra en la Hotbar (con teclas 1-5).");
             }
         }
 
@@ -89,13 +112,19 @@ public class PlayerCombat : MonoBehaviour
             Debug.Log("Pistola Silenciada: Impacto en " + hit.collider.name);
 
             NPCHealth npcHealth = hit.collider.GetComponentInParent<NPCHealth>();
+            if (npcHealth == null)
+            {
+                // Auto-asignar NPCHealth si es un NPC de la escena que aún no tenía el componente en el inspector
+                if (hit.collider.name.StartsWith("Guard") || hit.collider.name.Contains("Executive") || (hit.collider.transform.parent != null && hit.collider.transform.parent.name == "NPCs"))
+                {
+                    npcHealth = hit.collider.gameObject.AddComponent<NPCHealth>();
+                }
+            }
+
             if (npcHealth != null)
             {
                 Debug.Log("Pistola Silenciada: Impacto confirmado en NPC -> " + hit.collider.name);
-
-                // 👇 ESTA ES LA LÍNEA QUE APLICARÁ EL DAÑO (borrar comentarios al estar el daño ya implementado):
-                // npcHealth.TakeDamage(damage);
-
+                npcHealth.TakeDamage(damage);
             }
         }
         else
@@ -123,5 +152,64 @@ public class PlayerCombat : MonoBehaviour
     public int GetMaxAmmo()
     {
         return maxAmmo;
+    }
+
+    private bool IsFiberWireEquipped()
+    {
+        if (playerHotbar == null)
+        {
+            return false;
+        }
+
+        ItemData currentItem = playerHotbar.GetSelectedItem();
+        return currentItem != null && currentItem.ItemType == ItemType.FiberWire;
+    }
+
+    private void TryFiberWireTakedown()
+    {
+        Ray ray = new Ray(playerCamera.transform.position, playerCamera.transform.forward);
+
+        if (Physics.Raycast(ray, out RaycastHit hit, fiberWireRange))
+        {
+            NPCHealth targetHealth = hit.collider.GetComponentInParent<NPCHealth>();
+            if (targetHealth == null)
+            {
+                if (hit.collider.name.StartsWith("Guard") || hit.collider.name.Contains("Executive") || (hit.collider.transform.parent != null && hit.collider.transform.parent.name == "NPCs"))
+                {
+                    targetHealth = hit.collider.gameObject.AddComponent<NPCHealth>();
+                }
+            }
+
+            if (targetHealth != null && !targetHealth.IsDead)
+            {
+                Transform targetTransform = targetHealth.transform;
+                Vector3 toNpc = (targetTransform.position - transform.position).normalized;
+
+                // Verificación de ángulo: el jugador debe estar DETRÁS del NPC
+                // El vector 'forward' del NPC debe apuntar en la misma dirección general que 'toNpc'
+                float dotBehind = Vector3.Dot(targetTransform.forward, toNpc);
+                bool isBehind = dotBehind > Mathf.Cos(behindAngleThreshold * Mathf.Deg2Rad);
+
+                if (isBehind)
+                {
+                    Debug.DrawLine(ray.origin, hit.point, Color.cyan, 1.0f);
+                    Debug.Log($"Cable de Fibra: ¡Eliminación silenciosa ejecutada por la espalda sobre {hit.collider.name}!");
+
+                    if (fiberWireKillSound != null)
+                    {
+                        AudioSource.PlayClipAtPoint(fiberWireKillSound, hit.point);
+                    }
+
+                    targetHealth.ExecuteSilentTakedown();
+                }
+                else
+                {
+                    Debug.Log("Cable de Fibra: Debes estar detrás del objetivo para realizar la eliminación sigilosa.");
+                }
+                return;
+            }
+        }
+
+        Debug.Log("Cable de Fibra: Ningún objetivo al alcance.");
     }
 }

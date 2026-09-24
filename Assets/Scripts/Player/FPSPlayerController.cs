@@ -35,6 +35,17 @@ public class FPSPlayerController : MonoBehaviour
                 cameraTransform = mainCamera.transform;
         }
 
+        // Asegurar que el jugador siempre cuente con sus componentes esenciales
+        if (GetComponent<PlayerCombat>() == null)
+        {
+            gameObject.AddComponent<PlayerCombat>();
+        }
+
+        if (GetComponent<PlayerHealth>() == null)
+        {
+            gameObject.AddComponent<PlayerHealth>();
+        }
+
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
     }
