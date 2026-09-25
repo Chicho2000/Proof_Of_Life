@@ -87,19 +87,6 @@ public class NPCHealth : MonoBehaviour
             AudioSource.PlayClipAtPoint(deathSound, transform.position);
         }
 
-        // Desactivar IA / Scripts de movimiento si existen
-        NPCBase npcBase = GetComponent<NPCBase>();
-        if (npcBase != null)
-        {
-            npcBase.enabled = false;
-        }
-
-        UnityEngine.AI.NavMeshAgent navAgent = GetComponent<UnityEngine.AI.NavMeshAgent>();
-        if (navAgent != null)
-        {
-            navAgent.enabled = false;
-        }
-
         // Animator: verificar si tiene controller y el parámetro "IsDead"
         Animator anim = GetComponentInChildren<Animator>();
         bool hasDeathAnim = false;
@@ -136,6 +123,19 @@ public class NPCHealth : MonoBehaviour
         SetupDisguiseInteractable();
 
         OnDeath?.Invoke();
+
+        // Desactivar la IA después de notificar la muerte para que pueda entrar en Dead.
+        NPCBase npcBase = GetComponent<NPCBase>();
+        if (npcBase != null)
+        {
+            npcBase.enabled = false;
+        }
+
+        UnityEngine.AI.NavMeshAgent navAgent = GetComponent<UnityEngine.AI.NavMeshAgent>();
+        if (navAgent != null)
+        {
+            navAgent.enabled = false;
+        }
     }
 
     private bool HasParameter(Animator animator, string paramName)

@@ -62,7 +62,7 @@ public class GuardNPC : NPCBase
         FindPlayerReference();
 
         // Si la alarma ya estaba sonando al arrancar, empezar a perseguir
-        if (AlarmManager.Instance != null && AlarmManager.Instance.GetIsAlarmActive())
+        if (AlarmManager.Instance != null && AlarmManager.Instance.IsAlarmActive)
         {
             StartChasingPlayer();
         }
@@ -126,17 +126,11 @@ public class GuardNPC : NPCBase
         UpdateAnimation();
     }
 
-    private void HandleAlarm(Transform intruder)
+    private void HandleAlarm()
     {
         if (currentState == NPCState.Dead)
         {
             return;
-        }
-
-        if (intruder != null)
-        {
-            playerTarget = intruder;
-            playerHealth = intruder.GetComponent<PlayerHealth>();
         }
 
         Debug.Log($"🚨 [GuardNPC] {gameObject.name} escuchó la alarma general y sale a cazar al jugador.");
