@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.AI;
 
 public class DoorInteractable : Interactable
 {
@@ -16,10 +17,13 @@ public class DoorInteractable : Interactable
     private bool isPicking = false;
     private PlayerInteraction playerInteraction;
     private PlayerHotbar playerHotbar;
+    private NavMeshObstacle navObstacle;
 
     private void Start()
     {
+        navObstacle = GetComponentInChildren<NavMeshObstacle>();
         UpdatePrompt();
+        UpdateNavMesh();
     }
 
     public override void Interact(GameObject interactor)
@@ -123,11 +127,20 @@ public class DoorInteractable : Interactable
     {
         isOpen = !isOpen;
         UpdatePrompt();
+        UpdateNavMesh();
 
         // Rotación instantánea simple (placeholder hasta meter animación o Slerp)
         transform.Rotate(0f, isOpen ? openAngle : -openAngle, 0f);
 
         Debug.Log(isOpen ? "Puerta abierta" : "Puerta cerrada");
+    }
+
+    private void UpdateNavMesh()
+    {
+        if (navObstacle != null)
+        {
+            navObstacle.enabled = !isOpen;
+        }
     }
 
     private void UpdatePrompt()
