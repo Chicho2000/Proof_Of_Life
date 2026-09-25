@@ -157,6 +157,6 @@ public class NPCHealth : MonoBehaviour
         }
 
         body.canInteract = true;
-        body.interactionPrompt = $"Cuerpo ({gameObject.name})";
+        body.interactionPrompt = $"Arrastrar cuerpo ({gameObject.name})";
     }
 }
