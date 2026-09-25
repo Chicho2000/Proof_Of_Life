@@ -22,6 +22,7 @@ public class BodyInteractable : Interactable
     private Transform carrier;
     private Camera playerCamera;
     private Collider[] bodyColliders;
+    private NPCRagdoll ragdoll;
     private string npcName;
 
     public bool IsBeingCarried => isBeingCarried;
@@ -32,6 +33,7 @@ public class BodyInteractable : Interactable
     {
         npcName = gameObject.name;
         bodyColliders = GetComponentsInChildren<Collider>();
+        ragdoll = GetComponent<NPCRagdoll>();
         canInteract = true;
         UpdatePrompt();
     }
@@ -116,6 +118,11 @@ public class BodyInteractable : Interactable
         playerCamera = interactor.GetComponentInChildren<Camera>();
         if (playerCamera == null) playerCamera = Camera.main;
 
+        if (ragdoll != null)
+        {
+            ragdoll.SetCarried(true);
+        }
+
         // Evitar que el cuerpo bloquee físicamente el paso del jugador
         SetCollidersTrigger(true);
 
@@ -152,6 +159,11 @@ public class BodyInteractable : Interactable
         // Restaurar colisiones sólidas
         SetCollidersTrigger(false);
 
+        if (ragdoll != null)
+        {
+            ragdoll.SetCarried(false);
+        }
+
         if (dropSound != null)
         {
             AudioSource.PlayClipAtPoint(dropSound, transform.position);
@@ -174,6 +186,11 @@ public class BodyInteractable : Interactable
 
         isHidden = true;
         canInteract = false;
+
+        if (ragdoll != null)
+        {
+            ragdoll.SetCarried(true);
+        }
 
         // Alojar en el punto interno del escondite si está asignado
         if (spot != null && spot.HidePoint != null)

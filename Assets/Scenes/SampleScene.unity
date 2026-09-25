@@ -168,6 +168,7 @@ GameObject:
   - component: {fileID: 39539287}
   - component: {fileID: 39539286}
   - component: {fileID: 39539288}
+  - component: {fileID: 39539289}
   m_Layer: 0
   m_Name: Executive
   m_TagString: Untagged
@@ -252,6 +253,7 @@ MonoBehaviour:
   facingReference: {fileID: 1802494221}
   hurtSound: {fileID: 0}
   deathSound: {fileID: 0}
+  ragdoll: {fileID: 39539289}
 --- !u!195 &39539288
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -287,6 +289,8 @@ GameObject:
   - component: {fileID: 44803120}
   - component: {fileID: 44803119}
   - component: {fileID: 44803121}
+  - component: {fileID: 44803122}
+  - component: {fileID: 44803124}
   m_Layer: 0
   m_Name: Guard02
   m_TagString: Untagged
@@ -346,12 +350,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GuardNPC
   currentState: 0
-  chaseSpeed: 4.8
+  patrolPoints: []
   patrolSpeed: 2
+  waitTimeAtPatrolPoint: 2
+  waypointReachDistance: 0.5
+  loopPatrol: 1
+  currentPatrolIndex: 0
+  chaseSpeed: 4.8
   attackDamage: 25
   attackRange: 1.8
   attackRate: 1.2
   attackSound: {fileID: 0}
+  detectionSystem: {fileID: 44803122}
 --- !u!114 &44803120
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -369,6 +379,7 @@ MonoBehaviour:
   facingReference: {fileID: 245141502}
   hurtSound: {fileID: 0}
   deathSound: {fileID: 0}
+  ragdoll: {fileID: 44803124}
 --- !u!195 &44803121
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -391,6 +402,28 @@ NavMeshAgent:
   m_BaseOffset: 0
   m_WalkableMask: 4294967295
   m_ObstacleAvoidanceType: 4
+--- !u!114 &44803122
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 44803116}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5ee18277638cdf74598160b6c5867d20, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DetectionSystem
+  detectionOrigin: {fileID: 245141502}
+  detectionRange: 15
+  detectionAngle: 70
+  targetMask:
+    serializedVersion: 2
+    m_Bits: 1
+  obstacleMask:
+    serializedVersion: 2
+    m_Bits: 1
+  drawDebug: 1
 --- !u!1001 &136646770
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1314,6 +1347,37 @@ Transform:
   - {fileID: 39539284}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &423668272
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 423668273}
+  m_Layer: 0
+  m_Name: W2
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &423668273
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 423668272}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 3.49, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 714039920}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &453123555 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 101aea0e26dca6c429bbd4de713fb32b, type: 3}
@@ -1831,6 +1895,40 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 12ade0b6be3b348429f4ab60481d3714, type: 3}
+--- !u!1 &714039919
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 714039920}
+  m_Layer: 0
+  m_Name: Patrol
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &714039920
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 714039919}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 1819787546}
+  - {fileID: 423668273}
+  - {fileID: 1926206026}
+  m_Father: {fileID: 1712067201}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &765104592
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3963,6 +4061,8 @@ GameObject:
   - component: {fileID: 1712067204}
   - component: {fileID: 1712067203}
   - component: {fileID: 1712067205}
+  - component: {fileID: 1712067206}
+  - component: {fileID: 1712067207}
   m_Layer: 0
   m_Name: Guard01
   m_TagString: Untagged
@@ -3984,6 +4084,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1242002399}
+  - {fileID: 714039920}
   m_Father: {fileID: 420460870}
   m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
 --- !u!136 &1712067202
@@ -4022,12 +4123,21 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GuardNPC
   currentState: 0
-  chaseSpeed: 4.8
+  patrolPoints:
+  - {fileID: 1819787546}
+  - {fileID: 423668273}
+  - {fileID: 1926206026}
   patrolSpeed: 2
+  waitTimeAtPatrolPoint: 2
+  waypointReachDistance: 0.5
+  loopPatrol: 1
+  currentPatrolIndex: 0
+  chaseSpeed: 4.8
   attackDamage: 25
   attackRange: 1.8
   attackRate: 1.2
   attackSound: {fileID: 0}
+  detectionSystem: {fileID: 1712067206}
 --- !u!114 &1712067204
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4045,6 +4155,7 @@ MonoBehaviour:
   facingReference: {fileID: 1242002399}
   hurtSound: {fileID: 0}
   deathSound: {fileID: 0}
+  ragdoll: {fileID: 1712067207}
 --- !u!195 &1712067205
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -4067,6 +4178,28 @@ NavMeshAgent:
   m_BaseOffset: 0
   m_WalkableMask: 4294967295
   m_ObstacleAvoidanceType: 4
+--- !u!114 &1712067206
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1712067200}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5ee18277638cdf74598160b6c5867d20, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DetectionSystem
+  detectionOrigin: {fileID: 1242002399}
+  detectionRange: 15
+  detectionAngle: 70
+  targetMask:
+    serializedVersion: 2
+    m_Bits: 1
+  obstacleMask:
+    serializedVersion: 2
+    m_Bits: 1
+  drawDebug: 1
 --- !u!1 &1717301554
 GameObject:
   m_ObjectHideFlags: 0
@@ -4224,6 +4357,37 @@ Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 101aea0e26dca6c429bbd4de713fb32b, type: 3}
   m_PrefabInstance: {fileID: 1443276972}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1819787545
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1819787546}
+  m_Layer: 0
+  m_Name: W1
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1819787546
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1819787545}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 3.8, y: 0, z: 8.25}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 714039920}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1874562959
 GameObject:
   m_ObjectHideFlags: 0
@@ -4366,6 +4530,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerInteraction
   interactionRange: 3
   interactKey: 101
+  secondaryInteractKey: 102
   currentInteractable: {fileID: 0}
 --- !u!114 &1901548861
 MonoBehaviour:
@@ -4440,6 +4605,37 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerDisguiseSystem
   currentDisguise: 0
+--- !u!1 &1926206025
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1926206026}
+  m_Layer: 0
+  m_Name: W3
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1926206026
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1926206025}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 714039920}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!95 &1931405733 stripped
 Animator:
   m_CorrespondingSourceObject: {fileID: 5866666021909216657, guid: 101aea0e26dca6c429bbd4de713fb32b, type: 3}
@@ -5391,6 +5587,60 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 300acc995048aee4fa7eefc63cd79263, type: 3}
+--- !u!114 &39539289
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 39539283}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b2d9c91e475a4b80a2f86f0d8d22e4af, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::NPCRagdoll
+  animator: {fileID: 0}
+  rootCollider: {fileID: 39539285}
+  ragdollBodies: []
+  ragdollColliders: []
+  disableRootColliderOnDeath: 1
+  maxAngularVelocity: 20
+--- !u!114 &44803124
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 44803116}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b2d9c91e475a4b80a2f86f0d8d22e4af, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::NPCRagdoll
+  animator: {fileID: 0}
+  rootCollider: {fileID: 44803118}
+  ragdollBodies: []
+  ragdollColliders: []
+  disableRootColliderOnDeath: 1
+  maxAngularVelocity: 20
+--- !u!114 &1712067207
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1712067200}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b2d9c91e475a4b80a2f86f0d8d22e4af, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::NPCRagdoll
+  animator: {fileID: 0}
+  rootCollider: {fileID: 1712067202}
+  ragdollBodies: []
+  ragdollColliders: []
+  disableRootColliderOnDeath: 1
+  maxAngularVelocity: 20
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

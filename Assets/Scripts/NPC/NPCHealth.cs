@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 
+[RequireComponent(typeof(NPCRagdoll))]
 public class NPCHealth : MonoBehaviour
 {
     [Header("Configuración de Salud")]
@@ -13,6 +14,9 @@ public class NPCHealth : MonoBehaviour
     [Header("Audio")]
     [SerializeField] private AudioClip hurtSound;
     [SerializeField] private AudioClip deathSound;
+
+    [Header("Ragdoll")]
+    [SerializeField] private NPCRagdoll ragdoll;
 
     private bool isDead = false;
 
@@ -29,6 +33,11 @@ public class NPCHealth : MonoBehaviour
     private void Awake()
     {
         currentHealth = maxHealth;
+
+        if (ragdoll == null)
+        {
+            ragdoll = GetComponent<NPCRagdoll>();
+        }
     }
 
     private void Start()
@@ -88,17 +97,21 @@ public class NPCHealth : MonoBehaviour
         }
 
         // Animator: verificar si tiene controller y el parámetro "IsDead"
+        bool ragdollActivated = ragdoll != null && ragdoll.ActivateRagdoll();
         Animator anim = GetComponentInChildren<Animator>();
         bool hasDeathAnim = false;
 
-        if (anim != null && anim.runtimeAnimatorController != null && HasParameter(anim, "IsDead"))
+        if (!ragdollActivated
+            && anim != null
+            && anim.runtimeAnimatorController != null
+            && HasParameter(anim, "IsDead"))
         {
             anim.SetBool("IsDead", true);
             hasDeathAnim = true;
         }
 
         // Si no hay animación de muerte configurada, hacer colapso físico al suelo
-        if (!hasDeathAnim)
+        if (!ragdollActivated && !hasDeathAnim)
         {
             // Desactivar el Animator para que no obligue al modelo a quedarse parado en pose idle/T-pose
             if (anim != null)
