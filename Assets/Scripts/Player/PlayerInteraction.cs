@@ -8,6 +8,7 @@ public class PlayerInteraction : MonoBehaviour
 
     [Header("Input")]
     public KeyCode interactKey = KeyCode.E;
+    public KeyCode secondaryInteractKey = KeyCode.F;
 
     public Interactable currentInteractable;
 
@@ -25,9 +26,16 @@ public class PlayerInteraction : MonoBehaviour
     {
         DetectInteractable();
 
-        if (currentInteractable != null && Input.GetKeyDown(interactKey))
+        if (currentInteractable != null)
         {
-            currentInteractable.Interact(gameObject);
+            if (Input.GetKeyDown(interactKey) && currentInteractable.canInteract)
+            {
+                currentInteractable.Interact(gameObject);
+            }
+            else if (Input.GetKeyDown(secondaryInteractKey))
+            {
+                currentInteractable.SecondaryInteract(gameObject);
+            }
         }
     }
 

@@ -13,5 +13,8 @@ public abstract class Interactable : MonoBehaviour
     // dependiendo de si se esta dentro o fuera del area de deteccion del jugador
     public virtual void OnFocus(GameObject interactor) { }
     public virtual void OnLoseFocus(GameObject interactor) { }
+
+    // Interacción secundaria (ej. tecla F)
+    public virtual void SecondaryInteract(GameObject interactor) { }
 }
 

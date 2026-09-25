@@ -41,6 +41,11 @@ public class BodyInteractable : Interactable
         UpdatePrompt();
     }
 
+    public void RefreshPrompt()
+    {
+        UpdatePrompt();
+    }
+
     private void UpdatePrompt()
     {
         if (isHidden)
@@ -58,6 +63,24 @@ public class BodyInteractable : Interactable
         else
         {
             interactionPrompt = $"Arrastrar cuerpo ({npcName})";
+            
+            GuardDisguise disguise = GetComponent<GuardDisguise>();
+            if (disguise != null && disguise.canBeStolen)
+            {
+                interactionPrompt += "\n[F] Robar disfraz";
+            }
+        }
+    }
+
+    public override void SecondaryInteract(GameObject interactor)
+    {
+        if (isHidden || isBeingCarried) return;
+
+        GuardDisguise disguise = GetComponent<GuardDisguise>();
+        if (disguise != null && disguise.canBeStolen)
+        {
+            disguise.StealDisguise(interactor);
+            UpdatePrompt();
         }
     }
 

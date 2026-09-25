@@ -133,6 +133,7 @@ public class NPCHealth : MonoBehaviour
 
         // Convertir al NPC en cuerpo interactuable para esconder o cambiar ropa
         SetupBodyInteractable();
+        SetupDisguiseInteractable();
 
         OnDeath?.Invoke();
     }
@@ -158,5 +159,25 @@ public class NPCHealth : MonoBehaviour
 
         body.canInteract = true;
         body.interactionPrompt = $"Arrastrar cuerpo ({gameObject.name})";
+    }
+
+    private void SetupDisguiseInteractable()
+    {
+        // Solo los guardias sueltan disfraces por ahora
+        GuardNPC guard = GetComponent<GuardNPC>();
+        if (guard == null) return;
+
+        // Añadimos el script directamente al cuerpo
+        if (GetComponent<GuardDisguise>() == null)
+        {
+            gameObject.AddComponent<GuardDisguise>();
+        }
+
+        // Actualizar el prompt del BodyInteractable
+        BodyInteractable body = GetComponent<BodyInteractable>();
+        if (body != null)
+        {
+            body.RefreshPrompt();
+        }
     }
 }
