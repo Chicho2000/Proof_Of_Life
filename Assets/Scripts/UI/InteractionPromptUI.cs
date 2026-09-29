@@ -1,31 +1,50 @@
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 public class InteractionPromptUI : MonoBehaviour
 {
-    [Header("Referencias UI")]
+    [Header("Referencias UI - Mensaje")]
     [SerializeField] private GameObject promptContainer;
-    [SerializeField] private Text promptText;
+    [SerializeField] private TMP_Text promptText;
+
+    [Header("Referencias UI - Barra de Progreso (Ganzuado / Acciones)")]
+    [SerializeField] private GameObject progressContainer;
+    [SerializeField] private Image progressBarFill;
 
     [Header("Referencia al Jugador")]
     [SerializeField] private PlayerInteraction playerInteraction;
 
-    private void Start()
+    private DoorInteractable activeDoor;
+    private float warningTimer = 0f;
+
+    private void Awake()
     {
         if (playerInteraction == null)
         {
             playerInteraction = FindFirstObjectByType<PlayerInteraction>();
         }
 
+        if (promptContainer == null)
+        {
+            promptContainer = gameObject;
+        }
+
+        ResetProgressBar();
+    }
+
+    private void Start()
+    {
+        ResetProgressBar();
+
         if (playerInteraction != null)
         {
             playerInteraction.OnInteractableChanged += HandleInteractableChanged;
-            // Estado inicial
             HandleInteractableChanged(playerInteraction.currentInteractable);
         }
         else
         {
-            HidePrompt();
+            HideAll();
         }
     }
 
@@ -37,16 +56,63 @@ public class InteractionPromptUI : MonoBehaviour
         }
     }
 
-    private void HandleInteractableChanged(Interactable interactable)
+    private void Update()
     {
-        if (interactable != null && interactable.canInteract)
+        // Temporizador de aviso/advertencia temporal
+        if (warningTimer > 0f)
         {
-            ShowPrompt($"[E] {interactable.interactionPrompt}");
+            warningTimer -= Time.deltaTime;
+            if (warningTimer <= 0f)
+            {
+                if (playerInteraction != null && playerInteraction.currentInteractable != null)
+                {
+                    HandleInteractableChanged(playerInteraction.currentInteractable);
+                }
+                else
+                {
+                    HideAll();
+                }
+            }
+        }
+
+        // Si hay una puerta enfocada y el jugador está manteniendo E para ganzuear
+        if (activeDoor != null && activeDoor.IsPicking())
+        {
+            ShowProgress(activeDoor.GetPickProgressNormalized());
         }
         else
         {
-            HidePrompt();
+            if (progressContainer != null && progressContainer.activeSelf)
+            {
+                ResetProgressBar();
+            }
         }
+    }
+
+    private void HandleInteractableChanged(Interactable interactable)
+    {
+        activeDoor = interactable as DoorInteractable;
+        ResetProgressBar();
+
+        if (interactable != null && interactable.canInteract)
+        {
+            string prompt = interactable.interactionPrompt;
+            if (!prompt.StartsWith("["))
+            {
+                prompt = "[E] " + prompt;
+            }
+            ShowPrompt(prompt);
+        }
+        else
+        {
+            HideAll();
+        }
+    }
+
+    public void ShowTemporaryWarning(string warningMessage, float duration = 2.0f)
+    {
+        ShowPrompt(warningMessage);
+        warningTimer = duration;
     }
 
     public void ShowPrompt(string message)
@@ -60,21 +126,41 @@ public class InteractionPromptUI : MonoBehaviour
         {
             promptContainer.SetActive(true);
         }
-        else if (promptText != null)
+    }
+
+    public void ShowProgress(float progressNormalized)
+    {
+        if (progressContainer != null)
         {
-            promptText.gameObject.SetActive(true);
+            progressContainer.SetActive(true);
+        }
+
+        if (progressBarFill != null)
+        {
+            progressBarFill.fillAmount = Mathf.Clamp01(progressNormalized);
         }
     }
 
-    public void HidePrompt()
+    private void ResetProgressBar()
+    {
+        if (progressBarFill != null)
+        {
+            progressBarFill.fillAmount = 0f;
+        }
+
+        if (progressContainer != null)
+        {
+            progressContainer.SetActive(false);
+        }
+    }
+
+    public void HideAll()
     {
         if (promptContainer != null)
         {
             promptContainer.SetActive(false);
         }
-        else if (promptText != null)
-        {
-            promptText.gameObject.SetActive(false);
-        }
+
+        ResetProgressBar();
     }
 }

@@ -71,15 +71,15 @@ public class ExtractionPoint : Interactable
 
             if (isEquipped)
             {
-                interactionPrompt = "Extraer y Completar Misión [USB Equipado]";
+                interactionPrompt = "Extraer <color=#22C55E>[USB listo]</color>";
             }
             else if (hasInInventory)
             {
-                interactionPrompt = "Extraer (¡Equipa el USB en tu mano!)";
+                interactionPrompt = "Extraer <color=#F59E0B>[Equipa el USB]</color>";
             }
             else
             {
-                interactionPrompt = "Extracción Bloqueada (Consigue el USB)";
+                interactionPrompt = "Bloqueado <color=#EF4444>[Falta USB]</color>";
             }
         }
     }

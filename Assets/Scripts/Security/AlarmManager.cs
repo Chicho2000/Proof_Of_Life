@@ -3,7 +3,22 @@ using UnityEngine;
 
 public class AlarmManager : MonoBehaviour
 {
-    public static AlarmManager Instance { get; private set; }
+    private static AlarmManager instance;
+    public static AlarmManager Instance
+    {
+        get
+        {
+            if (instance == null)
+            {
+                instance = FindFirstObjectByType<AlarmManager>();
+            }
+            return instance;
+        }
+        private set
+        {
+            instance = value;
+        }
+    }
 
     public static event Action OnAlarmTriggered;
 

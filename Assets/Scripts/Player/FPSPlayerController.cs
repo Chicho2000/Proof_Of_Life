@@ -65,12 +65,20 @@ public class FPSPlayerController : MonoBehaviour
 
     private void Update()
     {
+        // Solo permitir mover la cámara y el cuerpo si el juego está corriendo y el cursor capturado
+        if (Cursor.lockState != CursorLockMode.Locked || Time.timeScale <= 0f)
+        {
+            return;
+        }
+
         Look();
         Move();
     }
 
     private void Look()
     {
+        if (cameraTransform == null) return;
+
         float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity;
         float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity;
 

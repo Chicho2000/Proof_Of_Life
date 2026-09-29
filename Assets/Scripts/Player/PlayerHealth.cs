@@ -115,10 +115,11 @@ public class PlayerHealth : MonoBehaviour
             AudioSource.PlayClipAtPoint(deathSound, transform.position);
         }
 
-        OnDeath?.Invoke();
-        OnPlayerDeath?.Invoke();
+        // 1. Desbloquear el cursor para interactuar con botones de la UI
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
 
-        // Desactivar componentes del jugador si existen
+        // 2. Desactivar componentes del jugador para bloquear totalmente inputs
         FPSPlayerController movement = GetComponent<FPSPlayerController>();
         if (movement != null) movement.enabled = false;
 
@@ -127,6 +128,19 @@ public class PlayerHealth : MonoBehaviour
 
         PlayerInteraction interaction = GetComponent<PlayerInteraction>();
         if (interaction != null) interaction.enabled = false;
+
+        PlayerHotbar hotbar = GetComponent<PlayerHotbar>();
+        if (hotbar != null) hotbar.enabled = false;
+
+        // 3. Disparar eventos
+        OnDeath?.Invoke();
+        OnPlayerDeath?.Invoke();
+
+        // 4. Notificar a MissionManager si existe
+        if (MissionManager.Instance != null && !MissionManager.Instance.IsMissionCompleted)
+        {
+            MissionManager.Instance.FailMission("El agente ha caído en combate.");
+        }
     }
 
     /// <summary>
@@ -145,6 +159,9 @@ public class PlayerHealth : MonoBehaviour
 
         PlayerInteraction interaction = GetComponent<PlayerInteraction>();
         if (interaction != null) interaction.enabled = true;
+
+        PlayerHotbar hotbar = GetComponent<PlayerHotbar>();
+        if (hotbar != null) hotbar.enabled = true;
 
         OnHealthChanged?.Invoke(currentHealth, maxHealth);
     }

@@ -37,6 +37,11 @@ public class DoorInteractable : Interactable
         PlayerHotbar hotbar = interactor.GetComponent<PlayerHotbar>();
         if (!HasLockpickEquipped(hotbar))
         {
+            InteractionPromptUI promptUI = FindFirstObjectByType<InteractionPromptUI>();
+            if (promptUI != null)
+            {
+                promptUI.ShowTemporaryWarning("<color=#EF4444>[ ! ] SE REQUIERE GANZÚA</color>", 2.0f);
+            }
             Debug.Log("Necesitás tener la ganzúa equipada para abrir esta puerta");
             return;
         }
@@ -93,14 +98,61 @@ public class DoorInteractable : Interactable
         }
     }
 
-    // Para en el futuro una UI convierte el progreso en una escala de 0 a 1
+    public bool IsPicking()
+    {
+        return isPicking;
+    }
+
     public float GetPickProgressNormalized()
     {
         if (pickTime <= 0f)
         {
             return 0f;
         }
-        return pickProgress / pickTime;
+        return Mathf.Clamp01(pickProgress / pickTime);
+    }
+
+    public override void OnFocus(GameObject interactor)
+    {
+        base.OnFocus(interactor);
+        UpdatePromptWithInteractor(interactor);
+    }
+
+    public void UpdatePromptWithInteractor(GameObject interactor)
+    {
+        if (isLocked)
+        {
+            PlayerHotbar hotbar = null;
+            if (interactor != null)
+            {
+                hotbar = interactor.GetComponent<PlayerHotbar>();
+            }
+
+            if (HasLockpickEquipped(hotbar))
+            {
+                interactionPrompt = "Forzar cerradura";
+            }
+            else
+            {
+                interactionPrompt = "Abrir puerta";
+            }
+        }
+        else
+        {
+            interactionPrompt = isOpen ? "Cerrar puerta" : "Abrir puerta";
+        }
+    }
+
+    private void UpdatePrompt()
+    {
+        if (isLocked)
+        {
+            interactionPrompt = "Abrir puerta";
+        }
+        else
+        {
+            interactionPrompt = isOpen ? "Cerrar puerta" : "Abrir puerta";
+        }
     }
 
     private void FinishPicking()
@@ -129,7 +181,6 @@ public class DoorInteractable : Interactable
         UpdatePrompt();
         UpdateNavMesh();
 
-        // Rotación instantánea simple (placeholder hasta meter animación o Slerp)
         transform.Rotate(0f, isOpen ? openAngle : -openAngle, 0f);
 
         Debug.Log(isOpen ? "Puerta abierta" : "Puerta cerrada");
@@ -140,18 +191,6 @@ public class DoorInteractable : Interactable
         if (navObstacle != null)
         {
             navObstacle.enabled = !isOpen;
-        }
-    }
-
-    private void UpdatePrompt()
-    {
-        if (isLocked)
-        {
-            interactionPrompt = "Ganzuear puerta";
-        }
-        else
-        {
-            interactionPrompt = isOpen ? "Cerrar puerta" : "Abrir puerta";
         }
     }
 

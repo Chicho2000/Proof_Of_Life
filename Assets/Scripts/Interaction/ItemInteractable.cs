@@ -64,6 +64,12 @@ public class ItemInteractable : Interactable
                     AudioSource.PlayClipAtPoint(pickupSound, transform.position);
                 }
 
+                PlayerInteraction playerInteraction = interactor.GetComponent<PlayerInteraction>();
+                if (playerInteraction != null && playerInteraction.currentInteractable == this)
+                {
+                    playerInteraction.ClearCurrentInteractable();
+                }
+
                 Destroy(gameObject);
             }
             else

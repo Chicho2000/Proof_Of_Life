@@ -12,6 +12,10 @@ public class ExecutiveNPC : NPCBase
     [SerializeField] private List<Transform> fleePoints = new List<Transform>();
     [SerializeField] private float reachThreshold = 1.2f;
 
+    [Header("Misión")]
+    [Tooltip("Si está activo, el escape de este NPC hará fracasar la misión (para misiones de asesinato donde es el VIP objetivo).")]
+    [SerializeField] private bool failMissionOnEscape = false;
+
     private int currentPointIndex;
     private bool hasCurrentDestination;
     private bool hasEscaped;
@@ -254,6 +258,13 @@ public class ExecutiveNPC : NPCBase
         StopAgent();
 
         Debug.Log($"[ExecutiveNPC] {gameObject.name} llegó al último punto y escapó.");
+
+        // Solo falla la misión si este NPC en particular tiene activada la condición de VIP objetivo
+        if (failMissionOnEscape && MissionManager.Instance != null && !MissionManager.Instance.IsMissionCompleted)
+        {
+            MissionManager.Instance.FailMissionTargetEscape();
+        }
+
         gameObject.SetActive(false);
     }
 

@@ -21,6 +21,9 @@ public class PlayerCombat : MonoBehaviour
     [SerializeField] private float backstabAngle = 60f;
     [SerializeField] private AudioClip fiberWireKillSound;
 
+    // Evento desacoplado para UI de munición (currentAmmo, maxAmmo)
+    public event System.Action<int, int> OnAmmoChanged;
+
     private Camera playerCamera;
 
     private void Awake()
@@ -42,8 +45,21 @@ public class PlayerCombat : MonoBehaviour
         currentAmmo = maxAmmo;
     }
 
+    private void Start()
+    {
+        if (OnAmmoChanged != null)
+        {
+            OnAmmoChanged.Invoke(currentAmmo, maxAmmo);
+        }
+    }
+
     private void Update()
     {
+        if (Cursor.lockState != CursorLockMode.Locked || Time.timeScale <= 0f)
+        {
+            return;
+        }
+
         // Disparar o Atacar con Click Izquierdo según el ítem equipado
         if (Input.GetMouseButtonDown(0))
         {
@@ -107,6 +123,11 @@ public class PlayerCombat : MonoBehaviour
 
         Debug.Log("Pistola Silenciada: ¡Disparo realizado! Balas restantes: " + currentAmmo + "/" + maxAmmo);
 
+        if (OnAmmoChanged != null)
+        {
+            OnAmmoChanged.Invoke(currentAmmo, maxAmmo);
+        }
+
         Ray ray = new Ray(playerCamera.transform.position, playerCamera.transform.forward);
 
         if (Physics.Raycast(ray, out RaycastHit hit, range))
@@ -137,6 +158,11 @@ public class PlayerCombat : MonoBehaviour
 
         currentAmmo = maxAmmo;
         Debug.Log("Pistola Silenciada: Recargada. Municion completa: " + currentAmmo + "/" + maxAmmo);
+
+        if (OnAmmoChanged != null)
+        {
+            OnAmmoChanged.Invoke(currentAmmo, maxAmmo);
+        }
     }
 
     public int GetCurrentAmmo()

@@ -24,6 +24,11 @@ public class PlayerInteraction : MonoBehaviour
 
     private void Update()
     {
+        if (Cursor.lockState != CursorLockMode.Locked || Time.timeScale <= 0f)
+        {
+            return;
+        }
+
         DetectInteractable();
 
         if (currentInteractable != null)
@@ -39,6 +44,21 @@ public class PlayerInteraction : MonoBehaviour
         }
     }
 
+    public void ClearCurrentInteractable()
+    {
+        if (currentInteractable != null)
+        {
+            try
+            {
+                currentInteractable.OnLoseFocus(gameObject);
+            }
+            catch {}
+        }
+
+        currentInteractable = null;
+        OnInteractableChanged?.Invoke(null);
+    }
+
     private void DetectInteractable()
     {
         Interactable detected = null;
@@ -50,12 +70,27 @@ public class PlayerInteraction : MonoBehaviour
             detected = hit.collider.GetComponentInParent<Interactable>();
         }
 
+        // Si el interactable actual fue destruido o recogido
+        if (currentInteractable == null && detected == null)
+        {
+            if (currentInteractable != null) // Caso referencia muerta de Unity
+            {
+                currentInteractable = null;
+                OnInteractableChanged?.Invoke(null);
+            }
+            return;
+        }
+
         if (detected != currentInteractable)
         {
             // Si había algo enfocado antes, pierde el foco al cambiar
             if (currentInteractable != null)
             {
-                currentInteractable.OnLoseFocus(gameObject);
+                try
+                {
+                    currentInteractable.OnLoseFocus(gameObject);
+                }
+                catch {}
             }
 
             if (detected != null && detected.canInteract)
@@ -72,8 +107,12 @@ public class PlayerInteraction : MonoBehaviour
         }
         else if (currentInteractable != null && !currentInteractable.canInteract)
         {
-            // Seguís apuntando al mismo objeto, pero cambió de estado mientras lo mirabas
-            currentInteractable.OnLoseFocus(gameObject);
+            try
+            {
+                currentInteractable.OnLoseFocus(gameObject);
+            }
+            catch {}
+
             currentInteractable = null;
             OnInteractableChanged?.Invoke(null);
         }

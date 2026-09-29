@@ -31,11 +31,13 @@ public class MissionManager : MonoBehaviour
 
     // Estado
     public bool IsMissionCompleted { get; private set; }
+    public bool IsMissionFailed { get; private set; }
     public IReadOnlyList<MissionObjective> Objectives => objectives;
 
     // Eventos
     public static event Action<MissionObjective> OnObjectiveChanged;
     public static event Action OnMissionCompleted;
+    public static event Action<string> OnMissionFailed;
     public static event Action<string> OnMissionMessage;
 
     private void Awake()
@@ -48,11 +50,15 @@ public class MissionManager : MonoBehaviour
         }
 
         Instance = this;
+        DiscoverSceneObjectives();
     }
 
     private void Start()
     {
-        DiscoverSceneObjectives();
+        if (objectives.Count == 0)
+        {
+            DiscoverSceneObjectives();
+        }
     }
 
     private void Update()
@@ -190,6 +196,37 @@ public class MissionManager : MonoBehaviour
         OnMissionCompleted?.Invoke();
     }
 
+    /// <summary>
+    /// Finaliza la misión como Fallida, bloquea los controles del jugador y desbloquea el cursor.
+    /// </summary>
+    public void FailMission(string reason = "Misión Fallida")
+    {
+        if (IsMissionCompleted || IsMissionFailed) return;
+
+        IsMissionFailed = true;
+        Debug.Log("💀 <color=#EF4444><b>==========================================</b></color>");
+        Debug.Log($"💀 <color=#EF4444><b>¡MISIÓN FALLIDA! {reason}</b></color>");
+        Debug.Log("💀 <color=#EF4444><b>==========================================</b></color>");
+
+        DisablePlayerControls();
+
+        if (unlockCursorOnEnd)
+        {
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+        }
+
+        OnMissionFailed?.Invoke(reason);
+    }
+
+    /// <summary>
+    /// Falla la misión específicamente porque el objetivo VIP ha escapado del perímetro.
+    /// </summary>
+    public void FailMissionTargetEscape()
+    {
+        FailMission("El objetivo VIP ha escapado del perímetro.");
+    }
+
     private void DisablePlayerControls()
     {
         FPSPlayerController controller = FindFirstObjectByType<FPSPlayerController>();
@@ -200,6 +237,9 @@ public class MissionManager : MonoBehaviour
 
         PlayerInteraction interaction = FindFirstObjectByType<PlayerInteraction>();
         if (interaction != null) interaction.enabled = false;
+
+        PlayerHotbar hotbar = FindFirstObjectByType<PlayerHotbar>();
+        if (hotbar != null) hotbar.enabled = false;
     }
 
     /// <summary>

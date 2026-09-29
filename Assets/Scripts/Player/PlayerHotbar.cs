@@ -95,6 +95,11 @@ public class PlayerHotbar : MonoBehaviour
 
     private void Update()
     {
+        if (Cursor.lockState != CursorLockMode.Locked || Time.timeScale <= 0f)
+        {
+            return;
+        }
+
         HandleNumericInput();
         HandleScrollInput();
         HandleDropInput();
