@@ -16,10 +16,10 @@ MonoBehaviour:
   itemType: 3
   description: "Arma t\xE1ctica con supresor para eliminaci\xF3n silenciosa."
   icon: {fileID: 21300000, guid: 80e98815417748f44befaf186e61baf0, type: 3}
-  worldPrefab: {fileID: 6753802399519252793, guid: 204dff6f160980643813f481bb1ce6b2, type: 3}
-  inHandPrefab: {fileID: 919132149155446097, guid: aa825bdeec009cd45bbab07537c88998, type: 3}
+  worldPrefab: {fileID: 6516872825371127734, guid: 1f5726fe522e4db47ac69789b1e58182, type: 3}
+  inHandPrefab: {fileID: 6516872825371127734, guid: 1f5726fe522e4db47ac69789b1e58182, type: 3}
   inHandPositionOffset: {x: 0.25, y: -0.2, z: 0.45}
-  inHandRotationOffset: {x: 0, y: -90, z: 0}
+  inHandRotationOffset: {x: 0, y: 0, z: 0}
   inHandScale: {x: 0.6, y: 0.6, z: 0.6}
   isStackable: 0
   maxStack: 1

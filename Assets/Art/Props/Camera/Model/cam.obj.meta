@@ -1,14 +1,19 @@
 fileFormatVersion: 2
-guid: 2bd60c134f92b0946996071823d2b375
+guid: 5314ca487b7577a4ab68cf59a650a5f7
 ModelImporter:
   serializedVersion: 24300
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: cam
+    second: {fileID: 2100000, guid: 581ad5374be94c44f8fca77b3de64751, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0
     materialSearch: 1
-    materialLocation: 1
+    materialLocation: 0
     searchTexturesGlobally: 0
   animations:
     legacyGenerateAnimations: 4
