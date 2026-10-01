@@ -113,8 +113,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f14bfaf11523dfe4395b709470f8c7e1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ItemInteractable
-  interactionPrompt: Recoger Objeto
+  interactionPrompt: Recoger Plato de Cerámica
   canInteract: 1
-  itemData: {fileID: 11400000, guid: 6e29dc1e2461d3344bf8ce8ee05fbb0f, type: 2}
+  itemName: Plato de Cerámica
+  itemType: 2
+  description: Objeto arrojadizo para distracción sonora de los guardias.
+  icon: {fileID: 0}
+  isStackable: 1
+  maxStack: 3
   amount: 1
+  worldPrefab: {fileID: 3999984762954176684, guid: dbf9b50852bcb014287d181803da813c, type: 3}
+  inHandPrefab: {fileID: 919132149155446097, guid: 8471c77d67146aa4ca1c38a99eb7dd4d, type: 3}
+  inHandPositionOffset: {x: 0.22, y: -0.2, z: 0.45}
+  inHandRotationOffset: {x: 15, y: 30, z: 0}
+  inHandScale: {x: 0.4, y: 0.4, z: 0.4}
+  itemData: {fileID: 0}
   pickupSound: {fileID: 0}

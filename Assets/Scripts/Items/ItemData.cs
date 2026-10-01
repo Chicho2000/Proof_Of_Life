@@ -37,4 +37,33 @@ public class ItemData : ScriptableObject
 
     public bool IsStackable => isStackable;
     public int MaxStack => Mathf.Max(1, maxStack);
+
+    /// <summary>
+    /// Permite inicializar los datos del ítem en tiempo de ejecución desde el componente padre.
+    /// </summary>
+    public void Initialize(
+        string newName,
+        ItemType newType,
+        string newDescription,
+        Sprite newIcon,
+        GameObject newWorldPrefab,
+        GameObject newInHandPrefab,
+        Vector3 inHandPos,
+        Vector3 inHandRot,
+        Vector3 inHandScaleOffset,
+        bool stackable,
+        int maxStk)
+    {
+        itemName = newName;
+        itemType = newType;
+        description = newDescription;
+        icon = newIcon;
+        worldPrefab = newWorldPrefab;
+        inHandPrefab = newInHandPrefab;
+        inHandPositionOffset = inHandPos;
+        inHandRotationOffset = inHandRot;
+        inHandScale = inHandScaleOffset;
+        isStackable = stackable;
+        maxStack = Mathf.Max(1, maxStk);
+    }
 }

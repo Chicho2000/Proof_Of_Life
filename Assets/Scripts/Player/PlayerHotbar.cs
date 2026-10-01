@@ -203,21 +203,14 @@ public class PlayerHotbar : MonoBehaviour
         ItemData selectedItem = selectedSlot.Item;
         GameObject worldPrefab = selectedItem.WorldPrefab;
 
+        if (worldPrefab == null && selectedItem.InHandPrefab != null)
+        {
+            worldPrefab = selectedItem.InHandPrefab;
+        }
+
         if (worldPrefab == null)
         {
-            Debug.LogWarning($"[Hotbar] No se puede soltar '{selectedItem.ItemName}': su ItemData no tiene WorldPrefab asignado.");
-            return false;
-        }
-
-        if (worldPrefab.GetComponent<ItemInteractable>() == null)
-        {
-            Debug.LogWarning($"[Hotbar] No se puede soltar '{selectedItem.ItemName}': el WorldPrefab debe tener ItemInteractable en el objeto raíz.");
-            return false;
-        }
-
-        if (worldPrefab.GetComponent<Collider>() == null)
-        {
-            Debug.LogWarning($"[Hotbar] No se puede soltar '{selectedItem.ItemName}': el WorldPrefab debe tener un Collider en el objeto raíz.");
+            Debug.LogWarning($"[Hotbar] No se puede soltar '{selectedItem.ItemName}': su ItemData no tiene WorldPrefab ni InHandPrefab asignado.");
             return false;
         }
 
@@ -246,16 +239,19 @@ public class PlayerHotbar : MonoBehaviour
         }
 
         ItemInteractable droppedInteractable = droppedObject.GetComponent<ItemInteractable>();
-        Collider droppedCollider = droppedObject.GetComponent<Collider>();
-
-        if (droppedInteractable == null || droppedCollider == null)
+        if (droppedInteractable == null)
         {
-            droppedObject.SetActive(false);
-            Destroy(droppedObject);
-            Debug.LogWarning($"[Hotbar] El objeto instanciado para '{selectedItem.ItemName}' no es un pickup válido. El ítem permanece en la hotbar.");
-            return false;
+            droppedInteractable = droppedObject.AddComponent<ItemInteractable>();
         }
 
+        Collider droppedCollider = droppedObject.GetComponent<Collider>();
+        if (droppedCollider == null)
+        {
+            droppedCollider = droppedObject.AddComponent<BoxCollider>();
+        }
+
+        droppedCollider.enabled = true;
+        droppedInteractable.enabled = true;
         droppedInteractable.Initialize(selectedItem, 1);
 
         if (!RemoveItem(selectedSlotIndex, 1))
@@ -393,19 +389,29 @@ public class PlayerHotbar : MonoBehaviour
         ItemData selectedItem = GetSelectedItem();
         if (selectedItem != null && selectedItem.InHandPrefab != null)
         {
-            currentInHandObject = Instantiate(selectedItem.InHandPrefab, handSocket);
-            currentInHandObject.transform.localPosition = selectedItem.InHandPositionOffset;
-            currentInHandObject.transform.localRotation = Quaternion.Euler(selectedItem.InHandRotationOffset);
-            currentInHandObject.transform.localScale = selectedItem.InHandScale;
+            try
+            {
+                currentInHandObject = Instantiate(selectedItem.InHandPrefab, handSocket);
+                if (currentInHandObject != null)
+                {
+                    currentInHandObject.transform.localPosition = selectedItem.InHandPositionOffset;
+                    currentInHandObject.transform.localRotation = Quaternion.Euler(selectedItem.InHandRotationOffset);
+                    currentInHandObject.transform.localScale = selectedItem.InHandScale;
 
-            // Desactivar colliders e interactables en el ítem sostenido para evitar interferencias
-            foreach (var col in currentInHandObject.GetComponentsInChildren<Collider>())
-            {
-                col.enabled = false;
+                    // Desactivar colliders e interactables en el ítem sostenido para evitar interferencias
+                    foreach (var col in currentInHandObject.GetComponentsInChildren<Collider>())
+                    {
+                        col.enabled = false;
+                    }
+                    foreach (var interactable in currentInHandObject.GetComponentsInChildren<Interactable>())
+                    {
+                        interactable.enabled = false;
+                    }
+                }
             }
-            foreach (var interactable in currentInHandObject.GetComponentsInChildren<Interactable>())
+            catch (System.Exception ex)
             {
-                interactable.enabled = false;
+                Debug.LogWarning($"[Hotbar] No se pudo instanciar el visual en mano de '{selectedItem.ItemName}': {ex.Message}");
             }
         }
     }

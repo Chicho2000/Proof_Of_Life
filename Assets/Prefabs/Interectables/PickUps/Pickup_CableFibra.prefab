@@ -115,6 +115,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ItemInteractable
   interactionPrompt: Recoger Cable de Fibra
   canInteract: 1
-  itemData: {fileID: 11400000, guid: 9b6a42067a3b34740bcaf8401762e830, type: 2}
+  itemName: Cable de Fibra
+  itemType: 4
+  description: Cuerda reforzada para noquear o neutralizar en silencio desde la espalda.
+  icon: {fileID: 0}
+  isStackable: 0
+  maxStack: 1
   amount: 1
+  worldPrefab: {fileID: 2004946617662530019, guid: dbfcba0d88a6c4042b5f6f8adf226bf6, type: 3}
+  inHandPrefab: {fileID: 919132149155446097, guid: 3b0cda8124e71074482fc8d73fbdcaf5, type: 3}
+  inHandPositionOffset: {x: 0.2, y: -0.18, z: 0.4}
+  inHandRotationOffset: {x: 0, y: 0, z: 0}
+  inHandScale: {x: 0.5, y: 0.5, z: 0.5}
+  itemData: {fileID: 0}
   pickupSound: {fileID: 0}

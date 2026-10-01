@@ -126,10 +126,11 @@ public class StealObjective : MissionObjective
     {
         if (item == null) return false;
 
-        // 1. Si hay un ItemData asignado, comparar por referencia directa
+        // 1. Si hay un ItemData asignado, comparar por referencia directa o por nombre
         if (targetItem != null)
         {
-            return item == targetItem;
+            if (item == targetItem) return true;
+            if (string.Equals(item.ItemName, targetItem.ItemName, System.StringComparison.OrdinalIgnoreCase)) return true;
         }
 
         // 2. Si no, validar por tipo de ítem

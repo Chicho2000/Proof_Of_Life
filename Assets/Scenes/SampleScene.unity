@@ -358,7 +358,6 @@ MonoBehaviour:
   ragdollVisualHeightOffset: 0.05
   disableRootColliderOnDeath: 1
   maxAngularVelocity: 20
-  debugFreezeVisualOnDeath: 0
   dropRaycastDistance: 4
   dropPelvisGroundClearance: 0.45
   dropGroundMask:
@@ -540,7 +539,6 @@ MonoBehaviour:
   ragdollVisualHeightOffset: 0.05
   disableRootColliderOnDeath: 1
   maxAngularVelocity: 20
-  debugFreezeVisualOnDeath: 0
   dropRaycastDistance: 4
   dropPelvisGroundClearance: 0.45
   dropGroundMask:
@@ -1567,7 +1565,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: c4ecc53a8d90c9e4db5fc85c1f8aa5e9, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.109
+      value: 0.451
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: c4ecc53a8d90c9e4db5fc85c1f8aa5e9, type: 3}
       propertyPath: m_LocalPosition.z
@@ -9788,7 +9786,6 @@ MonoBehaviour:
   ragdollVisualHeightOffset: 0.07
   disableRootColliderOnDeath: 1
   maxAngularVelocity: 20
-  debugFreezeVisualOnDeath: 0
   dropRaycastDistance: 4
   dropPelvisGroundClearance: 0.45
   dropGroundMask:
@@ -12543,8 +12540,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ItemInteractable
   interactionPrompt: Recoger USB Confidencial
   canInteract: 1
-  itemData: {fileID: 11400000, guid: d7e8a9b1c2d3e4f5a6b7c8d9e0f1a2b3, type: 2}
+  itemName: USB Confidencial
+  itemType: 6
+  description: Dispositivo de almacenamiento cifrado que contiene planos e información confidencial.
+  icon: {fileID: 0}
+  isStackable: 0
+  maxStack: 1
   amount: 1
+  worldPrefab: {fileID: 3445193840895494317, guid: 8b8a2ddc489cd4544b12fa8fd1ebf328, type: 3}
+  inHandPrefab: {fileID: 919132149155446097, guid: a083f79ac6277184f836b45808fefb89, type: 3}
+  inHandPositionOffset: {x: 0.25, y: -0.2, z: 0.45}
+  inHandRotationOffset: {x: 0, y: 0, z: 0}
+  inHandScale: {x: 50, y: 50, z: 50}
   pickupSound: {fileID: 0}
 --- !u!65 &4195942315516893634
 BoxCollider:
