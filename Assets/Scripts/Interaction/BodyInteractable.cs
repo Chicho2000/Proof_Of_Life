@@ -3,6 +3,11 @@ using UnityEngine;
 public class BodyInteractable : Interactable
 {
     public static BodyInteractable CurrentCarriedBody { get; private set; }
+    private static int bodyDropInputFrame = -1;
+
+    public static bool IsDraggingAnyBody => CurrentCarriedBody != null && CurrentCarriedBody.isBeingCarried;
+    public static bool ShouldBlockItemDropThisFrame =>
+        IsDraggingAnyBody || bodyDropInputFrame == Time.frameCount;
 
     [Header("Configuración de Arrastre")]
     [SerializeField] private float carryDistance = 1.5f;
@@ -38,9 +43,12 @@ public class BodyInteractable : Interactable
         UpdatePrompt();
     }
 
-    private void Start()
+    private void OnDisable()
     {
-        UpdatePrompt();
+        if (CurrentCarriedBody == this)
+        {
+            CurrentCarriedBody = null;
+        }
     }
 
     public void RefreshPrompt()
@@ -124,7 +132,10 @@ public class BodyInteractable : Interactable
         }
 
         // Evitar que el cuerpo bloquee físicamente el paso del jugador
-        SetCollidersTrigger(true);
+        if (ragdoll == null || !ragdoll.IsRagdollActive)
+        {
+            SetCollidersTrigger(true);
+        }
 
         if (grabSound != null)
         {
@@ -150,14 +161,17 @@ public class BodyInteractable : Interactable
         playerCamera = null;
 
         // Apoyar en el piso mediante raycast hacia abajo
-        Vector3 rayStart = transform.position + Vector3.up * 0.5f;
-        if (Physics.Raycast(rayStart, Vector3.down, out RaycastHit hit, 3.0f, ~0, QueryTriggerInteraction.Ignore))
+        bool usesActiveRagdoll = ragdoll != null && ragdoll.IsRagdollActive;
+        if (!usesActiveRagdoll)
         {
-            transform.position = hit.point + Vector3.up * 0.12f;
-        }
+            Vector3 rayStart = transform.position + Vector3.up * 0.5f;
+            if (Physics.Raycast(rayStart, Vector3.down, out RaycastHit hit, 3.0f, ~0, QueryTriggerInteraction.Ignore))
+            {
+                transform.position = hit.point + Vector3.up * 0.12f;
+            }
 
-        // Restaurar colisiones sólidas
-        SetCollidersTrigger(false);
+            SetCollidersTrigger(false);
+        }
 
         if (ragdoll != null)
         {
@@ -189,7 +203,7 @@ public class BodyInteractable : Interactable
 
         if (ragdoll != null)
         {
-            ragdoll.SetCarried(true);
+            ragdoll.PrepareForHide();
         }
 
         // Alojar en el punto interno del escondite si está asignado
@@ -222,12 +236,31 @@ public class BodyInteractable : Interactable
         Transform targetTransform = playerCamera != null ? playerCamera.transform : carrier;
         Vector3 targetPos = targetTransform.position + targetTransform.forward * carryDistance + Vector3.up * carryHeightOffset;
 
-        // Posicionar suavemente frente al jugador
-        transform.position = Vector3.Lerp(transform.position, targetPos, Time.deltaTime * followSpeed);
-
         // Orientación acostada acompañando la rotación del jugador
         Quaternion targetRot = Quaternion.Euler(0f, targetTransform.eulerAngles.y, -90f);
-        transform.rotation = Quaternion.Lerp(transform.rotation, targetRot, Time.deltaTime * followSpeed);
+
+        bool movedProxy = false;
+        if (ragdoll != null && ragdoll.IsRagdollActive && ragdoll.Pelvis != null)
+        {
+            Vector3 carriedPosition = Vector3.Lerp(
+                ragdoll.Pelvis.position,
+                targetPos,
+                Time.deltaTime * followSpeed
+            );
+            Quaternion carriedRotation = Quaternion.Lerp(
+                ragdoll.Pelvis.rotation,
+                targetRot,
+                Time.deltaTime * followSpeed
+            );
+
+            movedProxy = ragdoll.MoveCarriedProxy(carriedPosition, carriedRotation);
+        }
+
+        if (!movedProxy)
+        {
+            transform.position = Vector3.Lerp(transform.position, targetPos, Time.deltaTime * followSpeed);
+            transform.rotation = Quaternion.Lerp(transform.rotation, targetRot, Time.deltaTime * followSpeed);
+        }
 
         // No procesar soltar en el mismo instante en que se levantó
         if (Time.time - grabTime < dropCooldown) return;
@@ -235,6 +268,7 @@ public class BodyInteractable : Interactable
         // Tecla alternativa para soltar (G) o tecla E si no está apuntando a otro interactable
         if (Input.GetKeyDown(KeyCode.G))
         {
+            bodyDropInputFrame = Time.frameCount;
             DropBody();
         }
         else if (Input.GetKeyDown(KeyCode.E))

@@ -183,6 +183,11 @@ public class PlayerHotbar : MonoBehaviour
     {
         if (Input.GetKeyDown(dropKey))
         {
+            if (BodyInteractable.ShouldBlockItemDropThisFrame)
+            {
+                return;
+            }
+
             DropSelectedItem();
         }
     }
@@ -424,6 +429,68 @@ public class PlayerHotbar : MonoBehaviour
     }
 
     public bool AddItem(ItemData itemData, int amount = 1)
+    {
+        if (!CanAddItem(itemData, amount))
+        {
+            if (itemData != null && amount > 0)
+            {
+                Debug.LogWarning(
+                    $"[Hotbar] No hay espacio suficiente para guardar {amount} unidad(es) de '{itemData.ItemName}'. " +
+                    "No se modificó ningún slot."
+                );
+            }
+
+            return false;
+        }
+
+        return AddItemUnchecked(itemData, amount);
+    }
+
+    public bool CanAddItem(ItemData itemData, int amount = 1)
+    {
+        if (itemData == null || amount <= 0 || slots == null || slots.Count == 0)
+        {
+            return false;
+        }
+
+        int remainingCapacityNeeded = amount;
+
+        if (itemData.IsStackable)
+        {
+            for (int i = 0; i < slots.Count; i++)
+            {
+                HotbarSlot slot = slots[i];
+                if (slot == null || slot.IsEmpty || slot.Item != itemData)
+                {
+                    continue;
+                }
+
+                remainingCapacityNeeded -= Mathf.Max(0, itemData.MaxStack - slot.Count);
+                if (remainingCapacityNeeded <= 0)
+                {
+                    return true;
+                }
+            }
+        }
+
+        int capacityPerEmptySlot = itemData.IsStackable ? itemData.MaxStack : 1;
+        for (int i = 0; i < slots.Count; i++)
+        {
+            HotbarSlot slot = slots[i];
+            if (slot != null && slot.IsEmpty)
+            {
+                remainingCapacityNeeded -= capacityPerEmptySlot;
+                if (remainingCapacityNeeded <= 0)
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private bool AddItemUnchecked(ItemData itemData, int amount)
     {
         if (itemData == null || amount <= 0) return false;
 

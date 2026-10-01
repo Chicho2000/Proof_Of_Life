@@ -1,7 +1,10 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class HideSpot : Interactable
 {
+    private const int MaxBodies = 2;
+
     [Header("Configuración de HideSpot")]
     [Tooltip("Nombre descriptivo para la UI (ej: Placard, Tacho de Basura)")]
     [SerializeField] private string spotName = "Placard";
@@ -16,21 +19,17 @@ public class HideSpot : Interactable
     [SerializeField] private AudioClip hideSound;
 
     [Header("Estado")]
-    [SerializeField] private bool isOccupied = false;
-    [SerializeField] private GameObject hiddenBody;
+    [SerializeField] private List<BodyInteractable> storedBodies = new List<BodyInteractable>();
 
-    public bool IsOccupied => isOccupied;
+    public bool IsOccupied => StoredBodyCount > 0;
+    public bool IsFull => StoredBodyCount >= MaxBodies;
+    public int StoredBodyCount => storedBodies?.Count ?? 0;
     public string SpotName => spotName;
     public Transform HidePoint => hidePoint;
 
     private void Awake()
     {
-        EnsureColliderExists();
-        UpdatePrompt();
-    }
-
-    private void Start()
-    {
+        CleanupStoredBodies();
         EnsureColliderExists();
         UpdatePrompt();
     }
@@ -67,39 +66,42 @@ public class HideSpot : Interactable
 
     private void UpdatePrompt()
     {
-        if (isOccupied)
+        CleanupStoredBodies();
+        int storedBodyCount = storedBodies.Count;
+
+        if (storedBodyCount >= MaxBodies)
         {
-            interactionPrompt = $"{spotName} (Ocupado)";
+            interactionPrompt = $"{spotName} (Lleno {storedBodyCount}/{MaxBodies})";
             canInteract = false;
             return;
         }
 
-        // Si el jugador está arrastrando un cuerpo en este momento
-        if (BodyInteractable.CurrentCarriedBody != null)
+        if (storedBodyCount == 0)
         {
-            interactionPrompt = $"Esconder cuerpo en {spotName}";
+            interactionPrompt = $"{spotName} (Vacío)";
             canInteract = true;
             return;
         }
 
-        // Si hay un cuerpo abatido cerca en el suelo
-        BodyInteractable nearbyBody = FindNearbyBody();
-        if (nearbyBody != null)
+        bool hasAvailableBody = BodyInteractable.CurrentCarriedBody != null;
+        if (!hasAvailableBody)
         {
-            interactionPrompt = $"Esconder cuerpo cercano en {spotName}";
-            canInteract = true;
-            return;
+            hasAvailableBody = FindNearbyBody() != null;
         }
 
-        interactionPrompt = $"{spotName} (Vacío)";
+        interactionPrompt = hasAvailableBody
+            ? $"Esconder cuerpo en {spotName} ({storedBodyCount}/{MaxBodies})"
+            : $"{spotName} ({storedBodyCount}/{MaxBodies})";
         canInteract = true;
     }
 
     public override void Interact(GameObject interactor)
     {
-        if (isOccupied)
+        CleanupStoredBodies();
+
+        if (IsFull)
         {
-            Debug.Log($"[HideSpot] {spotName} ya está ocupado con un cuerpo.");
+            Debug.Log($"[HideSpot] {spotName} está lleno ({StoredBodyCount}/{MaxBodies}).");
             return;
         }
 
@@ -124,14 +126,14 @@ public class HideSpot : Interactable
 
     public bool HideBody(BodyInteractable body)
     {
-        if (isOccupied || body == null)
+        CleanupStoredBodies();
+
+        if (body == null || storedBodies.Count >= MaxBodies || storedBodies.Contains(body))
         {
             return false;
         }
 
-        isOccupied = true;
-        hiddenBody = body.gameObject;
-
+        storedBodies.Add(body);
         body.OnHiddenInSpot(this);
 
         if (hideSound != null)
@@ -140,12 +142,22 @@ public class HideSpot : Interactable
         }
 
         UpdatePrompt();
-        Debug.Log($"🔒 [HideSpot] ¡Cuerpo de {hiddenBody.name} escondido exitosamente en {spotName}!");
+        Debug.Log(
+            $"🔒 [HideSpot] ¡Cuerpo de {body.gameObject.name} escondido exitosamente " +
+            $"en {spotName}! ({StoredBodyCount}/{MaxBodies})"
+        );
         return true;
     }
 
     private BodyInteractable FindNearbyBody()
     {
+        CleanupStoredBodies();
+
+        if (IsFull)
+        {
+            return null;
+        }
+
         BodyInteractable[] allBodies = Object.FindObjectsByType<BodyInteractable>(FindObjectsSortMode.None);
         BodyInteractable closest = null;
         float minDist = detectionRadius;
@@ -163,6 +175,17 @@ public class HideSpot : Interactable
         }
 
         return closest;
+    }
+
+    private void CleanupStoredBodies()
+    {
+        if (storedBodies == null)
+        {
+            storedBodies = new List<BodyInteractable>();
+            return;
+        }
+
+        storedBodies.RemoveAll(body => body == null);
     }
 
     /// <summary>
