@@ -63,7 +63,7 @@ public class DoorInteractable : Interactable
             return false;
         }
 
-        ItemData selectedItem = hotbar.GetSelectedItem();
+        ItemInteractable selectedItem = hotbar.GetSelectedItem();
         return selectedItem != null && selectedItem.ItemType == ItemType.Lockpick;
     }
 

@@ -149,7 +149,7 @@ public class AmmoUI : MonoBehaviour
 
         if (playerHotbar == null) return false;
 
-        ItemData selectedItem = playerHotbar.GetSelectedItem();
+        ItemInteractable selectedItem = playerHotbar.GetSelectedItem();
         if (selectedItem != null && selectedItem.ItemType == ItemType.SilencedPistol)
         {
             return true;
@@ -163,7 +163,7 @@ public class AmmoUI : MonoBehaviour
 
         if (isPistol && playerHotbar != null)
         {
-            ItemData selectedItem = playerHotbar.GetSelectedItem();
+            ItemInteractable selectedItem = playerHotbar.GetSelectedItem();
             if (weaponNameText != null)
             {
                 weaponNameText.text = selectedItem.ItemName.ToUpper();

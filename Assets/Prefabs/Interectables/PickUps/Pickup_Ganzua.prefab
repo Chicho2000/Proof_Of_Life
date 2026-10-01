@@ -115,6 +115,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ItemInteractable
   interactionPrompt: "Recoger Ganz\xFAa"
   canInteract: 1
+  itemId: lockpick
   itemName: "Ganz\xFAa"
   itemType: 1
   description: "Herramienta t\xE1ctica para forzar cerraduras mec\xE1nicas."
@@ -127,5 +128,4 @@ MonoBehaviour:
   inHandPositionOffset: {x: 0.2, y: -0.15, z: 0.35}
   inHandRotationOffset: {x: 0, y: 90, z: 0}
   inHandScale: {x: 0.5, y: 0.5, z: 0.5}
-  itemData: {fileID: 0}
   pickupSound: {fileID: 0}

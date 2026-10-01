@@ -98,7 +98,7 @@ public class PlayerCombat : MonoBehaviour
             return false;
         }
 
-        ItemData currentItem = playerHotbar.GetSelectedItem();
+        ItemInteractable currentItem = playerHotbar.GetSelectedItem();
         if (currentItem != null && currentItem.ItemType == ItemType.SilencedPistol)
         {
             return true;
@@ -182,7 +182,7 @@ public class PlayerCombat : MonoBehaviour
             return false;
         }
 
-        ItemData currentItem = playerHotbar.GetSelectedItem();
+        ItemInteractable currentItem = playerHotbar.GetSelectedItem();
         return currentItem != null && currentItem.ItemType == ItemType.FiberWire;
     }
 

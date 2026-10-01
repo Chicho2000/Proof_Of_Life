@@ -14,6 +14,11 @@ public class BodyInteractable : Interactable
     [SerializeField] private float carryHeightOffset = -0.4f;
     [SerializeField] private float followSpeed = 14f;
 
+    [Header("Colisiones durante Arrastre")]
+    [SerializeField] private LayerMask carryObstacleMask = ~0;
+    [SerializeField, Min(0.05f)] private float carryCollisionRadius = 0.3f;
+    [SerializeField, Min(0f)] private float carryCollisionSkin = 0.05f;
+
     [Header("Audio")]
     [SerializeField] private AudioClip grabSound;
     [SerializeField] private AudioClip dropSound;
@@ -29,6 +34,7 @@ public class BodyInteractable : Interactable
     private Collider[] bodyColliders;
     private NPCRagdoll ragdoll;
     private string npcName;
+    private readonly RaycastHit[] carryCastHits = new RaycastHit[16];
 
     public bool IsBeingCarried => isBeingCarried;
     public bool IsHidden => isHidden;
@@ -128,7 +134,8 @@ public class BodyInteractable : Interactable
 
         if (ragdoll != null)
         {
-            ragdoll.SetCarried(true);
+            Collider[] carrierColliders = interactor.GetComponentsInChildren<Collider>(true);
+            ragdoll.SetCarried(true, carrierColliders);
         }
 
         // Evitar que el cuerpo bloquee físicamente el paso del jugador
@@ -234,7 +241,11 @@ public class BodyInteractable : Interactable
         }
 
         Transform targetTransform = playerCamera != null ? playerCamera.transform : carrier;
-        Vector3 targetPos = targetTransform.position + targetTransform.forward * carryDistance + Vector3.up * carryHeightOffset;
+        Vector3 desiredTargetPos =
+            targetTransform.position +
+            targetTransform.forward * carryDistance +
+            Vector3.up * carryHeightOffset;
+        Vector3 targetPos = ResolveCarryTarget(targetTransform.position, desiredTargetPos);
 
         // Orientación acostada acompañando la rotación del jugador
         Quaternion targetRot = Quaternion.Euler(0f, targetTransform.eulerAngles.y, -90f);
@@ -279,6 +290,52 @@ public class BodyInteractable : Interactable
                 DropBody();
             }
         }
+    }
+
+    private Vector3 ResolveCarryTarget(Vector3 castOrigin, Vector3 desiredTarget)
+    {
+        Vector3 displacement = desiredTarget - castOrigin;
+        float castDistance = displacement.magnitude;
+        if (castDistance <= Mathf.Epsilon)
+        {
+            return desiredTarget;
+        }
+
+        Vector3 castDirection = displacement / castDistance;
+        int hitCount = Physics.SphereCastNonAlloc(
+            castOrigin,
+            Mathf.Max(0.05f, carryCollisionRadius),
+            castDirection,
+            carryCastHits,
+            castDistance,
+            carryObstacleMask,
+            QueryTriggerInteraction.Ignore
+        );
+
+        float closestHitDistance = castDistance;
+        bool foundObstacle = false;
+
+        for (int index = 0; index < hitCount; index++)
+        {
+            Collider hitCollider = carryCastHits[index].collider;
+            if (hitCollider == null ||
+                hitCollider.transform.IsChildOf(transform) ||
+                (carrier != null && hitCollider.transform.IsChildOf(carrier)))
+            {
+                continue;
+            }
+
+            closestHitDistance = Mathf.Min(closestHitDistance, carryCastHits[index].distance);
+            foundObstacle = true;
+        }
+
+        if (!foundObstacle)
+        {
+            return desiredTarget;
+        }
+
+        float safeDistance = Mathf.Max(0f, closestHitDistance - carryCollisionSkin);
+        return castOrigin + castDirection * safeDistance;
     }
 
     private void SetCollidersTrigger(bool isTrigger)

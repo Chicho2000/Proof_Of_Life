@@ -7,14 +7,11 @@ using UnityEngine;
 public class StealObjective : MissionObjective
 {
     [Header("Configuración del Ítem Objetivo")]
-    [Tooltip("El ItemData específico a robar (ej: USB_Data). Si se deja vacío, buscará por Tipo o Nombre.")]
-    [SerializeField] private ItemData targetItem;
+    [Tooltip("Pickup canónico a robar. Si se deja vacío, se valida por Tipo de Ítem.")]
+    [SerializeField] private ItemInteractable targetItem;
 
-    [Tooltip("Tipo de ítem a buscar si no se especificó un ItemData concreto.")]
+    [Tooltip("Tipo de ítem a buscar si no se especificó un pickup concreto.")]
     [SerializeField] private ItemType targetItemType = ItemType.MissionItem;
-
-    [Tooltip("Palabra clave a buscar en el nombre del ítem si no se asigna ItemData (ej: 'usb')")]
-    [SerializeField] private string itemNameKeyword = "usb";
 
     [Tooltip("Si es verdadero, el objetivo vuelve a estar incompleto si el jugador suelta o descarta el ítem.")]
     [SerializeField] private bool requireRetainedInInventory = true;
@@ -25,7 +22,7 @@ public class StealObjective : MissionObjective
 
     private PlayerHotbar cachedPlayerHotbar;
 
-    public ItemData TargetItem => targetItem;
+    public ItemInteractable TargetItem => targetItem;
     public ItemType TargetItemType => targetItemType;
 
     private void Awake()
@@ -120,28 +117,20 @@ public class StealObjective : MissionObjective
     }
 
     /// <summary>
-    /// Valida si un ItemData coincide con el ítem requerido para este objetivo.
+    /// Valida si un pickup canónico coincide con el ítem requerido para este objetivo.
     /// </summary>
-    public bool IsMatchingItem(ItemData item)
+    public bool IsMatchingItem(ItemInteractable item)
     {
         if (item == null) return false;
 
-        // 1. Si hay un ItemData asignado, comparar por referencia directa o por nombre
+        // 1. Si hay un pickup configurado, comparar su identidad canónica.
         if (targetItem != null)
         {
-            if (item == targetItem) return true;
-            if (string.Equals(item.ItemName, targetItem.ItemName, System.StringComparison.OrdinalIgnoreCase)) return true;
+            return item.HasSameIdentity(targetItem);
         }
 
-        // 2. Si no, validar por tipo de ítem
+        // 2. Si no, validar por tipo de ítem.
         if (targetItemType != ItemType.None && item.ItemType == targetItemType)
-        {
-            return true;
-        }
-
-        // 3. Validar por palabra clave en el nombre (ej: "USB")
-        if (!string.IsNullOrEmpty(itemNameKeyword) && 
-            item.ItemName.IndexOf(itemNameKeyword, System.StringComparison.OrdinalIgnoreCase) >= 0)
         {
             return true;
         }

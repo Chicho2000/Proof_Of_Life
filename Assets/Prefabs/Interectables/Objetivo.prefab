@@ -127,6 +127,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ItemInteractable
   interactionPrompt: Recoger USB Confidencial
   canInteract: 1
+  itemId: mission-usb
   itemName: USB Confidencial
   itemType: 6
   description: "Dispositivo de almacenamiento cifrado que contiene planos e informaci\xF3n
@@ -135,7 +136,7 @@ MonoBehaviour:
   isStackable: 0
   maxStack: 1
   amount: 1
-  worldPrefab: {fileID: 0}
+  worldPrefab: {fileID: 3714224290401263304, guid: 8b8a2ddc489cd4544b12fa8fd1ebf328, type: 3}
   inHandPrefab: {fileID: 919132149155446097, guid: a083f79ac6277184f836b45808fefb89, type: 3}
   inHandPositionOffset: {x: 0.25, y: -0.2, z: 0.45}
   inHandRotationOffset: {x: 0, y: 0, z: 0}
@@ -189,8 +190,7 @@ MonoBehaviour:
   objectiveTitle: Robar USB
   objectiveDescription: Encuentra el USB con los datos confidenciales.
   isOptional: 0
-  targetItem: {fileID: 11400000, guid: d7e8a9b1c2d3e4f5a6b7c8d9e0f1a2b3, type: 2}
+  targetItem: {fileID: 5879246900903407358}
   targetItemType: 6
-  itemNameKeyword: usb
   requireRetainedInInventory: 1
   worldPickupItem: {fileID: 0}

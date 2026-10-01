@@ -286,6 +286,7 @@ public class NPCRagdoll : MonoBehaviour
     private Vector3 carryTargetPosition;
     private Quaternion carryTargetRotation = Quaternion.identity;
     private bool hasCarryTarget;
+    private readonly List<Collider> ignoredCarrierColliders = new List<Collider>();
 
     public bool IsRagdollActive => isRagdollActive;
     public bool IsCarried => isCarried;
@@ -306,6 +307,11 @@ public class NPCRagdoll : MonoBehaviour
         SyncProxyFromVisual();
         CaptureVisualRigRootOffset();
         Physics.SyncTransforms();
+    }
+
+    private void OnDisable()
+    {
+        RestoreCarryCollisionIgnores();
     }
 
     private void LateUpdate()
@@ -433,6 +439,11 @@ public class NPCRagdoll : MonoBehaviour
 
     public void SetCarried(bool carried)
     {
+        SetCarried(carried, null);
+    }
+
+    public void SetCarried(bool carried, Collider[] carrierColliders)
+    {
         if (!isRagdollActive || isStored || isCarried == carried)
         {
             return;
@@ -440,7 +451,8 @@ public class NPCRagdoll : MonoBehaviour
 
         if (carried)
         {
-            SetRagdollCollidersEnabled(false);
+            ApplyCarryCollisionIgnores(carrierColliders);
+            SetRagdollCollidersEnabled(true);
             SetCarriedBodiesState();
             carryTargetPosition = proxyPelvis.position;
             carryTargetRotation = proxyPelvis.rotation;
@@ -457,6 +469,7 @@ public class NPCRagdoll : MonoBehaviour
         Physics.SyncTransforms();
         SetRagdollCollidersEnabled(true);
         SetBodiesState(false, true, true);
+        RestoreCarryCollisionIgnores();
         isCarried = false;
         SyncVisualFromProxy();
     }
@@ -486,6 +499,7 @@ public class NPCRagdoll : MonoBehaviour
         hasCarryTarget = false;
         SetBodiesState(true, false, false);
         SetRagdollCollidersEnabled(false);
+        RestoreCarryCollisionIgnores();
         RebaseOwnerRootPreservingWorldPose();
         isCarried = false;
         isStored = true;
@@ -963,7 +977,7 @@ public class NPCRagdoll : MonoBehaviour
             body.maxAngularVelocity = maxAngularVelocity;
             body.isKinematic = isCarryAnchor;
             body.useGravity = !isCarryAnchor;
-            body.detectCollisions = !isCarryAnchor;
+            body.detectCollisions = true;
 
             if (!isCarryAnchor)
             {
@@ -972,6 +986,70 @@ public class NPCRagdoll : MonoBehaviour
                 body.WakeUp();
             }
         }
+    }
+
+    private void ApplyCarryCollisionIgnores(Collider[] carrierColliders)
+    {
+        RestoreCarryCollisionIgnores();
+
+        if (carrierColliders == null || ragdollColliders == null)
+        {
+            return;
+        }
+
+        foreach (Collider carrierCollider in carrierColliders)
+        {
+            if (carrierCollider == null)
+            {
+                continue;
+            }
+
+            bool ignoredAnyPair = false;
+            foreach (Collider ragdollCollider in ragdollColliders)
+            {
+                if (ragdollCollider == null || ragdollCollider == carrierCollider)
+                {
+                    continue;
+                }
+
+                Physics.IgnoreCollision(ragdollCollider, carrierCollider, true);
+                ignoredAnyPair = true;
+            }
+
+            if (ignoredAnyPair)
+            {
+                ignoredCarrierColliders.Add(carrierCollider);
+            }
+        }
+    }
+
+    private void RestoreCarryCollisionIgnores()
+    {
+        if (ignoredCarrierColliders.Count == 0)
+        {
+            return;
+        }
+
+        if (ragdollColliders != null)
+        {
+            foreach (Collider carrierCollider in ignoredCarrierColliders)
+            {
+                if (carrierCollider == null)
+                {
+                    continue;
+                }
+
+                foreach (Collider ragdollCollider in ragdollColliders)
+                {
+                    if (ragdollCollider != null && ragdollCollider != carrierCollider)
+                    {
+                        Physics.IgnoreCollision(ragdollCollider, carrierCollider, false);
+                    }
+                }
+            }
+        }
+
+        ignoredCarrierColliders.Clear();
     }
 
     private void SetRagdollCollidersEnabled(bool enabled)

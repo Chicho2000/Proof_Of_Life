@@ -2,6 +2,9 @@ using UnityEngine;
 
 public class ItemInteractable : Interactable
 {
+    [Tooltip("Identidad estable usada para apilar y comparar pickups equivalentes.")]
+    [SerializeField] private string itemId;
+
     [Header("Configuración del Ítem (En Objeto Padre)")]
     [SerializeField] private string itemName = "Nuevo Ítem";
     [SerializeField] private ItemType itemType = ItemType.None;
@@ -24,54 +27,25 @@ public class ItemInteractable : Interactable
     [Header("Feedback Audio/Visual")]
     [SerializeField] private AudioClip pickupSound;
 
-    private ItemData cachedRuntimeData;
-
-    public ItemData ItemData
-    {
-        get
-        {
-            if (cachedRuntimeData == null)
-            {
-                cachedRuntimeData = ScriptableObject.CreateInstance<ItemData>();
-                cachedRuntimeData.Initialize(
-                    itemName,
-                    itemType,
-                    description,
-                    icon,
-                    worldPrefab != null ? worldPrefab : gameObject,
-                    inHandPrefab,
-                    inHandPositionOffset,
-                    inHandRotationOffset,
-                    inHandScale,
-                    isStackable,
-                    maxStack
-                );
-            }
-            return cachedRuntimeData;
-        }
-    }
-
+    public string ItemId => !string.IsNullOrWhiteSpace(itemId)
+        ? itemId.Trim()
+        : $"type:{(int)itemType}";
+    public string ItemName => itemName;
+    public ItemType ItemType => itemType;
+    public string Description => description;
+    public Sprite Icon => icon;
+    public bool IsStackable => isStackable;
+    public int MaxStack => Mathf.Max(1, maxStack);
     public int Amount => amount;
-
-    public void Initialize(ItemData newItemData, int newAmount = 1)
+    public GameObject WorldPrefab => worldPrefab;
+    public GameObject InHandPrefab => inHandPrefab != null ? inHandPrefab : WorldPrefab;
+    public Vector3 InHandPositionOffset => inHandPositionOffset;
+    public Vector3 InHandRotationOffset => inHandRotationOffset;
+    public Vector3 InHandScale => inHandScale;
+    public void Initialize(int newAmount = 1)
     {
-        if (newItemData != null)
-        {
-            itemName = newItemData.ItemName;
-            itemType = newItemData.ItemType;
-            description = newItemData.Description;
-            icon = newItemData.Icon;
-            worldPrefab = newItemData.WorldPrefab;
-            inHandPrefab = newItemData.InHandPrefab;
-            inHandPositionOffset = newItemData.InHandPositionOffset;
-            inHandRotationOffset = newItemData.InHandRotationOffset;
-            inHandScale = newItemData.InHandScale;
-            isStackable = newItemData.IsStackable;
-            maxStack = newItemData.MaxStack;
-        }
         amount = Mathf.Max(1, newAmount);
         canInteract = true;
-        cachedRuntimeData = null;
         UpdatePrompt();
     }
 
@@ -82,7 +56,15 @@ public class ItemInteractable : Interactable
 
     private void OnValidate()
     {
+        maxStack = Mathf.Max(1, maxStack);
+        amount = Mathf.Max(1, amount);
         UpdatePrompt();
+    }
+
+    public bool HasSameIdentity(ItemInteractable other)
+    {
+        return other != null
+            && string.Equals(ItemId, other.ItemId, System.StringComparison.Ordinal);
     }
 
     private void UpdatePrompt()
@@ -106,10 +88,7 @@ public class ItemInteractable : Interactable
 
         if (hotbar != null)
         {
-            ItemData data = ItemData;
-            if (data == null) return;
-
-            bool added = hotbar.AddItem(data, amount);
+            bool added = hotbar.AddItem(this, amount);
             if (added)
             {
                 if (pickupSound != null)
@@ -123,11 +102,18 @@ public class ItemInteractable : Interactable
                     playerInteraction.ClearCurrentInteractable();
                 }
 
-                Destroy(gameObject);
+                if (hotbar.IsStoredItemSource(this))
+                {
+                    gameObject.SetActive(false);
+                }
+                else
+                {
+                    Destroy(gameObject);
+                }
             }
             else
             {
-                Debug.Log($"[ItemInteractable] No hay espacio en la Hotbar para recoger {data.ItemName}.");
+                Debug.Log($"[ItemInteractable] No se pudo recoger {itemName}.");
             }
         }
         else

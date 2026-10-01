@@ -115,6 +115,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ItemInteractable
   interactionPrompt: Recoger Plato de Cerámica
   canInteract: 1
+  itemId: throwable-plate
   itemName: Plato de Cerámica
   itemType: 2
   description: Objeto arrojadizo para distracción sonora de los guardias.
@@ -127,5 +128,4 @@ MonoBehaviour:
   inHandPositionOffset: {x: 0.22, y: -0.2, z: 0.45}
   inHandRotationOffset: {x: 15, y: 30, z: 0}
   inHandScale: {x: 0.4, y: 0.4, z: 0.4}
-  itemData: {fileID: 0}
   pickupSound: {fileID: 0}

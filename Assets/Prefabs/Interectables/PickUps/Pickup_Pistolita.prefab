@@ -103,6 +103,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ItemInteractable
   interactionPrompt: Recoger Pistola Silenciada
   canInteract: 1
+  itemId: silenced-pistol
   itemName: Pistola Silenciada
   itemType: 3
   description: Arma táctica con supresor para eliminación silenciosa.
@@ -115,5 +116,4 @@ MonoBehaviour:
   inHandPositionOffset: {x: 0.25, y: -0.2, z: 0.45}
   inHandRotationOffset: {x: 0, y: -90, z: 0}
   inHandScale: {x: 0.6, y: 0.6, z: 0.6}
-  itemData: {fileID: 0}
   pickupSound: {fileID: 0}

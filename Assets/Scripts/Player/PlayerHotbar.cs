@@ -5,10 +5,10 @@ using UnityEngine;
 [System.Serializable]
 public class HotbarSlot
 {
-    [SerializeField] private ItemData item;
+    [SerializeField] private ItemInteractable item;
     [SerializeField] private int count;
 
-    public ItemData Item => item;
+    public ItemInteractable Item => item;
     public int Count => count;
     public bool IsEmpty => item == null || count <= 0;
 
@@ -18,13 +18,13 @@ public class HotbarSlot
         count = 0;
     }
 
-    public HotbarSlot(ItemData item, int count)
+    public HotbarSlot(ItemInteractable item, int count)
     {
         this.item = item;
         this.count = count;
     }
 
-    public void Set(ItemData newItem, int newCount)
+    public void Set(ItemInteractable newItem, int newCount)
     {
         item = newItem;
         count = newCount;
@@ -66,6 +66,7 @@ public class PlayerHotbar : MonoBehaviour
     [Header("Visualización en Mano (Primera Persona)")]
     [SerializeField] private Transform handSocket;
     private GameObject currentInHandObject;
+    private ItemInteractable currentInHandItem;
 
     [Header("Soltar Ítems")]
     [SerializeField] private KeyCode dropKey = KeyCode.G;
@@ -200,19 +201,7 @@ public class PlayerHotbar : MonoBehaviour
             return false;
         }
 
-        ItemData selectedItem = selectedSlot.Item;
-        GameObject worldPrefab = selectedItem.WorldPrefab;
-
-        if (worldPrefab == null && selectedItem.InHandPrefab != null)
-        {
-            worldPrefab = selectedItem.InHandPrefab;
-        }
-
-        if (worldPrefab == null)
-        {
-            Debug.LogWarning($"[Hotbar] No se puede soltar '{selectedItem.ItemName}': su ItemData no tiene WorldPrefab ni InHandPrefab asignado.");
-            return false;
-        }
+        ItemInteractable selectedItem = selectedSlot.Item;
 
         if (!TryGetDropPosition(out Vector3 spawnPosition))
         {
@@ -224,7 +213,11 @@ public class PlayerHotbar : MonoBehaviour
 
         try
         {
-            droppedObject = Instantiate(worldPrefab, spawnPosition, worldPrefab.transform.rotation);
+            droppedObject = Instantiate(
+                selectedItem.gameObject,
+                spawnPosition,
+                selectedItem.transform.rotation
+            );
         }
         catch (Exception exception)
         {
@@ -239,20 +232,22 @@ public class PlayerHotbar : MonoBehaviour
         }
 
         ItemInteractable droppedInteractable = droppedObject.GetComponent<ItemInteractable>();
-        if (droppedInteractable == null)
-        {
-            droppedInteractable = droppedObject.AddComponent<ItemInteractable>();
-        }
-
         Collider droppedCollider = droppedObject.GetComponent<Collider>();
-        if (droppedCollider == null)
+        if (droppedInteractable == null || droppedCollider == null)
         {
-            droppedCollider = droppedObject.AddComponent<BoxCollider>();
+            droppedObject.SetActive(false);
+            Destroy(droppedObject);
+            Debug.LogWarning(
+                $"[Hotbar] El pickup guardado de '{selectedItem.ItemName}' debe tener ItemInteractable y Collider en el objeto raíz. " +
+                "El ítem permanece en la hotbar."
+            );
+            return false;
         }
 
         droppedCollider.enabled = true;
         droppedInteractable.enabled = true;
-        droppedInteractable.Initialize(selectedItem, 1);
+        droppedInteractable.Initialize(1);
+        droppedObject.SetActive(true);
 
         if (!RemoveItem(selectedSlotIndex, 1))
         {
@@ -374,11 +369,23 @@ public class PlayerHotbar : MonoBehaviour
 
     public void UpdateInHandVisual()
     {
+        HotbarSlot selectedSlot = GetSlot(selectedSlotIndex);
+        ItemInteractable selectedItem = selectedSlot != null && !selectedSlot.IsEmpty
+            ? selectedSlot.Item
+            : null;
+
+        if (currentInHandItem == selectedItem && currentInHandObject != null)
+        {
+            return;
+        }
+
         if (currentInHandObject != null)
         {
             Destroy(currentInHandObject);
             currentInHandObject = null;
         }
+
+        currentInHandItem = null;
 
         if (handSocket == null)
         {
@@ -386,7 +393,6 @@ public class PlayerHotbar : MonoBehaviour
             if (handSocket == null) return;
         }
 
-        ItemData selectedItem = GetSelectedItem();
         if (selectedItem != null && selectedItem.InHandPrefab != null)
         {
             try
@@ -394,19 +400,22 @@ public class PlayerHotbar : MonoBehaviour
                 currentInHandObject = Instantiate(selectedItem.InHandPrefab, handSocket);
                 if (currentInHandObject != null)
                 {
+                    currentInHandItem = selectedItem;
                     currentInHandObject.transform.localPosition = selectedItem.InHandPositionOffset;
                     currentInHandObject.transform.localRotation = Quaternion.Euler(selectedItem.InHandRotationOffset);
                     currentInHandObject.transform.localScale = selectedItem.InHandScale;
 
                     // Desactivar colliders e interactables en el ítem sostenido para evitar interferencias
-                    foreach (var col in currentInHandObject.GetComponentsInChildren<Collider>())
+                    foreach (var col in currentInHandObject.GetComponentsInChildren<Collider>(true))
                     {
                         col.enabled = false;
                     }
-                    foreach (var interactable in currentInHandObject.GetComponentsInChildren<Interactable>())
+                    foreach (var interactable in currentInHandObject.GetComponentsInChildren<Interactable>(true))
                     {
                         interactable.enabled = false;
                     }
+
+                    currentInHandObject.SetActive(true);
                 }
             }
             catch (System.Exception ex)
@@ -416,7 +425,7 @@ public class PlayerHotbar : MonoBehaviour
         }
     }
 
-    public ItemData GetSelectedItem()
+    public ItemInteractable GetSelectedItem()
     {
         if (selectedSlotIndex >= 0 && selectedSlotIndex < slots.Count)
         {
@@ -434,14 +443,14 @@ public class PlayerHotbar : MonoBehaviour
         return null;
     }
 
-    public bool AddItem(ItemData itemData, int amount = 1)
+    public bool AddItem(ItemInteractable item, int amount = 1)
     {
-        if (!CanAddItem(itemData, amount))
+        if (!CanAddItem(item, amount))
         {
-            if (itemData != null && amount > 0)
+            if (item != null && amount > 0)
             {
                 Debug.LogWarning(
-                    $"[Hotbar] No hay espacio suficiente para guardar {amount} unidad(es) de '{itemData.ItemName}'. " +
+                    $"[Hotbar] No hay espacio suficiente para guardar {amount} unidad(es) de '{item.ItemName}'. " +
                     "No se modificó ningún slot."
                 );
             }
@@ -449,29 +458,29 @@ public class PlayerHotbar : MonoBehaviour
             return false;
         }
 
-        return AddItemUnchecked(itemData, amount);
+        return AddItemUnchecked(item, amount);
     }
 
-    public bool CanAddItem(ItemData itemData, int amount = 1)
+    public bool CanAddItem(ItemInteractable item, int amount = 1)
     {
-        if (itemData == null || amount <= 0 || slots == null || slots.Count == 0)
+        if (item == null || amount <= 0 || slots == null || slots.Count == 0)
         {
             return false;
         }
 
         int remainingCapacityNeeded = amount;
 
-        if (itemData.IsStackable)
+        if (item.IsStackable)
         {
             for (int i = 0; i < slots.Count; i++)
             {
                 HotbarSlot slot = slots[i];
-                if (slot == null || slot.IsEmpty || slot.Item != itemData)
+                if (slot == null || slot.IsEmpty || !slot.Item.HasSameIdentity(item))
                 {
                     continue;
                 }
 
-                remainingCapacityNeeded -= Mathf.Max(0, itemData.MaxStack - slot.Count);
+                remainingCapacityNeeded -= Mathf.Max(0, item.MaxStack - slot.Count);
                 if (remainingCapacityNeeded <= 0)
                 {
                     return true;
@@ -479,7 +488,7 @@ public class PlayerHotbar : MonoBehaviour
             }
         }
 
-        int capacityPerEmptySlot = itemData.IsStackable ? itemData.MaxStack : 1;
+        int capacityPerEmptySlot = item.IsStackable ? item.MaxStack : 1;
         for (int i = 0; i < slots.Count; i++)
         {
             HotbarSlot slot = slots[i];
@@ -496,20 +505,22 @@ public class PlayerHotbar : MonoBehaviour
         return false;
     }
 
-    private bool AddItemUnchecked(ItemData itemData, int amount)
+    private bool AddItemUnchecked(ItemInteractable item, int amount)
     {
-        if (itemData == null || amount <= 0) return false;
+        if (item == null || amount <= 0) return false;
 
         bool addedSuccessfully = false;
 
         // 1. Si es apilable, intentar sumar a una ranura existente con el mismo ítem
-        if (itemData.IsStackable)
+        if (item.IsStackable)
         {
             for (int i = 0; i < slots.Count; i++)
             {
-                if (!slots[i].IsEmpty && slots[i].Item == itemData && slots[i].Count < itemData.MaxStack)
+                if (!slots[i].IsEmpty
+                    && slots[i].Item.HasSameIdentity(item)
+                    && slots[i].Count < item.MaxStack)
                 {
-                    int spaceAvailable = itemData.MaxStack - slots[i].Count;
+                    int spaceAvailable = item.MaxStack - slots[i].Count;
                     int toAdd = Mathf.Min(spaceAvailable, amount);
                     slots[i].Add(toAdd);
                     amount -= toAdd;
@@ -517,7 +528,7 @@ public class PlayerHotbar : MonoBehaviour
                     OnSlotUpdated?.Invoke(i, slots[i]);
                     addedSuccessfully = true;
 
-                    Debug.Log($"📦 <color=#4CAF50><b>[Hotbar]</b> ¡Ítem Apilado!</color> Se sumó '<b>{itemData.ItemName}</b>' en el Slot {i + 1}. Cantidad actual: <b>{slots[i].Count} / {itemData.MaxStack}</b>.");
+                    Debug.Log($"📦 <color=#4CAF50><b>[Hotbar]</b> ¡Ítem Apilado!</color> Se sumó '<b>{item.ItemName}</b>' en el Slot {i + 1}. Cantidad actual: <b>{slots[i].Count} / {item.MaxStack}</b>.");
 
                     if (i == selectedSlotIndex)
                     {
@@ -532,15 +543,15 @@ public class PlayerHotbar : MonoBehaviour
         // 2. Si el slot actualmente seleccionado está vacío, priorizar colocarlo en la mano
         if (slots[selectedSlotIndex].IsEmpty)
         {
-            int toAdd = itemData.IsStackable ? Mathf.Min(itemData.MaxStack, amount) : 1;
-            slots[selectedSlotIndex].Set(itemData, toAdd);
+            int toAdd = item.IsStackable ? Mathf.Min(item.MaxStack, amount) : 1;
+            slots[selectedSlotIndex].Set(item, toAdd);
             amount -= toAdd;
 
             OnSlotUpdated?.Invoke(selectedSlotIndex, slots[selectedSlotIndex]);
             UpdateInHandVisual();
             addedSuccessfully = true;
 
-            Debug.Log($"✋ <color=#2196F3><b>[Hotbar]</b> Ítem equipado en mano:</color> '<b>{itemData.ItemName}</b>' en el Slot {selectedSlotIndex + 1}. Cantidad: <b>{toAdd}</b>.");
+            Debug.Log($"✋ <color=#2196F3><b>[Hotbar]</b> Ítem equipado en mano:</color> '<b>{item.ItemName}</b>' en el Slot {selectedSlotIndex + 1}. Cantidad: <b>{toAdd}</b>.");
 
             if (amount <= 0) return true;
         }
@@ -550,14 +561,14 @@ public class PlayerHotbar : MonoBehaviour
         {
             if (slots[i].IsEmpty)
             {
-                int toAdd = itemData.IsStackable ? Mathf.Min(itemData.MaxStack, amount) : 1;
-                slots[i].Set(itemData, toAdd);
+                int toAdd = item.IsStackable ? Mathf.Min(item.MaxStack, amount) : 1;
+                slots[i].Set(item, toAdd);
                 amount -= toAdd;
 
                 OnSlotUpdated?.Invoke(i, slots[i]);
                 addedSuccessfully = true;
 
-                Debug.Log($"📥 <color=#00BCD4><b>[Hotbar]</b> Ítem guardado:</color> '<b>{itemData.ItemName}</b>' en el Slot {i + 1} (Ranura libre). Cantidad: <b>{toAdd}</b>.");
+                Debug.Log($"📥 <color=#00BCD4><b>[Hotbar]</b> Ítem guardado:</color> '<b>{item.ItemName}</b>' en el Slot {i + 1} (Ranura libre). Cantidad: <b>{toAdd}</b>.");
 
                 if (i == selectedSlotIndex)
                 {
@@ -570,7 +581,7 @@ public class PlayerHotbar : MonoBehaviour
 
         if (amount > 0)
         {
-            Debug.LogWarning($"⚠️ <color=#FF9800><b>[Hotbar]</b> ¡Inventario lleno!</color> No hay espacio disponible para guardar '{itemData.ItemName}'.");
+            Debug.LogWarning($"⚠️ <color=#FF9800><b>[Hotbar]</b> ¡Inventario lleno!</color> No hay espacio disponible para guardar '{item.ItemName}'.");
         }
 
         return addedSuccessfully && amount <= 0;
@@ -583,6 +594,7 @@ public class PlayerHotbar : MonoBehaviour
             return false;
         }
 
+        ItemInteractable storedSource = slots[slotIndex].Item;
         slots[slotIndex].Remove(amount);
         OnSlotUpdated?.Invoke(slotIndex, slots[slotIndex]);
 
@@ -591,17 +603,26 @@ public class PlayerHotbar : MonoBehaviour
             UpdateInHandVisual();
         }
 
+        ReleaseSourceIfUnused(storedSource);
+
         return true;
     }
 
-    public bool RemoveItem(ItemData itemData, int amount = 1)
+    public bool RemoveItem(ItemInteractable item, int amount = 1)
     {
-        if (itemData == null || amount <= 0) return false;
+        if (item == null || amount <= 0)
+        {
+            return false;
+        }
+
+        string itemId = item.ItemId;
 
         for (int i = 0; i < slots.Count; i++)
         {
-            if (!slots[i].IsEmpty && slots[i].Item == itemData)
+            if (!slots[i].IsEmpty
+                && string.Equals(slots[i].Item.ItemId, itemId, StringComparison.Ordinal))
             {
+                ItemInteractable storedSource = slots[i].Item;
                 int toRemove = Mathf.Min(slots[i].Count, amount);
                 slots[i].Remove(toRemove);
                 amount -= toRemove;
@@ -612,6 +633,8 @@ public class PlayerHotbar : MonoBehaviour
                 {
                     UpdateInHandVisual();
                 }
+
+                ReleaseSourceIfUnused(storedSource);
 
                 if (amount <= 0) return true;
             }
@@ -634,17 +657,48 @@ public class PlayerHotbar : MonoBehaviour
         return false;
     }
 
-    public bool HasItem(ItemData itemData)
+    public bool HasItem(ItemInteractable item)
     {
-        if (itemData == null) return false;
+        if (item == null)
+        {
+            return false;
+        }
 
         for (int i = 0; i < slots.Count; i++)
         {
-            if (!slots[i].IsEmpty && slots[i].Item == itemData)
+            if (!slots[i].IsEmpty && slots[i].Item.HasSameIdentity(item))
             {
                 return true;
             }
         }
         return false;
+    }
+
+    public bool IsStoredItemSource(ItemInteractable item)
+    {
+        if (item == null) return false;
+
+        for (int i = 0; i < slots.Count; i++)
+        {
+            if (!slots[i].IsEmpty && slots[i].Item == item)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private void ReleaseSourceIfUnused(ItemInteractable source)
+    {
+        if (source == null || IsStoredItemSource(source))
+        {
+            return;
+        }
+
+        if (source.gameObject.scene.IsValid())
+        {
+            Destroy(source.gameObject);
+        }
     }
 }

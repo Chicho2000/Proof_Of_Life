@@ -8,14 +8,11 @@ using UnityEngine;
 public class ExtractionPoint : Interactable
 {
     [Header("Requisitos de Ítem")]
-    [Tooltip("El ItemData específico del USB requerido. Si no se asigna, busca por Tipo de Ítem o por nombre.")]
-    [SerializeField] private ItemData requiredUsbItem;
+    [Tooltip("Pickup canónico del USB requerido. Si no se asigna, valida por Tipo de Ítem.")]
+    [SerializeField] private ItemInteractable requiredUsbItem;
 
-    [Tooltip("Tipo de ítem requerido si no se especifica ItemData (por defecto MissionItem).")]
+    [Tooltip("Tipo de ítem requerido si no se especifica un pickup concreto (por defecto MissionItem).")]
     [SerializeField] private ItemType requiredItemType = ItemType.MissionItem;
-
-    [Tooltip("Palabra clave para identificar el USB por nombre si no coincide la referencia exacta.")]
-    [SerializeField] private string usbKeyword = "usb";
 
     [Tooltip("Si es true, el jugador DEBE tener el USB seleccionado activamente en su mano. Si es false, basta con tenerlo en cualquier ranura.")]
     [SerializeField] private bool requireEquippedInHand = true;
@@ -166,7 +163,7 @@ public class ExtractionPoint : Interactable
         // Retirar el pendrive entregado de la mano/inventario si está configurado
         if (consumeUsbOnDelivery && hotbar != null)
         {
-            ItemData equipped = hotbar.GetSelectedItem();
+            ItemInteractable equipped = hotbar.GetSelectedItem();
             if (equipped != null && IsMatchingUsb(equipped))
             {
                 hotbar.RemoveItem(hotbar.SelectedSlotIndex, 1);
@@ -228,7 +225,7 @@ public class ExtractionPoint : Interactable
     {
         if (hotbar == null) return false;
 
-        ItemData selectedItem = hotbar.GetSelectedItem();
+        ItemInteractable selectedItem = hotbar.GetSelectedItem();
         return IsMatchingUsb(selectedItem);
     }
 
@@ -254,22 +251,16 @@ public class ExtractionPoint : Interactable
     /// <summary>
     /// Valida si un ítem corresponde al USB requerido.
     /// </summary>
-    private bool IsMatchingUsb(ItemData item)
+    private bool IsMatchingUsb(ItemInteractable item)
     {
         if (item == null) return false;
 
         if (requiredUsbItem != null)
         {
-            return item == requiredUsbItem;
+            return item.HasSameIdentity(requiredUsbItem);
         }
 
         if (requiredItemType != ItemType.None && item.ItemType == requiredItemType)
-        {
-            return true;
-        }
-
-        if (!string.IsNullOrEmpty(usbKeyword) && 
-            item.ItemName.IndexOf(usbKeyword, System.StringComparison.OrdinalIgnoreCase) >= 0)
         {
             return true;
         }
