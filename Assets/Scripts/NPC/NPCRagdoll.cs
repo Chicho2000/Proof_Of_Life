@@ -525,9 +525,30 @@ public class NPCRagdoll : MonoBehaviour
             {
                 proxyRoot = FindDescendantByName(transform, "Ragdoll");
             }
+
+            // Si este NPC no tiene proxy propio, buscar una plantilla existente en otro NPC de la escena
+            if (proxyRoot == null)
+            {
+                NPCRagdoll[] allRagdolls = FindObjectsByType<NPCRagdoll>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+                foreach (NPCRagdoll other in allRagdolls)
+                {
+                    if (other != this && other.proxyRoot != null)
+                    {
+                        GameObject cloned = Instantiate(other.proxyRoot.gameObject, transform);
+                        cloned.name = "Ragdoll";
+                        cloned.transform.localPosition = Vector3.zero;
+                        cloned.transform.localRotation = Quaternion.identity;
+                        cloned.transform.localScale = Vector3.one;
+                        proxyRoot = cloned.transform;
+                        forceRefresh = true;
+                        Debug.Log($"[NPCRagdoll] Se autogeneró RagdollProxy en '{gameObject.name}' clonado desde '{other.gameObject.name}'.");
+                        break;
+                    }
+                }
+            }
         }
 
-        if (proxyRoot != null && proxyPelvis == null)
+        if (proxyRoot != null && (proxyPelvis == null || forceRefresh))
         {
             Transform proxyPelvisTransform = FindDescendantByName(proxyRoot, "Pelvis");
             if (proxyPelvisTransform != null)
@@ -538,7 +559,7 @@ public class NPCRagdoll : MonoBehaviour
 
         ResolveVisualRigRoot();
 
-        if (forceRefresh || ragdollBodies == null || ragdollBodies.Length == 0)
+        if (forceRefresh || ragdollBodies == null || ragdollBodies.Length == 0 || AnyBodyInvalid())
         {
             ragdollBodies = proxyRoot != null
                 ? proxyRoot.GetComponentsInChildren<Rigidbody>(true)
@@ -547,12 +568,12 @@ public class NPCRagdoll : MonoBehaviour
             Array.Sort(ragdollBodies, CompareBodiesByHierarchyDepth);
         }
 
-        if (pelvis == null)
+        if (pelvis == null || forceRefresh)
         {
             pelvis = FindVisualTransform("DEF-pelvis.R");
         }
 
-        if (forceRefresh || ragdollColliders == null || ragdollColliders.Length == 0)
+        if (forceRefresh || ragdollColliders == null || ragdollColliders.Length == 0 || AnyColliderInvalid())
         {
             List<Collider> validColliders = new List<Collider>();
 
@@ -586,7 +607,7 @@ public class NPCRagdoll : MonoBehaviour
             return;
         }
 
-        if (forceRefresh || directBindings == null || directBindings.Count == 0)
+        if (forceRefresh || DirectBindingsNeedRefresh())
         {
             directBindings = new List<DirectBoneBinding>();
 
@@ -748,6 +769,44 @@ public class NPCRagdoll : MonoBehaviour
             }
         }
 
+        return false;
+    }
+
+    private bool DirectBindingsNeedRefresh()
+    {
+        if (directBindings == null || directBindings.Count == 0)
+        {
+            return true;
+        }
+
+        foreach (DirectBoneBinding binding in directBindings)
+        {
+            if (binding == null || !binding.IsValid)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private bool AnyBodyInvalid()
+    {
+        if (ragdollBodies == null || ragdollBodies.Length == 0) return true;
+        for (int i = 0; i < ragdollBodies.Length; i++)
+        {
+            if (ragdollBodies[i] == null) return true;
+        }
+        return false;
+    }
+
+    private bool AnyColliderInvalid()
+    {
+        if (ragdollColliders == null || ragdollColliders.Length == 0) return true;
+        for (int i = 0; i < ragdollColliders.Length; i++)
+        {
+            if (ragdollColliders[i] == null) return true;
+        }
         return false;
     }
 

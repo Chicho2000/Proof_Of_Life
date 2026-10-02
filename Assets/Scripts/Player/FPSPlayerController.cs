@@ -59,6 +59,11 @@ public class FPSPlayerController : MonoBehaviour
             gameObject.AddComponent<PlayerHealth>();
         }
 
+        if (GetComponent<PlayerHidingSystem>() == null)
+        {
+            gameObject.AddComponent<PlayerHidingSystem>();
+        }
+
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
     }

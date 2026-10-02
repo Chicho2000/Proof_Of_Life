@@ -12,7 +12,7 @@ public class DetectionSystem : MonoBehaviour
 
     public bool CanDetectTarget(Transform target)
     {
-        if (target == null || IsTargetDisguised(target))
+        if (target == null || IsTargetDisguised(target) || IsTargetHidden(target))
         {
             return false;
         }
@@ -102,6 +102,12 @@ public class DetectionSystem : MonoBehaviour
         PlayerDisguiseSystem disguiseSystem = target.GetComponentInParent<PlayerDisguiseSystem>();
         return disguiseSystem != null
             && disguiseSystem.CurrentDisguise == PlayerDisguiseSystem.DisguiseType.GuardDisguise;
+    }
+
+    private static bool IsTargetHidden(Transform target)
+    {
+        PlayerHidingSystem hidingSystem = target.GetComponentInParent<PlayerHidingSystem>();
+        return hidingSystem != null && hidingSystem.IsHiding;
     }
 
     private void DrawDetectionRay(Vector3 origin, Vector3 direction, Color color)
