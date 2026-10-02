@@ -78,7 +78,8 @@ public class PlayerCombat : MonoBehaviour
             {
                 TryFiberWireTakedown();
             }
-            else
+            else if (playerHotbar == null || playerHotbar.GetSelectedItem() == null
+                || playerHotbar.GetSelectedItem().ItemType != ItemType.Throwable)
             {
                 Debug.Log("[PlayerCombat] Para atacar necesitas tener seleccionada la Pistola Silenciada o el Cable de Fibra en la Hotbar (con teclas 1-5).");
             }

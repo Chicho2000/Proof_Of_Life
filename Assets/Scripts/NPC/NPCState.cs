@@ -7,5 +7,6 @@ public enum NPCState
     Chase,
     Attack,
     Flee,
-    Dead
+    Dead,
+    Investigate
 }
