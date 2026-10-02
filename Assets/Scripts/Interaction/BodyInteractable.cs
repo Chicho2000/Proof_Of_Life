@@ -97,6 +97,17 @@ public class BodyInteractable : Interactable
         {
             disguise.StealDisguise(interactor);
             UpdatePrompt();
+
+            InteractionPromptUI promptUI = FindFirstObjectByType<InteractionPromptUI>();
+            if (promptUI != null)
+            {
+                string prompt = interactionPrompt;
+                if (!prompt.StartsWith("["))
+                {
+                    prompt = "[E] " + prompt;
+                }
+                promptUI.ShowPrompt(prompt);
+            }
         }
     }
 

@@ -16,6 +16,7 @@ public class InteractionPromptUI : MonoBehaviour
     [SerializeField] private PlayerInteraction playerInteraction;
 
     private DoorInteractable activeDoor;
+    private SecurityPanelInteractable activeSecurityPanel;
     private float warningTimer = 0f;
 
     private void Awake()
@@ -80,6 +81,10 @@ public class InteractionPromptUI : MonoBehaviour
         {
             ShowProgress(activeDoor.GetPickProgressNormalized());
         }
+        else if (activeSecurityPanel != null && activeSecurityPanel.IsHacking())
+        {
+            ShowProgress(activeSecurityPanel.GetHackProgressNormalized());
+        }
         else
         {
             if (progressContainer != null && progressContainer.activeSelf)
@@ -92,6 +97,7 @@ public class InteractionPromptUI : MonoBehaviour
     private void HandleInteractableChanged(Interactable interactable)
     {
         activeDoor = interactable as DoorInteractable;
+        activeSecurityPanel = interactable as SecurityPanelInteractable;
         ResetProgressBar();
 
         if (interactable != null && interactable.canInteract)

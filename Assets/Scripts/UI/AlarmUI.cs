@@ -9,10 +9,8 @@ public class AlarmUI : MonoBehaviour
 
     [Header("Configuración")]
     [SerializeField] private string alarmMessage = "[ ! ] ALARMA ACTIVADA";
-    [SerializeField] private float displayDuration = 3.5f;
 
     private CanvasGroup canvasGroup;
-    private float hideTimer = 0f;
 
     private void Awake()
     {
@@ -38,27 +36,34 @@ public class AlarmUI : MonoBehaviour
     private void OnEnable()
     {
         AlarmManager.OnAlarmTriggered += HandleAlarm;
+        AlarmManager.OnAlarmStopped += HandleAlarmStopped;
+        MissionManager.OnMissionCompleted += HandleAlarmStopped;
+        MissionManager.OnMissionFailed += HandleMissionEnd;
+
+        PlayerHealth playerHealth = FindFirstObjectByType<PlayerHealth>();
+        if (playerHealth != null)
+        {
+            playerHealth.OnDeath += HandleAlarmStopped;
+        }
     }
 
     private void OnDisable()
     {
         AlarmManager.OnAlarmTriggered -= HandleAlarm;
+        AlarmManager.OnAlarmStopped -= HandleAlarmStopped;
+        MissionManager.OnMissionCompleted -= HandleAlarmStopped;
+        MissionManager.OnMissionFailed -= HandleMissionEnd;
+
+        PlayerHealth playerHealth = FindFirstObjectByType<PlayerHealth>();
+        if (playerHealth != null)
+        {
+            playerHealth.OnDeath -= HandleAlarmStopped;
+        }
     }
 
-    private void Update()
+    private void HandleMissionEnd(string reason)
     {
-        // Temporizador simple con Time.deltaTime en vez de Corrutinas
-        if (hideTimer > 0f)
-        {
-            hideTimer -= Time.deltaTime;
-            if (hideTimer <= 0f)
-            {
-                if (canvasGroup != null)
-                {
-                    canvasGroup.alpha = 0f;
-                }
-            }
-        }
+        HandleAlarmStopped();
     }
 
     private void HandleAlarm()
@@ -72,7 +77,13 @@ public class AlarmUI : MonoBehaviour
         {
             canvasGroup.alpha = 1f;
         }
+    }
 
-        hideTimer = displayDuration;
+    private void HandleAlarmStopped()
+    {
+        if (canvasGroup != null)
+        {
+            canvasGroup.alpha = 0f;
+        }
     }
 }

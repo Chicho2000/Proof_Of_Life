@@ -46,11 +46,13 @@ public class GuardNPC : NPCBase
     {
         base.OnEnable();
         AlarmManager.OnAlarmTriggered += HandleAlarm;
+        AlarmManager.OnAlarmStopped += HandleAlarmStopped;
     }
 
     protected override void OnDisable()
     {
         AlarmManager.OnAlarmTriggered -= HandleAlarm;
+        AlarmManager.OnAlarmStopped -= HandleAlarmStopped;
         base.OnDisable();
     }
 
@@ -164,7 +166,7 @@ public class GuardNPC : NPCBase
         }
 
         float reachDistance = Mathf.Max(waypointReachDistance, agent.stoppingDistance);
-        if (agent.remainingDistance <= reachDistance)
+        if (agent.hasPath && agent.remainingDistance <= reachDistance)
         {
             isWaitingAtPatrolPoint = true;
             patrolWaitTimer = 0f;
@@ -174,10 +176,7 @@ public class GuardNPC : NPCBase
 
     private void TickDetection()
     {
-        if (currentState != NPCState.Idle
-            && currentState != NPCState.Patrol
-            && currentState != NPCState.Suspicious
-            && currentState != NPCState.Alert)
+        if (currentState == NPCState.Dead)
         {
             return;
         }
@@ -197,6 +196,7 @@ public class GuardNPC : NPCBase
         {
             Debug.Log($"[GuardNPC] {gameObject.name} detectó al jugador y activó la alarma.", this);
             alarmManager.TriggerAlarm();
+            StartChasingPlayer();
         }
     }
 
@@ -259,6 +259,11 @@ public class GuardNPC : NPCBase
             case NPCState.Idle:
                 StopAgent();
                 ResetPatrolTick();
+                if (CanUseAgent())
+                {
+                    agent.speed = patrolSpeed;
+                    agent.stoppingDistance = 0f;
+                }
                 break;
 
             case NPCState.Patrol:
@@ -406,6 +411,17 @@ public class GuardNPC : NPCBase
 
         Debug.Log($"[GuardNPC] {gameObject.name} escuchó la alarma general y persigue al jugador.");
         StartChasingPlayer();
+    }
+
+    private void HandleAlarmStopped()
+    {
+        if (currentState == NPCState.Dead)
+        {
+            return;
+        }
+
+        Debug.Log($"[GuardNPC] {gameObject.name}: Alarma detenida. Regresando a patrullaje.");
+        InitializePatrolState();
     }
 
     public void StartChasingPlayer()

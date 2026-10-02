@@ -24,11 +24,13 @@ public class ExecutiveNPC : NPCBase
     {
         base.OnEnable();
         AlarmManager.OnAlarmTriggered += HandleAlarm;
+        AlarmManager.OnAlarmStopped += HandleAlarmStopped;
     }
 
     protected override void OnDisable()
     {
         AlarmManager.OnAlarmTriggered -= HandleAlarm;
+        AlarmManager.OnAlarmStopped -= HandleAlarmStopped;
         base.OnDisable();
     }
 
@@ -131,6 +133,17 @@ public class ExecutiveNPC : NPCBase
         SetState(NPCState.Flee);
     }
 
+    private void HandleAlarmStopped()
+    {
+        if (hasEscaped || currentState == NPCState.Dead)
+        {
+            return;
+        }
+
+        Debug.Log($"[ExecutiveNPC] {gameObject.name}: Alarma detenida. Deteniendo huida.");
+        SetState(NPCState.Idle);
+    }
+
     protected override void OnStateChanged(NPCState newState)
     {
         base.OnStateChanged(newState);
@@ -185,7 +198,14 @@ public class ExecutiveNPC : NPCBase
             fleePoints = new List<Transform>();
         }
 
-        fleePoints.RemoveAll(point => point == null);
+        for (int i = fleePoints.Count - 1; i >= 0; i--)
+        {
+            if (fleePoints[i] == null)
+            {
+                fleePoints.RemoveAt(i);
+            }
+        }
+
         if (fleePoints.Count > 0)
         {
             return;
@@ -202,7 +222,15 @@ public class ExecutiveNPC : NPCBase
             fleePoints.Add(child);
         }
 
-        fleePoints.Sort((left, right) => string.CompareOrdinal(left.name, right.name));
+        fleePoints.Sort(CompareTransformNames);
+    }
+
+    private static int CompareTransformNames(Transform a, Transform b)
+    {
+        if (a == null && b == null) return 0;
+        if (a == null) return -1;
+        if (b == null) return 1;
+        return string.CompareOrdinal(a.name, b.name);
     }
 
     private void EnsureNavMeshPlacement()
@@ -234,6 +262,8 @@ public class ExecutiveNPC : NPCBase
 
         agent.isStopped = true;
         agent.ResetPath();
+        agent.speed = 3.5f;
+        agent.stoppingDistance = 0f;
     }
 
     protected override void HandleDeath()
