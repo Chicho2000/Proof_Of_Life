@@ -14,13 +14,18 @@ public class PlayerDisguiseSystem : MonoBehaviour
     [SerializeField] private DisguiseType currentDisguise = DisguiseType.None;
 
     public event Action<DisguiseType> OnDisguiseChanged;
+    public static event Action<DisguiseType> OnDisguiseChangedStatic;
 
-    public DisguiseType CurrentDisguise => currentDisguise;
+    public DisguiseType CurrentDisguise
+    {
+        get { return currentDisguise; }
+    }
 
     public void EquipDisguise(DisguiseType newDisguise)
     {
         currentDisguise = newDisguise;
         Debug.Log($"[PlayerDisguiseSystem] Disfraz cambiado a: {newDisguise}");
         OnDisguiseChanged?.Invoke(currentDisguise);
+        OnDisguiseChangedStatic?.Invoke(currentDisguise);
     }
 }

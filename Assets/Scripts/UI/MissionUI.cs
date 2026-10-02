@@ -172,7 +172,10 @@ public class MissionUI : MonoBehaviour
     }
 
     // --- HUD OBJETIVO ACTUAL ---
-    private void OnObjectiveChanged(MissionObjective obj) => UpdateObjectivesDisplay();
+    private void OnObjectiveChanged(MissionObjective obj)
+    {
+        UpdateObjectivesDisplay();
+    }
 
     public void UpdateObjectivesDisplay()
     {

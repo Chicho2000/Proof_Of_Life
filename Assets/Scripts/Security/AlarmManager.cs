@@ -21,6 +21,7 @@ public class AlarmManager : MonoBehaviour
     }
 
     public static event Action OnAlarmTriggered;
+    public static event Action OnAlarmStopped;
 
     [Header("Estado")]
     [SerializeField] private bool isAlarmActive;
@@ -31,14 +32,17 @@ public class AlarmManager : MonoBehaviour
     [SerializeField] private bool loopAlarmSound = true;
     [SerializeField] private bool playAlarmSound = true;
 
-    public bool IsAlarmActive => isAlarmActive;
+    public bool IsAlarmActive
+    {
+        get { return isAlarmActive; }
+    }
 
     private void Awake()
     {
-        if (Instance != null && Instance != this)
+        if (instance != null && instance != this)
         {
             Debug.LogWarning(
-                $"[AlarmManager] Ya existe un AlarmManager activo en '{Instance.gameObject.name}'. " +
+                $"[AlarmManager] Ya existe un AlarmManager activo en '{instance.gameObject.name}'. " +
                 $"Se eliminará el duplicado '{gameObject.name}'.",
                 this
             );
@@ -46,15 +50,15 @@ public class AlarmManager : MonoBehaviour
             return;
         }
 
-        Instance = this;
-        ResolveAudioSource(true);
+        instance = this;
+        ResolveAudioSource(false);
     }
 
     private void OnDestroy()
     {
-        if (Instance == this)
+        if (instance == this)
         {
-            Instance = null;
+            instance = null;
         }
     }
 
@@ -88,6 +92,7 @@ public class AlarmManager : MonoBehaviour
         }
 
         Debug.Log("[AlarmManager] Alarma detenida.");
+        OnAlarmStopped?.Invoke();
     }
 
     // Compatibilidad temporal con código existente.
