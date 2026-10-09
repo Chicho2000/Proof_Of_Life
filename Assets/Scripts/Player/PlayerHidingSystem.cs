@@ -17,10 +17,9 @@ public class PlayerHidingSystem : MonoBehaviour
     [SerializeField] private AudioClip enterSound;
     [SerializeField] private AudioClip exitSound;
 
-    [Header("Efectos Visuales de Interior")]
-    [Tooltip("Opacidad de la viñeta de penumbra interior (0 a 1)")]
-    [Range(0f, 1f)]
-    [SerializeField] private float interiorDarknessAlpha = 0.35f;
+    // Eventos desacoplados para UI
+    public static event System.Action<HideSpot> OnPlayerEnteredHiding;
+    public static event System.Action OnPlayerExitedHiding;
 
     private bool isHiding = false;
     private HideSpot currentHideSpot;
@@ -48,11 +47,15 @@ public class PlayerHidingSystem : MonoBehaviour
     // Lista de renderers del propio personaje que se ocultan mientras está escondido
     private readonly System.Collections.Generic.List<Renderer> hiddenPlayerRenderers = new System.Collections.Generic.List<Renderer>();
 
-    // Textura procedural de viñeta para la vista desde el interior
-    private static Texture2D vignetteTexture;
+    public bool IsHiding
+    {
+        get { return isHiding; }
+    }
 
-    public bool IsHiding => isHiding;
-    public HideSpot CurrentHideSpot => currentHideSpot;
+    public HideSpot CurrentHideSpot
+    {
+        get { return currentHideSpot; }
+    }
 
     private void Awake()
     {
@@ -87,8 +90,6 @@ public class PlayerHidingSystem : MonoBehaviour
                 firstPersonHandsObj = foundHands.gameObject;
             }
         }
-
-        CreateVignetteTextureIfNeeded();
     }
 
     private void Update()
@@ -138,6 +139,12 @@ public class PlayerHidingSystem : MonoBehaviour
 
         isHiding = true;
         currentHideSpot = spot;
+
+        // Notificar a la UI desacoplada
+        if (OnPlayerEnteredHiding != null)
+        {
+            OnPlayerEnteredHiding.Invoke(spot);
+        }
 
         // Guardar la posición y rotación exacta del jugador para restaurarlo de forma 100% segura al salir
         enterPlayerPosition = transform.position;
@@ -244,6 +251,12 @@ public class PlayerHidingSystem : MonoBehaviour
         isHiding = false;
         currentHideSpot = null;
 
+        // Notificar a la UI desacoplada
+        if (OnPlayerExitedHiding != null)
+        {
+            OnPlayerExitedHiding.Invoke();
+        }
+
         // Restaurar al jugador en la posición de entrada segura (evita caer al vacío o salir en el espacio)
         Vector3 exitPos = (spot != null && spot.HasCustomExitPoint)
             ? spot.CustomExitPoint.position
@@ -333,48 +346,6 @@ public class PlayerHidingSystem : MonoBehaviour
                     m.SetFloat("_Cull", 0f); // 0 = Cull Off (Double-Sided)
                 }
             }
-        }
-    }
-
-    private static void CreateVignetteTextureIfNeeded()
-    {
-        if (vignetteTexture != null) return;
-
-        int size = 128;
-        vignetteTexture = new Texture2D(size, size, TextureFormat.RGBA32, false);
-        vignetteTexture.wrapMode = TextureWrapMode.Clamp;
-
-        Vector2 center = new Vector2(size * 0.5f, size * 0.5f);
-        float maxDist = size * 0.5f;
-
-        for (int y = 0; y < size; y++)
-        {
-            for (int x = 0; x < size; x++)
-            {
-                float dist = Vector2.Distance(new Vector2(x, y), center);
-                float normalizedDist = Mathf.Clamp01(dist / maxDist);
-                float alpha = Mathf.SmoothStep(0.1f, 0.85f, normalizedDist);
-                vignetteTexture.SetPixel(x, y, new Color(0f, 0f, 0f, alpha));
-            }
-        }
-
-        vignetteTexture.Apply();
-    }
-
-    private void OnGUI()
-    {
-        if (!isHiding)
-        {
-            return;
-        }
-
-        // Viñeta oscura sutil del interior de escondite
-        if (vignetteTexture != null && interiorDarknessAlpha > 0f)
-        {
-            Color prevColor = GUI.color;
-            GUI.color = new Color(0f, 0f, 0f, interiorDarknessAlpha);
-            GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), vignetteTexture, ScaleMode.StretchToFill);
-            GUI.color = prevColor;
         }
     }
 }

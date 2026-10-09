@@ -543,7 +543,7 @@ public class GuardNPC : NPCBase
             AudioSource.PlayClipAtPoint(attackSound, transform.position);
         }
 
-        playerHealth.TakeDamage(attackDamage);
+        playerHealth.TakeDamage(attackDamage, transform.position);
     }
 
     private void FindPlayerReference()

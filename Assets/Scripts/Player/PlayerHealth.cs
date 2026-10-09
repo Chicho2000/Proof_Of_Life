@@ -19,17 +19,43 @@ public class PlayerHealth : MonoBehaviour
     private bool isDead = false;
 
     // Eventos desacoplados para UI y sistemas de juego
+    public static event Action<int, bool, Vector3> OnPlayerDamagedWithSource; // (damageAmount, hasAttacker, attackerPosition)
+    public static event Action<int> OnPlayerDamaged;
+    public static event Action<int, int> OnPlayerHealthChangedStatic; // (currentHealth, maxHealth)
     public event Action<int, int> OnHealthChanged; // (currentHealth, maxHealth)
     public event Action<int> OnDamaged;           // (damageAmount)
+    public event Action<int, Vector3> OnDamagedWithSource; // (damageAmount, attackerPosition)
     public event Action<int> OnHealed;            // (healAmount)
     public event Action OnDeath;
     public event Action OnPlayerDeath;            // Alias por compatibilidad
 
     // Propiedades públicas de consulta
-    public int MaxHealth => maxHealth;
-    public int CurrentHealth => currentHealth;
-    public bool IsDead => isDead;
-    public float HealthNormalized => maxHealth > 0 ? (float)currentHealth / maxHealth : 0f;
+    public int MaxHealth
+    {
+        get { return maxHealth; }
+    }
+
+    public int CurrentHealth
+    {
+        get { return currentHealth; }
+    }
+
+    public bool IsDead
+    {
+        get { return isDead; }
+    }
+
+    public float HealthNormalized
+    {
+        get
+        {
+            if (maxHealth > 0)
+            {
+                return (float)currentHealth / maxHealth;
+            }
+            return 0f;
+        }
+    }
 
     private void Awake()
     {
@@ -39,25 +65,54 @@ public class PlayerHealth : MonoBehaviour
 
     private void EnsureUIExists()
     {
-        if (FindFirstObjectByType<PlayerHealthUI>() == null)
+        Canvas canvas = FindFirstObjectByType<Canvas>();
+        if (canvas != null)
         {
-            Canvas canvas = FindFirstObjectByType<Canvas>();
-            if (canvas != null)
+            if (FindFirstObjectByType<PlayerHealthUI>() == null)
             {
                 canvas.gameObject.AddComponent<PlayerHealthUI>();
+            }
+
+            if (FindFirstObjectByType<DamageIndicatorUI>() == null)
+            {
+                canvas.gameObject.AddComponent<DamageIndicatorUI>();
             }
         }
     }
 
     private void Start()
     {
-        OnHealthChanged?.Invoke(currentHealth, maxHealth);
+        if (OnHealthChanged != null)
+        {
+            OnHealthChanged.Invoke(currentHealth, maxHealth);
+        }
+
+        if (OnPlayerHealthChangedStatic != null)
+        {
+            OnPlayerHealthChangedStatic.Invoke(currentHealth, maxHealth);
+        }
     }
 
     /// <summary>
-    /// Aplica daño al jugador, descontando de su vida actual.
+    /// Aplica daño al jugador sin origen específico de posición.
     /// </summary>
     public void TakeDamage(int damage)
+    {
+        TakeDamage(damage, false, Vector3.zero);
+    }
+
+    /// <summary>
+    /// Aplica daño al jugador registrando la posición del atacante para feedback direccional.
+    /// </summary>
+    public void TakeDamage(int damage, Vector3 attackerPosition)
+    {
+        TakeDamage(damage, true, attackerPosition);
+    }
+
+    /// <summary>
+    /// Aplica daño al jugador indicando explícitamente si proviene de una fuente direccional.
+    /// </summary>
+    public void TakeDamage(int damage, bool hasAttacker, Vector3 attackerPosition)
     {
         if (isDead || damage <= 0) return;
 
@@ -77,8 +132,35 @@ public class PlayerHealth : MonoBehaviour
             AudioSource.PlayClipAtPoint(hurtSound, transform.position);
         }
 
-        OnDamaged?.Invoke(damage);
-        OnHealthChanged?.Invoke(currentHealth, maxHealth);
+        if (OnDamaged != null)
+        {
+            OnDamaged.Invoke(damage);
+        }
+
+        if (OnDamagedWithSource != null)
+        {
+            OnDamagedWithSource.Invoke(damage, attackerPosition);
+        }
+
+        if (OnPlayerDamaged != null)
+        {
+            OnPlayerDamaged.Invoke(damage);
+        }
+
+        if (OnPlayerDamagedWithSource != null)
+        {
+            OnPlayerDamagedWithSource.Invoke(damage, hasAttacker, attackerPosition);
+        }
+
+        if (OnHealthChanged != null)
+        {
+            OnHealthChanged.Invoke(currentHealth, maxHealth);
+        }
+
+        if (OnPlayerHealthChangedStatic != null)
+        {
+            OnPlayerHealthChangedStatic.Invoke(currentHealth, maxHealth);
+        }
 
         if (currentHealth <= 0)
         {
@@ -96,8 +178,20 @@ public class PlayerHealth : MonoBehaviour
         currentHealth = Mathf.Min(maxHealth, currentHealth + healAmount);
         Debug.Log($"[PlayerHealth] Jugador curado +{healAmount}. Salud actual: {currentHealth}/{maxHealth}");
 
-        OnHealed?.Invoke(healAmount);
-        OnHealthChanged?.Invoke(currentHealth, maxHealth);
+        if (OnHealed != null)
+        {
+            OnHealed.Invoke(healAmount);
+        }
+
+        if (OnHealthChanged != null)
+        {
+            OnHealthChanged.Invoke(currentHealth, maxHealth);
+        }
+
+        if (OnPlayerHealthChangedStatic != null)
+        {
+            OnPlayerHealthChangedStatic.Invoke(currentHealth, maxHealth);
+        }
     }
 
     /// <summary>
@@ -133,8 +227,15 @@ public class PlayerHealth : MonoBehaviour
         if (hotbar != null) hotbar.enabled = false;
 
         // 3. Disparar eventos
-        OnDeath?.Invoke();
-        OnPlayerDeath?.Invoke();
+        if (OnDeath != null)
+        {
+            OnDeath.Invoke();
+        }
+
+        if (OnPlayerDeath != null)
+        {
+            OnPlayerDeath.Invoke();
+        }
 
         // 4. Notificar a MissionManager si existe
         if (MissionManager.Instance != null && !MissionManager.Instance.IsMissionCompleted)
@@ -163,6 +264,14 @@ public class PlayerHealth : MonoBehaviour
         PlayerHotbar hotbar = GetComponent<PlayerHotbar>();
         if (hotbar != null) hotbar.enabled = true;
 
-        OnHealthChanged?.Invoke(currentHealth, maxHealth);
+        if (OnHealthChanged != null)
+        {
+            OnHealthChanged.Invoke(currentHealth, maxHealth);
+        }
+
+        if (OnPlayerHealthChangedStatic != null)
+        {
+            OnPlayerHealthChangedStatic.Invoke(currentHealth, maxHealth);
+        }
     }
 }

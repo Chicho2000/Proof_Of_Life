@@ -13,7 +13,7 @@ public class DisguiseUI : MonoBehaviour
         public Sprite iconSprite;
     }
 
-    [Header("Elementos de UI")]
+    [Header("Elementos del Badge")]
     [SerializeField] private GameObject disguiseContainer;
     [SerializeField] private TMP_Text disguiseText;
     [SerializeField] private Image disguiseIcon;
@@ -29,32 +29,32 @@ public class DisguiseUI : MonoBehaviour
         }
     };
 
-    private CanvasGroup canvasGroup;
+    [Header("Transición de Pantalla (Opcional)")]
+    [Tooltip("Arrastra aquí un CanvasGroup que cubra la pantalla para oscurecerla al cambiarte de ropa.")]
+    [SerializeField] private CanvasGroup screenFade;
+    [SerializeField] private float fadeDuration = 0.4f;
+
+    private CanvasGroup badgeCanvasGroup;
+    private float fadeTimer = 0f;
+    private bool isFading = false;
+    private PlayerDisguiseSystem.DisguiseType pendingDisguise;
+    private bool isInitialized = false;
 
     private void Awake()
     {
-        if (disguiseContainer == null)
-        {
-            disguiseContainer = gameObject;
-        }
+        if (disguiseContainer == null) disguiseContainer = gameObject;
+        if (disguiseIcon == null) disguiseIcon = disguiseContainer.GetComponentInChildren<Image>();
+        if (disguiseText == null) disguiseText = disguiseContainer.GetComponentInChildren<TMP_Text>();
 
-        if (disguiseIcon == null)
-        {
-            disguiseIcon = disguiseContainer.GetComponentInChildren<Image>();
-        }
+        badgeCanvasGroup = disguiseContainer.GetComponent<CanvasGroup>();
+        if (badgeCanvasGroup == null) badgeCanvasGroup = disguiseContainer.AddComponent<CanvasGroup>();
+        badgeCanvasGroup.alpha = 0f;
 
-        if (disguiseText == null)
+        if (screenFade != null)
         {
-            disguiseText = disguiseContainer.GetComponentInChildren<TMP_Text>();
+            screenFade.alpha = 0f;
+            screenFade.blocksRaycasts = false;
         }
-
-        canvasGroup = disguiseContainer.GetComponent<CanvasGroup>();
-        if (canvasGroup == null)
-        {
-            canvasGroup = disguiseContainer.AddComponent<CanvasGroup>();
-        }
-
-        canvasGroup.alpha = 0f;
     }
 
     private void OnEnable()
@@ -72,15 +72,56 @@ public class DisguiseUI : MonoBehaviour
         PlayerDisguiseSystem playerDisguise = FindFirstObjectByType<PlayerDisguiseSystem>();
         if (playerDisguise != null)
         {
-            HandleDisguiseChanged(playerDisguise.CurrentDisguise);
+            ApplyBadge(playerDisguise.CurrentDisguise);
         }
         else
         {
             HideDisguiseBadge();
         }
+        isInitialized = true;
+    }
+
+    private void Update()
+    {
+        if (!isFading || screenFade == null) return;
+
+        fadeTimer += Time.deltaTime;
+        float half = fadeDuration * 0.5f;
+
+        if (fadeTimer <= half)
+        {
+            screenFade.alpha = fadeTimer / half;
+        }
+        else
+        {
+            if (pendingDisguise != PlayerDisguiseSystem.DisguiseType.None || badgeCanvasGroup.alpha > 0f)
+            {
+                ApplyBadge(pendingDisguise);
+            }
+            screenFade.alpha = 1f - ((fadeTimer - half) / half);
+        }
+
+        if (fadeTimer >= fadeDuration)
+        {
+            screenFade.alpha = 0f;
+            isFading = false;
+        }
     }
 
     private void HandleDisguiseChanged(PlayerDisguiseSystem.DisguiseType disguise)
+    {
+        if (!isInitialized || screenFade == null)
+        {
+            ApplyBadge(disguise);
+            return;
+        }
+
+        pendingDisguise = disguise;
+        fadeTimer = 0f;
+        isFading = true;
+    }
+
+    private void ApplyBadge(PlayerDisguiseSystem.DisguiseType disguise)
     {
         if (disguise == PlayerDisguiseSystem.DisguiseType.None)
         {
@@ -98,10 +139,7 @@ public class DisguiseUI : MonoBehaviour
         {
             for (int i = 0; i < disguises.Length; i++)
             {
-                if (disguises[i].disguiseType == disguise)
-                {
-                    return disguises[i];
-                }
+                if (disguises[i].disguiseType == disguise) return disguises[i];
             }
         }
 
@@ -114,38 +152,20 @@ public class DisguiseUI : MonoBehaviour
 
     public void ShowDisguiseBadge(DisguiseVisualConfig config)
     {
-        if (disguiseText != null)
-        {
-            disguiseText.text = config.displayName;
-        }
-
+        if (disguiseText != null) disguiseText.text = config.displayName;
         if (disguiseIcon != null)
         {
-            if (config.iconSprite != null)
-            {
-                disguiseIcon.sprite = config.iconSprite;
-            }
+            if (config.iconSprite != null) disguiseIcon.sprite = config.iconSprite;
             disguiseIcon.enabled = true;
         }
+        if (disguiseContainer != null && !disguiseContainer.activeSelf) disguiseContainer.SetActive(true);
+        if (badgeCanvasGroup != null) badgeCanvasGroup.alpha = 1f;
 
-        if (disguiseContainer != null && !disguiseContainer.activeSelf)
-        {
-            disguiseContainer.SetActive(true);
-        }
-
-        if (canvasGroup != null)
-        {
-            canvasGroup.alpha = 1f;
-        }
-
-        Debug.Log($"[DisguiseUI] Disfraz activado en HUD: {config.displayName}");
+        Debug.Log("[DisguiseUI] Disfraz activado en HUD: " + config.displayName);
     }
 
     public void HideDisguiseBadge()
     {
-        if (canvasGroup != null)
-        {
-            canvasGroup.alpha = 0f;
-        }
+        if (badgeCanvasGroup != null) badgeCanvasGroup.alpha = 0f;
     }
 }
