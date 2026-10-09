@@ -298,6 +298,14 @@ public class ExecutiveNPC : NPCBase
         gameObject.SetActive(false);
     }
 
+    /// <summary>
+    /// Configura si la huida del ejecutivo hace fracasar la misión.
+    /// </summary>
+    public void SetFailMissionOnEscape(bool fail)
+    {
+        failMissionOnEscape = fail;
+    }
+
     private void UpdateAnimation()
     {
         if (animator == null)

@@ -16,6 +16,19 @@ public class MissionManager : MonoBehaviour
     [Tooltip("Lista de objetivos a cumplir en esta misión. Si está vacía, se autocompletará con los objetivos en escena.")]
     [SerializeField] private List<MissionObjective> objectives = new List<MissionObjective>();
 
+    [Header("Configuración de Modos de Misión")]
+    [Tooltip("El GameObject del USB/Objetivo de robo (prefab Objetivo en escena).")]
+    [SerializeField] private GameObject usbObjectiveGroup;
+
+    [Tooltip("El objetivo de eliminar al Ejecutivo VIP.")]
+    [SerializeField] private TargetObjective targetObjective;
+
+    [Tooltip("El Ejecutivo NPC en la escena.")]
+    [SerializeField] private ExecutiveNPC executiveNpc;
+
+    [Tooltip("El punto de extracción en la escena.")]
+    [SerializeField] private ExtractionPoint extractionPoint;
+
     [Header("Audio y Feedback")]
     [SerializeField] private AudioClip missionCompleteSound;
     [SerializeField] private AudioClip objectiveUpdatedSound;
@@ -107,6 +120,80 @@ public class MissionManager : MonoBehaviour
         }
 
         Debug.Log($"📋 [MissionManager] Inicializado con {objectives.Count} objetivo(s).");
+    }
+
+    /// <summary>
+    /// Limpia y vuelve a registrar únicamente los objetivos actualmente ACTIVOS en la escena.
+    /// </summary>
+    public void RefreshSceneObjectives()
+    {
+        UnsubscribeAllObjectives();
+        objectives.Clear();
+
+        MissionObjective[] found = FindObjectsByType<MissionObjective>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+        foreach (var obj in found)
+        {
+            RegisterObjective(obj);
+        }
+
+        Debug.Log($"📋 [MissionManager] Objetivos activos actualizados: {objectives.Count}.");
+    }
+
+    /// <summary>
+    /// Configura la partida para el modo por defecto: Extracción del Pendrive.
+    /// </summary>
+    public void ConfigurarMisionExtraccion()
+    {
+        EnsureMissionReferences();
+
+        if (usbObjectiveGroup != null) usbObjectiveGroup.SetActive(true);
+        if (targetObjective != null) targetObjective.gameObject.SetActive(false);
+        if (executiveNpc != null) executiveNpc.SetFailMissionOnEscape(false);
+        if (extractionPoint != null) extractionPoint.SetRequireUsb(true);
+
+        RefreshSceneObjectives();
+        Debug.Log("🎮 [MissionManager] Misión iniciada: EXTRACCIÓN DE PENDRIVE.");
+    }
+
+    /// <summary>
+    /// Configura la partida para el modo Eliminación del Ejecutivo.
+    /// (Retira el pendrive del escritorio, activa neutralizar al ejecutivo y huida con derrota).
+    /// </summary>
+    public void ConfigurarMisionEliminacion()
+    {
+        EnsureMissionReferences();
+
+        if (usbObjectiveGroup != null) usbObjectiveGroup.SetActive(false);
+        if (targetObjective != null) targetObjective.gameObject.SetActive(true);
+        if (executiveNpc != null) executiveNpc.SetFailMissionOnEscape(true);
+        if (extractionPoint != null) extractionPoint.SetRequireUsb(false);
+
+        RefreshSceneObjectives();
+        Debug.Log("🎯 [MissionManager] Misión iniciada: ELIMINACIÓN DEL EJECUTIVO.");
+    }
+
+    private void EnsureMissionReferences()
+    {
+        if (usbObjectiveGroup == null)
+        {
+            StealObjective steal = FindFirstObjectByType<StealObjective>(FindObjectsInactive.Include);
+            if (steal != null) usbObjectiveGroup = steal.gameObject;
+        }
+
+        if (targetObjective == null)
+        {
+            targetObjective = FindFirstObjectByType<TargetObjective>(FindObjectsInactive.Include);
+        }
+
+        if (executiveNpc == null)
+        {
+            executiveNpc = FindFirstObjectByType<ExecutiveNPC>(FindObjectsInactive.Include);
+        }
+
+        if (extractionPoint == null)
+        {
+            extractionPoint = FindFirstObjectByType<ExtractionPoint>(FindObjectsInactive.Include);
+        }
     }
 
     /// <summary>

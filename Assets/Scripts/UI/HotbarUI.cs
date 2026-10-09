@@ -68,10 +68,6 @@ public class HotbarUI : MonoBehaviour
 
     private void Start()
     {
-        if (playerHotbar == null)
-        {
-            playerHotbar = FindFirstObjectByType<PlayerHotbar>();
-        }
 
         if (playerHotbar != null)
         {

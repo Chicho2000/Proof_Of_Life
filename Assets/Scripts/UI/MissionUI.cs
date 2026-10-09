@@ -2,17 +2,32 @@ using System.Collections;
 using System.Text;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class MissionUI : MonoBehaviour
 {
-    [Header("1. Briefing Inicial")]
+    [Header("1. Briefing Inicial y Selección")]
     [SerializeField] private GameObject panelBriefing;
-    [SerializeField] private TMP_Text briefingObjectivesListTMP;
-    [SerializeField] private Button btnIniciarMision;
+    [FormerlySerializedAs("boton_Extraccion")]
+    [SerializeField] private Button boton_Extraccion;
+    [FormerlySerializedAs("boton_Eliminacion")]
+    [SerializeField] private Button boton_Eliminacion;
+    [FormerlySerializedAs("texto_Titulo")]
+    [SerializeField] private TMP_Text texto_Titulo;
+    [FormerlySerializedAs("texto_Descripcion")]
+    [SerializeField] private TMP_Text texto_Descripcion;
+    [FormerlySerializedAs("texto_Objetivos")]
+    [SerializeField] private TMP_Text texto_Objetivos;
+    [FormerlySerializedAs("boton_IniciarMision")]
+    [SerializeField] private Button boton_IniciarMision;
     [SerializeField] private bool showBriefingOnStart = true;
+    [SerializeField] private Color btnSelectedColor = new Color(0.96f, 0.62f, 0.04f, 1f);
+    [SerializeField] private Color btnNormalColor = new Color(0.22f, 0.25f, 0.32f, 1f);
+
+    private bool esModoEliminacion = false;
 
     [Header("2. HUD Objetivo Actual")]
     [SerializeField] private GameObject objectivesPanel;
@@ -136,26 +151,59 @@ public class MissionUI : MonoBehaviour
         panelBriefing.SetActive(true);
         if (objectivesPanel != null) objectivesPanel.SetActive(false);
 
-        if (briefingObjectivesListTMP != null && MissionManager.Instance != null)
-        {
-            if (MissionManager.Instance.Objectives.Count == 0)
-            {
-                MissionManager.Instance.DiscoverSceneObjectives();
-            }
-
-            StringBuilder sb = new StringBuilder();
-            sb.AppendLine("OBJETIVOS DE LA OPERACIÓN:\n");
-            var list = MissionManager.Instance.Objectives;
-            for (int i = 0; i < list.Count; i++)
-            {
-                if (list[i] != null) sb.AppendLine($"• [{i + 1}] {list[i].ObjectiveTitle}");
-            }
-            sb.AppendLine($"• [{list.Count + 1}] Escapar por el punto de extracción");
-            briefingObjectivesListTMP.text = sb.ToString().TrimEnd();
-        }
+        // Seleccionar por defecto Extracción
+        SeleccionarMisionExtraccion();
 
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
+    }
+
+    private void SeleccionarMisionExtraccion()
+    {
+        esModoEliminacion = false;
+        
+        if (boton_Extraccion != null) boton_Extraccion.GetComponent<Image>().color = btnSelectedColor;
+        if (boton_Eliminacion != null) boton_Eliminacion.GetComponent<Image>().color = btnNormalColor;
+
+        if (texto_Titulo != null) texto_Titulo.text = "OPERACIÓN: ROBO DE DATOS";
+        if (texto_Descripcion != null) texto_Descripcion.text = "Infiltrarse en el edificio, asegurar el pendrive con los planos y evacuar. El ejecutivo es un objetivo opcional, pero si escapa no hay penalización.";
+        
+        ActualizarTextoObjetivosBriefing();
+    }
+
+    private void SeleccionarMisionEliminacion()
+    {
+        esModoEliminacion = true;
+
+        if (boton_Extraccion != null) boton_Extraccion.GetComponent<Image>().color = btnNormalColor;
+        if (boton_Eliminacion != null) boton_Eliminacion.GetComponent<Image>().color = btnSelectedColor;
+
+        if (texto_Titulo != null) texto_Titulo.text = "OPERACIÓN: ASESINATO";
+        if (texto_Descripcion != null) texto_Descripcion.text = "El ejecutivo no debe escapar. Localiza y elimina al objetivo antes de que abandone el complejo. El pendrive no es relevante en esta misión.";
+        
+        ActualizarTextoObjetivosBriefing();
+    }
+
+    private void ActualizarTextoObjetivosBriefing()
+    {
+        if (texto_Objetivos != null)
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine("OBJETIVOS DE LA OPERACIÓN:\n");
+            
+            if (esModoEliminacion)
+            {
+                sb.AppendLine("• [1] Eliminar al Ejecutivo H. P. (Obligatorio)");
+                sb.AppendLine("• [2] Escapar por el punto de extracción");
+            }
+            else
+            {
+                sb.AppendLine("• [1] Robar el pendrive de los servidores (Obligatorio)");
+                sb.AppendLine("• [2] Eliminar al Ejecutivo H. P. (Opcional)");
+                sb.AppendLine("• [3] Escapar por el punto de extracción");
+            }
+            texto_Objetivos.text = sb.ToString().TrimEnd();
+        }
     }
 
     private void StartGameplay()
@@ -163,6 +211,18 @@ public class MissionUI : MonoBehaviour
         if (panelBriefing != null) panelBriefing.SetActive(false);
         Time.timeScale = 1f;
         missionStartTime = Time.time;
+
+        if (MissionManager.Instance != null)
+        {
+            if (esModoEliminacion)
+            {
+                MissionManager.Instance.ConfigurarMisionEliminacion();
+            }
+            else
+            {
+                MissionManager.Instance.ConfigurarMisionExtraccion();
+            }
+        }
 
         if (objectivesPanel != null) objectivesPanel.SetActive(true);
         UpdateObjectivesDisplay();
@@ -255,7 +315,9 @@ public class MissionUI : MonoBehaviour
     // --- BOTONES Y ACCIONES ---
     private void SetupButtonListeners()
     {
-        if (btnIniciarMision != null) btnIniciarMision.onClick.AddListener(StartGameplay);
+        if (boton_IniciarMision != null) boton_IniciarMision.onClick.AddListener(StartGameplay);
+        if (boton_Extraccion != null) boton_Extraccion.onClick.AddListener(SeleccionarMisionExtraccion);
+        if (boton_Eliminacion != null) boton_Eliminacion.onClick.AddListener(SeleccionarMisionEliminacion);
         if (btnRepetirVictoria != null) btnRepetirVictoria.onClick.AddListener(RestartGame);
         if (btnSalirVictoria != null) btnSalirVictoria.onClick.AddListener(QuitGame);
         if (btnReiniciarMuerte != null) btnReiniciarMuerte.onClick.AddListener(RestartGame);
@@ -285,8 +347,8 @@ public class MissionUI : MonoBehaviour
 
     private void AutoFindReferences()
     {
-        if (panelBriefing != null && btnIniciarMision == null)
-            btnIniciarMision = panelBriefing.GetComponentInChildren<Button>(true);
+        if (panelBriefing != null && boton_IniciarMision == null)
+            boton_IniciarMision = panelBriefing.GetComponentInChildren<Button>(true);
 
         if (panelMuerte != null)
         {
