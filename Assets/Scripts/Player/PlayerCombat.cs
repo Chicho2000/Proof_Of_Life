@@ -9,6 +9,9 @@ public class PlayerCombat : MonoBehaviour
     [Header("Configuracion de Pistola Silenciada")]
     [SerializeField] private float range = 50f;
     [SerializeField] private int damage = 100;
+    [SerializeField] private AudioClip shootSound;
+    [SerializeField] private AudioClip reloadSound;
+    [SerializeField] private AudioClip emptyAmmoSound;
 
     [Header("Municion")]
     [SerializeField] private int maxAmmo = 12;
@@ -71,6 +74,11 @@ public class PlayerCombat : MonoBehaviour
                 }
                 else if (currentAmmo <= 0)
                 {
+                    if (emptyAmmoSound != null)
+                    {
+                        Vector3 soundPos = playerCamera != null ? playerCamera.transform.position : transform.position;
+                        AudioSource.PlayClipAtPoint(emptyAmmoSound, soundPos);
+                    }
                     Debug.Log("Pistola Silenciada: ¡Sin munición! Presiona R para recargar.");
                 }
             }
@@ -124,6 +132,12 @@ public class PlayerCombat : MonoBehaviour
 
         Debug.Log("Pistola Silenciada: ¡Disparo realizado! Balas restantes: " + currentAmmo + "/" + maxAmmo);
 
+        if (shootSound != null)
+        {
+            Vector3 soundPos = playerCamera != null ? playerCamera.transform.position : transform.position;
+            AudioSource.PlayClipAtPoint(shootSound, soundPos);
+        }
+
         if (OnAmmoChanged != null)
         {
             OnAmmoChanged.Invoke(currentAmmo, maxAmmo);
@@ -159,6 +173,12 @@ public class PlayerCombat : MonoBehaviour
 
         currentAmmo = maxAmmo;
         Debug.Log("Pistola Silenciada: Recargada. Municion completa: " + currentAmmo + "/" + maxAmmo);
+
+        if (reloadSound != null)
+        {
+            Vector3 soundPos = playerCamera != null ? playerCamera.transform.position : transform.position;
+            AudioSource.PlayClipAtPoint(reloadSound, soundPos);
+        }
 
         if (OnAmmoChanged != null)
         {

@@ -25,7 +25,11 @@ public class ThrowableObject : MonoBehaviour
 
     public bool Launch(Vector3 velocity, Collider[] ownerColliders)
     {
-        if (launched || body == null || objectCollider == null || noiseEmitter == null
+        if (body == null) body = GetComponent<Rigidbody>();
+        if (noiseEmitter == null) noiseEmitter = GetComponent<NoiseEmitter>();
+        if (objectCollider == null) objectCollider = GetComponent<Collider>();
+
+        if (body == null || objectCollider == null || noiseEmitter == null
             || !objectCollider.enabled || velocity.sqrMagnitude < 0.001f
             || float.IsNaN(velocity.x) || float.IsNaN(velocity.y) || float.IsNaN(velocity.z))
         {
@@ -51,6 +55,7 @@ public class ThrowableObject : MonoBehaviour
         body.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
         body.linearVelocity = velocity;
         launched = true;
+        impacted = false;
         return true;
     }
 
@@ -74,6 +79,7 @@ public class ThrowableObject : MonoBehaviour
         if (!launched || impacted || collision.relativeVelocity.magnitude < minimumImpactSpeed) return;
 
         impacted = true;
+        launched = false;
         Vector3 impactPosition = collision.contactCount > 0
             ? collision.GetContact(0).point
             : transform.position;

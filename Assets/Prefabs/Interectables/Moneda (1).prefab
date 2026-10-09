@@ -121,7 +121,7 @@ MonoBehaviour:
   inHandPositionOffset: {x: 0.25, y: -0.2, z: 0.45}
   inHandRotationOffset: {x: 0, y: 0, z: 0}
   inHandScale: {x: 1, y: 1, z: 1}
-  pickupSound: {fileID: 0}
+  pickupSound: {fileID: 8300000, guid: 11a7c0456380b984da695cc3fa8e3948, type: 3}
 --- !u!54 &3288136574747359857
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -176,8 +176,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ThrowableObject
   breakOnImpact: 0
-  minimumImpactSpeed: 1.5
-  impactSound: {fileID: 0}
+  minimumImpactSpeed: 0.5
+  impactSound: {fileID: 8300000, guid: 11a7c0456380b984da695cc3fa8e3948, type: 3}
 --- !u!114 &8313967967906766435
 MonoBehaviour:
   m_ObjectHideFlags: 0

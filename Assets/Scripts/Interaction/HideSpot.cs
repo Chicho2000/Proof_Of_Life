@@ -38,6 +38,7 @@ public class HideSpot : Interactable
     public bool CanPlayerHide => !isPlayerInside && TotalOccupants < MaxCapacity;
     public bool CanBodyHide => TotalOccupants < MaxCapacity;
     public string SpotName => spotName;
+    public AudioClip HideSound => hideSound;
 
     public bool IsCloset => (GetComponent<BoxCollider>()?.size.y ?? 0f) >= 1.9f;
 

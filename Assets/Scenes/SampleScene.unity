@@ -7577,6 +7577,7 @@ GameObject:
   - component: {fileID: 1901548863}
   - component: {fileID: 1901548864}
   - component: {fileID: 1901548865}
+  - component: {fileID: 1901548866}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -7712,6 +7713,9 @@ MonoBehaviour:
   playerHotbar: {fileID: 0}
   range: 50
   damage: 100
+  shootSound: {fileID: 8300000, guid: 88580c45aea4ea2408e9afae0a0fd7b7, type: 3}
+  reloadSound: {fileID: 0}
+  emptyAmmoSound: {fileID: 0}
   maxAmmo: 12
   currentAmmo: 12
   fiberWireRange: 2.2
@@ -7767,6 +7771,23 @@ MonoBehaviour:
   obstacleMask:
     serializedVersion: 2
     m_Bits: 4294967295
+--- !u!114 &1901548866
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1901548854}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b73812d6a59247f5bb10901e85ef4c1a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerHidingSystem
+  maxLookYaw: 75
+  maxLookPitch: 35
+  mouseSensitivity: 2
+  enterSound: {fileID: 8300000, guid: 91df508b35b7ce842abe423b42388699, type: 3}
+  exitSound: {fileID: 8300000, guid: 91df508b35b7ce842abe423b42388699, type: 3}
 --- !u!1 &1926206025
 GameObject:
   m_ObjectHideFlags: 0

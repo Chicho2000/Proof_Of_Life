@@ -231,9 +231,11 @@ public class PlayerHidingSystem : MonoBehaviour
             promptUI.ShowPrompt("[E] Salir del escondite");
         }
 
-        if (enterSound != null)
+        AudioClip clipToPlay = enterSound != null ? enterSound : spot?.HideSound;
+        if (clipToPlay != null)
         {
-            AudioSource.PlayClipAtPoint(enterSound, transform.position);
+            Vector3 soundPos = playerCamera != null ? playerCamera.transform.position : transform.position;
+            AudioSource.PlayClipAtPoint(clipToPlay, soundPos);
         }
 
         Debug.Log($"🚪 [PlayerHidingSystem] Jugador escondido dentro de '{spot.SpotName}'.");
@@ -323,9 +325,11 @@ public class PlayerHidingSystem : MonoBehaviour
             promptUI.ShowTemporaryWarning($"<color=#38BDF8>Saliste de {spot?.SpotName ?? "escondite"}</color>", 1.5f);
         }
 
-        if (exitSound != null)
+        AudioClip clipToPlay = exitSound != null ? exitSound : spot?.HideSound;
+        if (clipToPlay != null)
         {
-            AudioSource.PlayClipAtPoint(exitSound, transform.position);
+            Vector3 soundPos = playerCamera != null ? playerCamera.transform.position : transform.position;
+            AudioSource.PlayClipAtPoint(clipToPlay, soundPos);
         }
 
         Debug.Log("🚪 [PlayerHidingSystem] Jugador salió del escondite.");

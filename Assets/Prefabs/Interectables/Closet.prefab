@@ -85,7 +85,7 @@ MonoBehaviour:
   spotName: Placard
   hidePoint: {fileID: 0}
   detectionRadius: 3.5
-  hideSound: {fileID: 0}
+  hideSound: {fileID: 8300000, guid: 91df508b35b7ce842abe423b42388699, type: 3}
   isOccupied: 0
   hiddenBody: {fileID: 0}
 --- !u!65 &318570603477829144

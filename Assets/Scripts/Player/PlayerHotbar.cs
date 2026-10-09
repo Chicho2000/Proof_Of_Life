@@ -249,6 +249,20 @@ public class PlayerHotbar : MonoBehaviour
         droppedInteractable.Initialize(1);
         droppedObject.SetActive(true);
 
+        Rigidbody droppedBody = droppedObject.GetComponent<Rigidbody>();
+        if (droppedBody != null)
+        {
+            droppedBody.isKinematic = false;
+            droppedBody.useGravity = true;
+        }
+
+        ThrowableObject throwable = droppedObject.GetComponent<ThrowableObject>();
+        if (throwable != null)
+        {
+            Collider[] playerColliders = GetComponentsInChildren<Collider>(true);
+            throwable.Launch(Vector3.down * 0.1f, playerColliders);
+        }
+
         if (!RemoveItem(selectedSlotIndex, 1))
         {
             droppedObject.SetActive(false);
