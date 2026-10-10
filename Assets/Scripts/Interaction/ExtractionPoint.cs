@@ -8,6 +8,9 @@ using UnityEngine;
 public class ExtractionPoint : Interactable
 {
     [Header("Requisitos de Ítem")]
+    [Tooltip("Si es true, la extracción exige robar y tener el USB. Si es false (misión de asesinato), valida que los objetivos obligatorios estén cumplidos.")]
+    [SerializeField] private bool requireUsb = true;
+
     [Tooltip("Pickup canónico del USB requerido. Si no se asigna, valida por Tipo de Ítem.")]
     [SerializeField] private ItemInteractable requiredUsbItem;
 
@@ -23,6 +26,19 @@ public class ExtractionPoint : Interactable
     [Header("Validaciones Adicionales")]
     [Tooltip("Si es true, comprueba que todos los demás objetivos obligatorios de MissionManager estén listos.")]
     [SerializeField] private bool requireAllObjectivesComplete = true;
+
+    /// <summary>
+    /// Configura si esta extracción exige portar el USB o si es una extracción basada en objetivos (ej. asesinato).
+    /// </summary>
+    public void SetRequireUsb(bool required)
+    {
+        requireUsb = required;
+        if (!required)
+        {
+            requireAllObjectivesComplete = true;
+        }
+        UpdatePromptState(null);
+    }
 
     [Header("Modo Trigger Opcional")]
     [Tooltip("Si es true, la extracción se activará también al entrar físicamente al collider trigger.")]
@@ -55,6 +71,20 @@ public class ExtractionPoint : Interactable
         if (interactor == null)
         {
             interactionPrompt = "Punto de Extracción";
+            return;
+        }
+
+        if (!requireUsb)
+        {
+            bool objectivesReady = MissionManager.Instance == null || MissionManager.Instance.AreMandatoryObjectivesComplete();
+            if (objectivesReady)
+            {
+                interactionPrompt = "Extraer <color=#22C55E>[Objetivo Neutralizado]</color>";
+            }
+            else
+            {
+                interactionPrompt = "Bloqueado <color=#EF4444>[Elimina al Ejecutivo]</color>";
+            }
             return;
         }
 
@@ -101,7 +131,7 @@ public class ExtractionPoint : Interactable
     }
 
     /// <summary>
-    /// Intenta procesar la extracción del jugador validando la posesión y equipamiento del USB.
+    /// Intenta procesar la extracción del jugador validando los requisitos según la misión activa.
     /// </summary>
     public bool TryExtract(GameObject playerObject)
     {
@@ -119,22 +149,26 @@ public class ExtractionPoint : Interactable
             return false;
         }
 
-        // 1. Verificar si el jugador tiene el USB en su inventario
-        bool hasUsb = HasUsbInInventory(hotbar);
-        if (!hasUsb)
+        // Si la misión requiere USB (misión de extracción):
+        if (requireUsb)
         {
-            PlayDeniedFeedback("¡Misión incompleta! Necesitas encontrar y robar el USB antes de extraer.");
-            return false;
-        }
-
-        // 2. Verificar si el USB está EQUIPADO en la mano activa
-        if (requireEquippedInHand)
-        {
-            bool isEquipped = IsUsbEquipped(hotbar);
-            if (!isEquipped)
+            // 1. Verificar si el jugador tiene el USB en su inventario
+            bool hasUsb = HasUsbInInventory(hotbar);
+            if (!hasUsb)
             {
-                PlayDeniedFeedback("¡Debes tener el USB equipado en tu mano para confirmar la extracción!");
+                PlayDeniedFeedback("¡Misión incompleta! Necesitas encontrar y robar el USB antes de extraer.");
                 return false;
+            }
+
+            // 2. Verificar si el USB está EQUIPADO en la mano activa
+            if (requireEquippedInHand)
+            {
+                bool isEquipped = IsUsbEquipped(hotbar);
+                if (!isEquipped)
+                {
+                    PlayDeniedFeedback("¡Debes tener el USB equipado en tu mano para confirmar la extracción!");
+                    return false;
+                }
             }
         }
 
@@ -143,7 +177,10 @@ public class ExtractionPoint : Interactable
         {
             if (!MissionManager.Instance.AreMandatoryObjectivesComplete())
             {
-                PlayDeniedFeedback("No puedes extraer todavía: quedan objetivos prioritarios por completar.");
+                string msg = requireUsb
+                    ? "No puedes extraer todavía: quedan objetivos prioritarios por completar."
+                    : "¡Misión incompleta! Debes neutralizar al objetivo antes de extraer.";
+                PlayDeniedFeedback(msg);
                 return false;
             }
         }
@@ -158,10 +195,10 @@ public class ExtractionPoint : Interactable
         isExtracted = true;
         canInteract = false;
 
-        Debug.Log("🚀 <color=#4CAF50><b>[ExtractionPoint] ¡Extracción autorizada! Pendrive entregado con éxito.</b></color>");
+        Debug.Log("🚀 <color=#4CAF50><b>[ExtractionPoint] ¡Extracción autorizada! Operación cumplida con éxito.</b></color>");
 
-        // Retirar el pendrive entregado de la mano/inventario si está configurado
-        if (consumeUsbOnDelivery && hotbar != null)
+        // Retirar el pendrive entregado de la mano/inventario si correspondía a misión de USB
+        if (requireUsb && consumeUsbOnDelivery && hotbar != null)
         {
             ItemInteractable equipped = hotbar.GetSelectedItem();
             if (equipped != null && IsMatchingUsb(equipped))

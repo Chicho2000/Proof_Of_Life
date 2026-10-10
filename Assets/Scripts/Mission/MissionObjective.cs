@@ -18,6 +18,11 @@ public abstract class MissionObjective : MonoBehaviour
     public bool IsOptional => isOptional;
     public bool IsComplete { get; protected set; }
 
+    public void SetOptional(bool optional)
+    {
+        isOptional = optional;
+    }
+
     /// <summary>
     /// Evento disparado cada vez que el estado del objetivo cambia (completado o reiniciado).
     /// </summary>
