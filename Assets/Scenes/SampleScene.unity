@@ -407,25 +407,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::NPCRagdoll
   animator: {fileID: 0}
   rootCollider: {fileID: 39539285}
-  visualRigRoot: {fileID: 0}
-  pelvis: {fileID: 0}
-  proxyRoot: {fileID: 0}
-  proxyPelvis: {fileID: 0}
-  ragdollBodies: []
-  ragdollColliders: []
-  directBindings: []
-  intermediateChains: []
-  ragdollVisualHeightOffset: 0.05
-  disableRootColliderOnDeath: 1
-  maxAngularVelocity: 20
-  dropRaycastDistance: 4
-  dropPelvisGroundClearance: 0.45
-  dropGroundMask:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  initialGroundCheckDistance: 2
-  initialGroundClearance: 0.04
-  maxInitialGroundCorrection: 0.5
+  hipsBody: {fileID: 0}
 --- !u!1 &44803116
 GameObject:
   m_ObjectHideFlags: 0
@@ -589,25 +571,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::NPCRagdoll
   animator: {fileID: 0}
   rootCollider: {fileID: 44803118}
-  visualRigRoot: {fileID: 0}
-  pelvis: {fileID: 0}
-  proxyRoot: {fileID: 0}
-  proxyPelvis: {fileID: 0}
-  ragdollBodies: []
-  ragdollColliders: []
-  directBindings: []
-  intermediateChains: []
-  ragdollVisualHeightOffset: 0.05
-  disableRootColliderOnDeath: 1
-  maxAngularVelocity: 20
-  dropRaycastDistance: 4
-  dropPelvisGroundClearance: 0.45
-  dropGroundMask:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  initialGroundCheckDistance: 2
-  initialGroundClearance: 0.04
-  maxInitialGroundCorrection: 0.5
+  hipsBody: {fileID: 0}
 --- !u!1001 &105370213
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -619,6 +583,18 @@ PrefabInstance:
     - target: {fileID: 3159650235303737281, guid: 2af7d90953760d2cdb8328c98b46e39b, type: 3}
       propertyPath: m_Name
       value: Humanoid
+      objectReference: {fileID: 0}
+    - target: {fileID: 6143976592460454057, guid: 2af7d90953760d2cdb8328c98b46e39b, type: 3}
+      propertyPath: m_Radius
+      value: 0.0014
+      objectReference: {fileID: 0}
+    - target: {fileID: 6143976592460454057, guid: 2af7d90953760d2cdb8328c98b46e39b, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6143976592460454057, guid: 2af7d90953760d2cdb8328c98b46e39b, type: 3}
+      propertyPath: m_Center.y
+      value: 0.001
       objectReference: {fileID: 0}
     - target: {fileID: 6936842574703600118, guid: 2af7d90953760d2cdb8328c98b46e39b, type: 3}
       propertyPath: m_LocalPosition.x
@@ -1020,17 +996,25 @@ PrefabInstance:
       propertyPath: m_Name
       value: Humanoid
       objectReference: {fileID: 0}
+    - target: {fileID: 6143976592460454057, guid: 2af7d90953760d2cdb8328c98b46e39b, type: 3}
+      propertyPath: m_Radius
+      value: 0.0014
+      objectReference: {fileID: 0}
+    - target: {fileID: 6143976592460454057, guid: 2af7d90953760d2cdb8328c98b46e39b, type: 3}
+      propertyPath: m_Center.y
+      value: 0.001
+      objectReference: {fileID: 0}
     - target: {fileID: 6936842574703600118, guid: 2af7d90953760d2cdb8328c98b46e39b, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0.027849857
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6936842574703600118, guid: 2af7d90953760d2cdb8328c98b46e39b, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 1.21776
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6936842574703600118, guid: 2af7d90953760d2cdb8328c98b46e39b, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -0.45068985
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6936842574703600118, guid: 2af7d90953760d2cdb8328c98b46e39b, type: 3}
       propertyPath: m_LocalRotation.w
@@ -3693,9 +3677,25 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1901548858}
     m_Modifications:
+    - target: {fileID: 5866666021909216657, guid: 101aea0e26dca6c429bbd4de713fb32b, type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 9100000, guid: f7bb0038d12323bdfac413bff44acaa0, type: 2}
+    - target: {fileID: 5866666021909216657, guid: 101aea0e26dca6c429bbd4de713fb32b, type: 3}
+      propertyPath: m_ApplyRootMotion
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 3159650235303737281, guid: 2af7d90953760d2cdb8328c98b46e39b, type: 3}
       propertyPath: m_Name
       value: Humanoid
+      objectReference: {fileID: 0}
+    - target: {fileID: 5220659831724182357, guid: 2af7d90953760d2cdb8328c98b46e39b, type: 3}
+      propertyPath: m_ApplyRootMotion
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6143976592460454057, guid: 2af7d90953760d2cdb8328c98b46e39b, type: 3}
+      propertyPath: m_Enabled
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6936842574703600118, guid: 2af7d90953760d2cdb8328c98b46e39b, type: 3}
       propertyPath: m_LocalPosition.x
@@ -3760,14 +3760,6 @@ PrefabInstance:
     - target: {fileID: 8550298448845719217, guid: 2af7d90953760d2cdb8328c98b46e39b, type: 3}
       propertyPath: m_AABB.m_Extent.z
       value: 0.19904807
-      objectReference: {fileID: 0}
-    - target: {fileID: 5866666021909216657, guid: 101aea0e26dca6c429bbd4de713fb32b, type: 3}
-      propertyPath: m_Controller
-      value: 
-      objectReference: {fileID: 9100000, guid: f7bb0038d12323bdfac413bff44acaa0, type: 2}
-    - target: {fileID: 5866666021909216657, guid: 101aea0e26dca6c429bbd4de713fb32b, type: 3}
-      propertyPath: m_ApplyRootMotion
-      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -5476,6 +5468,14 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 39539284}
     m_Modifications:
+    - target: {fileID: 5866666021909216657, guid: 101aea0e26dca6c429bbd4de713fb32b, type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 9100000, guid: f7bb0038d12323bdfac413bff44acaa0, type: 2}
+    - target: {fileID: 5866666021909216657, guid: 101aea0e26dca6c429bbd4de713fb32b, type: 3}
+      propertyPath: m_ApplyRootMotion
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 3159650235303737281, guid: 2af7d90953760d2cdb8328c98b46e39b, type: 3}
       propertyPath: m_Name
       value: Humanoid
@@ -5543,14 +5543,6 @@ PrefabInstance:
     - target: {fileID: 8550298448845719217, guid: 2af7d90953760d2cdb8328c98b46e39b, type: 3}
       propertyPath: m_AABB.m_Extent.z
       value: 0.19904807
-      objectReference: {fileID: 0}
-    - target: {fileID: 5866666021909216657, guid: 101aea0e26dca6c429bbd4de713fb32b, type: 3}
-      propertyPath: m_Controller
-      value: 
-      objectReference: {fileID: 9100000, guid: f7bb0038d12323bdfac413bff44acaa0, type: 2}
-    - target: {fileID: 5866666021909216657, guid: 101aea0e26dca6c429bbd4de713fb32b, type: 3}
-      propertyPath: m_ApplyRootMotion
-      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -6754,139 +6746,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::NPCRagdoll
   animator: {fileID: 0}
   rootCollider: {fileID: 1712067202}
-  visualRigRoot: {fileID: 0}
-  pelvis: {fileID: 0}
-  proxyRoot: {fileID: 0}
-  proxyPelvis: {fileID: 0}
-  ragdollBodies:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  ragdollColliders:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  directBindings:
-  - label: Pelvis.R
-    proxyBone: {fileID: 0}
-    visualBone: {fileID: 0}
-    drivesProxyWhenAlive: 1
-  - label: Pelvis.L
-    proxyBone: {fileID: 0}
-    visualBone: {fileID: 0}
-    drivesProxyWhenAlive: 0
-  - label: Spine
-    proxyBone: {fileID: 0}
-    visualBone: {fileID: 0}
-    drivesProxyWhenAlive: 1
-  - label: Thigh.L
-    proxyBone: {fileID: 0}
-    visualBone: {fileID: 0}
-    drivesProxyWhenAlive: 1
-  - label: Thigh.R
-    proxyBone: {fileID: 0}
-    visualBone: {fileID: 0}
-    drivesProxyWhenAlive: 1
-  - label: Head
-    proxyBone: {fileID: 0}
-    visualBone: {fileID: 0}
-    drivesProxyWhenAlive: 1
-  - label: UpperArm.L
-    proxyBone: {fileID: 0}
-    visualBone: {fileID: 0}
-    drivesProxyWhenAlive: 1
-  - label: UpperArm.R
-    proxyBone: {fileID: 0}
-    visualBone: {fileID: 0}
-    drivesProxyWhenAlive: 1
-  - label: Shin.L
-    proxyBone: {fileID: 0}
-    visualBone: {fileID: 0}
-    drivesProxyWhenAlive: 1
-  - label: Shin.R
-    proxyBone: {fileID: 0}
-    visualBone: {fileID: 0}
-    drivesProxyWhenAlive: 1
-  - label: Forearm.L
-    proxyBone: {fileID: 0}
-    visualBone: {fileID: 0}
-    drivesProxyWhenAlive: 1
-  - label: Forearm.R
-    proxyBone: {fileID: 0}
-    visualBone: {fileID: 0}
-    drivesProxyWhenAlive: 1
-  intermediateChains:
-  - label: Spine
-    startProxy: {fileID: 0}
-    endProxy: {fileID: 0}
-    startVisual: {fileID: 0}
-    endVisual: {fileID: 0}
-    visualBones:
-    - {fileID: 0}
-    - {fileID: 0}
-    - {fileID: 0}
-    - {fileID: 0}
-    - {fileID: 0}
-    distalInfluenceScale: 0
-  - label: UpperArm.L
-    startProxy: {fileID: 0}
-    endProxy: {fileID: 0}
-    startVisual: {fileID: 0}
-    endVisual: {fileID: 0}
-    visualBones:
-    - {fileID: 0}
-    distalInfluenceScale: 0
-  - label: UpperArm.R
-    startProxy: {fileID: 0}
-    endProxy: {fileID: 0}
-    startVisual: {fileID: 0}
-    endVisual: {fileID: 0}
-    visualBones:
-    - {fileID: 0}
-    distalInfluenceScale: 0
-  - label: Thigh.L
-    startProxy: {fileID: 0}
-    endProxy: {fileID: 0}
-    startVisual: {fileID: 0}
-    endVisual: {fileID: 0}
-    visualBones:
-    - {fileID: 0}
-    distalInfluenceScale: 0
-  - label: Thigh.R
-    startProxy: {fileID: 0}
-    endProxy: {fileID: 0}
-    startVisual: {fileID: 0}
-    endVisual: {fileID: 0}
-    visualBones:
-    - {fileID: 0}
-    distalInfluenceScale: 0
-  ragdollVisualHeightOffset: 0.07
-  disableRootColliderOnDeath: 1
-  maxAngularVelocity: 20
-  dropRaycastDistance: 4
-  dropPelvisGroundClearance: 0.45
-  dropGroundMask:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  initialGroundCheckDistance: 2
-  initialGroundClearance: 0.04
-  maxInitialGroundCorrection: 0.5
+  hipsBody: {fileID: 0}
 --- !u!1 &1717301554
 GameObject:
   m_ObjectHideFlags: 0
@@ -7622,6 +7482,11 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1895254863}
   m_CullTransparentMesh: 1
+--- !u!95 &1900641253 stripped
+Animator:
+  m_CorrespondingSourceObject: {fileID: 5220659831724182357, guid: 2af7d90953760d2cdb8328c98b46e39b, type: 3}
+  m_PrefabInstance: {fileID: 894179487}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1901548854
 GameObject:
   m_ObjectHideFlags: 0
@@ -7720,7 +7585,7 @@ MonoBehaviour:
   mouseSensitivity: 2
   minLookX: -80
   maxLookX: 80
-  animator: {fileID: 0}
+  animator: {fileID: 1900641253}
 --- !u!114 &1901548860
 MonoBehaviour:
   m_ObjectHideFlags: 0

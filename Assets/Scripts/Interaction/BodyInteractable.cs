@@ -261,7 +261,7 @@ public class BodyInteractable : Interactable
         // Orientación acostada acompañando la rotación del jugador
         Quaternion targetRot = Quaternion.Euler(0f, targetTransform.eulerAngles.y, -90f);
 
-        bool movedProxy = false;
+        bool movedRagdoll = false;
         if (ragdoll != null && ragdoll.IsRagdollActive && ragdoll.Pelvis != null)
         {
             Vector3 carriedPosition = Vector3.Lerp(
@@ -275,10 +275,10 @@ public class BodyInteractable : Interactable
                 Time.deltaTime * followSpeed
             );
 
-            movedProxy = ragdoll.MoveCarriedProxy(carriedPosition, carriedRotation);
+            movedRagdoll = ragdoll.SetCarryTarget(carriedPosition, carriedRotation);
         }
 
-        if (!movedProxy)
+        if (!movedRagdoll)
         {
             transform.position = Vector3.Lerp(transform.position, targetPos, Time.deltaTime * followSpeed);
             transform.rotation = Quaternion.Lerp(transform.rotation, targetRot, Time.deltaTime * followSpeed);

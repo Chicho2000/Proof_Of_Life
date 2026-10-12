@@ -110,25 +110,14 @@ public class NPCHealth : MonoBehaviour
             hasDeathAnim = true;
         }
 
-        // Si no hay animación de muerte configurada, hacer colapso físico al suelo
+        // Si falta el ragdoll, mantener la cápsula raíz como único cuerpo físico.
         if (!ragdollActivated && !hasDeathAnim)
         {
-            // Desactivar el Animator para que no obligue al modelo a quedarse parado en pose idle/T-pose
-            if (anim != null)
+            foreach (Animator rigAnimator in GetComponentsInChildren<Animator>(true))
             {
-                anim.enabled = false;
+                rigAnimator.enabled = false;
             }
-
-            // Voltear el modelo hacia el suelo para que se vea claramente abatido
-            transform.Rotate(Vector3.right, -90f, Space.Self);
-            transform.position = new Vector3(transform.position.x, 0.2f, transform.position.z);
-
-            CapsuleCollider col = GetComponent<CapsuleCollider>();
-            if (col != null)
-            {
-                col.direction = 2; // Eje Z (alineado horizontalmente con el cuerpo acostado)
-                col.center = new Vector3(0f, 0.2f, 0f);
-            }
+            Debug.LogWarning($"[NPCHealth] {name}: ragdoll no disponible; se conserva la cápsula raíz.", this);
         }
 
         // Convertir al NPC en cuerpo interactuable para esconder o cambiar ropa
