@@ -215,7 +215,7 @@ public class HideSpot : Interactable
 
         if (total >= MaxCapacity)
         {
-            interactionPrompt = $"{spotName} (Lleno {total}/{MaxCapacity})";
+            interactionPrompt = $"{spotName} ({total}/{MaxCapacity}) (Lleno)";
             canInteract = false;
             return;
         }

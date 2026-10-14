@@ -93,7 +93,7 @@ public class PlayerInteraction : MonoBehaviour
                 catch {}
             }
 
-            if (detected != null && detected.canInteract)
+            if (detected != null && (detected.canInteract || detected is HideSpot))
             {
                 currentInteractable = detected;
                 currentInteractable.OnFocus(gameObject);
@@ -105,7 +105,8 @@ public class PlayerInteraction : MonoBehaviour
 
             OnInteractableChanged?.Invoke(currentInteractable);
         }
-        else if (currentInteractable != null && !currentInteractable.canInteract)
+        else if (currentInteractable != null && !currentInteractable.canInteract &&
+                 !(currentInteractable is HideSpot))
         {
             try
             {

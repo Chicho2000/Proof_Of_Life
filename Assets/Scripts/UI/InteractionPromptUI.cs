@@ -92,6 +92,18 @@ public class InteractionPromptUI : MonoBehaviour
                 ResetProgressBar();
             }
         }
+
+        if (warningTimer <= 0f && playerInteraction != null &&
+            playerInteraction.currentInteractable is HideSpot spot)
+        {
+            string prompt = spot.canInteract
+                ? "[E] " + spot.interactionPrompt
+                : spot.interactionPrompt;
+            if (promptText != null && promptText.text != prompt)
+            {
+                ShowPrompt(prompt);
+            }
+        }
     }
 
     private void HandleInteractableChanged(Interactable interactable)
@@ -100,10 +112,10 @@ public class InteractionPromptUI : MonoBehaviour
         activeSecurityPanel = interactable as SecurityPanelInteractable;
         ResetProgressBar();
 
-        if (interactable != null && interactable.canInteract)
+        if (interactable != null && (interactable.canInteract || interactable is HideSpot))
         {
             string prompt = interactable.interactionPrompt;
-            if (!prompt.StartsWith("["))
+            if (interactable.canInteract && !prompt.StartsWith("["))
             {
                 prompt = "[E] " + prompt;
             }
