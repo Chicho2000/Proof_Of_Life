@@ -22,8 +22,9 @@ public class GuardNPC : NPCBase
     [SerializeField] private float attackRate = 1.2f;
     [SerializeField] private AudioClip attackSound;
 
-    [Header("Configuración de Detección")]
+    [Header("Configuración de Detección y Sospecha")]
     [SerializeField] private DetectionSystem detectionSystem;
+    [SerializeField] private NPCSuspicionSystem suspicionSystem;
 
     [Header("Investigacion de ruido")]
     [Min(0f)] [SerializeField] private float investigateDuration = 5f;
@@ -34,10 +35,6 @@ public class GuardNPC : NPCBase
     private float patrolWaitTimer;
     private bool hasPatrolDestination;
     private bool isWaitingAtPatrolPoint;
-    private Vector3 investigatePosition;
-    private float investigateTimer;
-    private bool hasInvestigateDestination;
-    private bool isInvestigatingAtPoint;
 
     protected override void Awake()
     {
@@ -47,6 +44,11 @@ public class GuardNPC : NPCBase
         {
             detectionSystem = GetComponent<DetectionSystem>();
         }
+
+        if (suspicionSystem == null)
+        {
+            suspicionSystem = GetComponent<NPCSuspicionSystem>();
+        }
     }
 
     protected override void OnEnable()
@@ -55,6 +57,11 @@ public class GuardNPC : NPCBase
         AlarmManager.OnAlarmTriggered += HandleAlarm;
         AlarmManager.OnAlarmStopped += HandleAlarmStopped;
         NoiseEmitter.OnNoiseEmitted += HandleNoise;
+
+        if (suspicionSystem != null)
+        {
+            suspicionSystem.OnSuspicionLevel2Reached += HandleSuspicionLevel2;
+        }
     }
 
     protected override void OnDisable()
@@ -62,6 +69,12 @@ public class GuardNPC : NPCBase
         AlarmManager.OnAlarmTriggered -= HandleAlarm;
         AlarmManager.OnAlarmStopped -= HandleAlarmStopped;
         NoiseEmitter.OnNoiseEmitted -= HandleNoise;
+
+        if (suspicionSystem != null)
+        {
+            suspicionSystem.OnSuspicionLevel2Reached -= HandleSuspicionLevel2;
+        }
+
         base.OnDisable();
     }
 
@@ -117,7 +130,6 @@ public class GuardNPC : NPCBase
                 break;
 
             case NPCState.Investigate:
-                TickInvestigate();
                 break;
 
             case NPCState.Chase:
@@ -189,28 +201,22 @@ public class GuardNPC : NPCBase
 
     private void TickDetection()
     {
+        // La detección y sospecha gradual se procesan de forma desacoplada en NPCSuspicionSystem
+    }
+
+    private void HandleSuspicionLevel2()
+    {
         if (currentState == NPCState.Dead)
         {
             return;
         }
 
-        AlarmManager alarmManager = AlarmManager.Instance;
-        if (alarmManager == null
-            || alarmManager.IsAlarmActive
-            || detectionSystem == null
-            || playerTarget == null
-            || playerHealth == null
-            || playerHealth.IsDead)
+        Debug.Log($"[GuardNPC] {gameObject.name} sospecha colmada (Nivel 2 - Alerta). Activando alarma y persecución.", this);
+        if (AlarmManager.Instance != null)
         {
-            return;
+            AlarmManager.Instance.TriggerAlarm();
         }
-
-        if (detectionSystem.CanDetectTarget(playerTarget))
-        {
-            Debug.Log($"[GuardNPC] {gameObject.name} detectó al jugador y activó la alarma.", this);
-            alarmManager.TriggerAlarm();
-            StartChasingPlayer();
-        }
+        StartChasingPlayer();
     }
 
     private void HandleNoise(Vector3 position, float radius)
@@ -223,54 +229,11 @@ public class GuardNPC : NPCBase
 
         if (AlarmManager.Instance != null && AlarmManager.Instance.IsAlarmActive) return;
         if (Vector3.Distance(transform.position, position) > radius) return;
-        if (!CanUseAgent()) return;
-        if (!NavMesh.SamplePosition(position, out NavMeshHit hit, 2f, NavMesh.AllAreas)) return;
 
-        investigatePosition = hit.position;
-        investigateTimer = 0f;
-        hasInvestigateDestination = false;
-        isInvestigatingAtPoint = false;
-        SetState(NPCState.Investigate);
-    }
-
-    private void TickInvestigate()
-    {
-        if (!CanUseAgent()) return;
-
-        if (!hasInvestigateDestination)
+        if (suspicionSystem != null)
         {
-            agent.isStopped = false;
-            agent.speed = patrolSpeed;
-            agent.stoppingDistance = Mathf.Max(0f, waypointReachDistance);
-            hasInvestigateDestination = agent.SetDestination(investigatePosition);
-            if (!hasInvestigateDestination) ReturnFromInvestigation();
-            return;
+            suspicionSystem.StartInvestigation(position, investigateDuration);
         }
-
-        if (!isInvestigatingAtPoint)
-        {
-            if (agent.pathPending) return;
-            if (agent.pathStatus != NavMeshPathStatus.PathComplete)
-            {
-                ReturnFromInvestigation();
-                return;
-            }
-
-            float reachDistance = Mathf.Max(waypointReachDistance, agent.stoppingDistance);
-            if (agent.remainingDistance > reachDistance) return;
-
-            agent.isStopped = true;
-            isInvestigatingAtPoint = true;
-            investigateTimer = 0f;
-        }
-
-        investigateTimer += Time.deltaTime;
-        if (investigateTimer >= investigateDuration) ReturnFromInvestigation();
-    }
-
-    private void ReturnFromInvestigation()
-    {
-        SetState(HasPatrolPoints() ? NPCState.Patrol : NPCState.Idle);
     }
 
     private void TickChase()
@@ -343,12 +306,13 @@ public class GuardNPC : NPCBase
                 EnterPatrolState();
                 break;
 
-            case NPCState.Investigate:
+            case NPCState.Suspicious:
                 ResetPatrolTick();
                 StopAgent();
-                hasInvestigateDestination = false;
-                isInvestigatingAtPoint = false;
-                investigateTimer = 0f;
+                break;
+
+            case NPCState.Investigate:
+                ResetPatrolTick();
                 break;
 
             case NPCState.Chase:
@@ -403,6 +367,7 @@ public class GuardNPC : NPCBase
 
         if (CanUseAgent())
         {
+            agent.ResetPath();
             agent.isStopped = false;
             agent.speed = patrolSpeed;
             agent.stoppingDistance = Mathf.Max(0f, waypointReachDistance);
@@ -630,8 +595,7 @@ public class GuardNPC : NPCBase
         if (currentState == NPCState.Investigate)
         {
             Gizmos.color = Color.yellow;
-            Gizmos.DrawWireSphere(investigatePosition, 0.3f);
-            Gizmos.DrawLine(transform.position, investigatePosition);
+            Gizmos.DrawWireSphere(transform.position, 1.0f);
         }
 
         if (patrolPoints == null || patrolPoints.Length == 0)

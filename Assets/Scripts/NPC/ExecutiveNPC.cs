@@ -16,21 +16,51 @@ public class ExecutiveNPC : NPCBase
     [Tooltip("Si está activo, el escape de este NPC hará fracasar la misión (para misiones de asesinato donde es el VIP objetivo).")]
     [SerializeField] private bool failMissionOnEscape = false;
 
+    [Header("Detección y Sospecha")]
+    [SerializeField] private DetectionSystem detectionSystem;
+    [SerializeField] private NPCSuspicionSystem suspicionSystem;
+
     private int currentPointIndex;
     private bool hasCurrentDestination;
     private bool hasEscaped;
+
+    protected override void Awake()
+    {
+        base.Awake();
+
+        if (detectionSystem == null)
+        {
+            detectionSystem = GetComponent<DetectionSystem>();
+        }
+
+        if (suspicionSystem == null)
+        {
+            suspicionSystem = GetComponent<NPCSuspicionSystem>();
+        }
+    }
 
     protected override void OnEnable()
     {
         base.OnEnable();
         AlarmManager.OnAlarmTriggered += HandleAlarm;
         AlarmManager.OnAlarmStopped += HandleAlarmStopped;
+
+        if (suspicionSystem != null)
+        {
+            suspicionSystem.OnSuspicionLevel2Reached += HandleSuspicionLevel2;
+        }
     }
 
     protected override void OnDisable()
     {
         AlarmManager.OnAlarmTriggered -= HandleAlarm;
         AlarmManager.OnAlarmStopped -= HandleAlarmStopped;
+
+        if (suspicionSystem != null)
+        {
+            suspicionSystem.OnSuspicionLevel2Reached -= HandleSuspicionLevel2;
+        }
+
         base.OnDisable();
     }
 
@@ -59,6 +89,8 @@ public class ExecutiveNPC : NPCBase
         switch (currentState)
         {
             case NPCState.Idle:
+            case NPCState.Investigate:
+            case NPCState.Suspicious:
                 break;
 
             case NPCState.Flee:
@@ -68,6 +100,21 @@ public class ExecutiveNPC : NPCBase
             case NPCState.Dead:
                 break;
         }
+    }
+
+    private void HandleSuspicionLevel2()
+    {
+        if (hasEscaped || currentState == NPCState.Dead)
+        {
+            return;
+        }
+
+        Debug.Log($"[ExecutiveNPC] {gameObject.name} sospecha colmada (Nivel 2 - Alerta). Activando alarma y huyendo.", this);
+        if (AlarmManager.Instance != null)
+        {
+            AlarmManager.Instance.TriggerAlarm();
+        }
+        SetState(NPCState.Flee);
     }
 
     private void TickFlee()
@@ -151,6 +198,10 @@ public class ExecutiveNPC : NPCBase
         switch (newState)
         {
             case NPCState.Idle:
+                StopAgent();
+                break;
+
+            case NPCState.Suspicious:
                 StopAgent();
                 break;
 

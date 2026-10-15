@@ -138,6 +138,20 @@ public class NPCHealth : MonoBehaviour
         {
             navAgent.enabled = false;
         }
+
+        DetectionSystem detection = GetComponent<DetectionSystem>();
+        if (detection != null)
+        {
+            detection.enabled = false;
+        }
+
+        NPCSuspicionSystem suspicion = GetComponent<NPCSuspicionSystem>();
+        if (suspicion != null)
+        {
+            suspicion.CancelInvestigation();
+            suspicion.ResetSuspicion();
+            suspicion.enabled = false;
+        }
     }
 
     private bool HasParameter(Animator animator, string paramName)
