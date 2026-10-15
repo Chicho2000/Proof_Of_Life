@@ -669,6 +669,8 @@ MonoBehaviour:
   - disguiseType: 1
     displayName: '[ DISFRAZ: GUARDIA ]'
     iconSprite: {fileID: 21300000, guid: 7a3f8902c4618e44b9123456789abcde, type: 3}
+  screenFade: {fileID: 0}
+  fadeDuration: 0.4
 --- !u!1 &1232097523165145437
 GameObject:
   m_ObjectHideFlags: 0
