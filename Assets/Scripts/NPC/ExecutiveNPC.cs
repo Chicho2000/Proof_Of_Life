@@ -155,6 +155,21 @@ public class ExecutiveNPC : NPCBase
         {
             AdvanceToNextPoint();
         }
+
+        CheckAndOpenNearbyDoors();
+    }
+
+    private void CheckAndOpenNearbyDoors()
+    {
+        Collider[] hits = Physics.OverlapSphere(transform.position, 1.8f);
+        for (int i = 0; i < hits.Length; i++)
+        {
+            DoorInteractable door = hits[i].GetComponentInParent<DoorInteractable>();
+            if (door != null && !door.isOpen && !door.isLocked)
+            {
+                door.OpenDoor();
+            }
+        }
     }
 
     private void AdvanceToNextPoint()

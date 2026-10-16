@@ -175,6 +175,14 @@ public class DoorInteractable : Interactable
         Debug.Log("Ganzúa cancelada");
     }
 
+    public void OpenDoor()
+    {
+        if (!isOpen)
+        {
+            ToggleOpen();
+        }
+    }
+
     private void ToggleOpen()
     {
         isOpen = !isOpen;
@@ -191,6 +199,18 @@ public class DoorInteractable : Interactable
         if (navObstacle != null)
         {
             navObstacle.enabled = !isOpen;
+        }
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        NPCBase npc = other.GetComponentInParent<NPCBase>();
+        if (npc != null && !isOpen && !isLocked)
+        {
+            if (npc.GetCurrentState() == NPCState.Flee || (AlarmManager.Instance != null && AlarmManager.Instance.IsAlarmActive))
+            {
+                OpenDoor();
+            }
         }
     }
 

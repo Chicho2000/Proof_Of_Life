@@ -26,6 +26,12 @@ public class NPCSuspicionSystem : MonoBehaviour
     [SerializeField] [Min(0.5f)] private float investigateDuration = 4.5f;
     [SerializeField] [Min(0.5f)] private float investigateSpeed = 2.4f;
 
+    [Header("Comportamiento")]
+    [Tooltip("Permite que el emisor de sospecha gire hacia el jugador.")]
+    [SerializeField] private bool canRotateTowardsTarget = true;
+    [Tooltip("Permite que el emisor de sospecha se desplace físicamente hacia la posición a investigar.")]
+    [SerializeField] private bool canInvestigateMovement = true;
+
     [Header("Audio (Opcional)")]
     [SerializeField] private AudioClip suspicionSound;
     [SerializeField] private AudioClip alertSound;
@@ -105,6 +111,18 @@ public class NPCSuspicionSystem : MonoBehaviour
     public bool IsInvestigating
     {
         get { return isInvestigating; }
+    }
+
+    public bool CanRotateTowardsTarget
+    {
+        get { return canRotateTowardsTarget; }
+        set { canRotateTowardsTarget = value; }
+    }
+
+    public bool CanInvestigateMovement
+    {
+        get { return canInvestigateMovement; }
+        set { canInvestigateMovement = value; }
     }
 
     private void Awake()
@@ -243,7 +261,10 @@ public class NPCSuspicionSystem : MonoBehaviour
                         agent.isStopped = true;
                     }
 
-                    FaceTarget(playerTarget.position);
+                    if (canRotateTowardsTarget && playerTarget != null)
+                    {
+                        FaceTarget(playerTarget.position);
+                    }
                 }
 
                 // Al llegar al 100% de la barra azul (entrada al naranja), recién ahí empieza a caminar hacia el lugar
@@ -254,7 +275,10 @@ public class NPCSuspicionSystem : MonoBehaviour
                     {
                         hasTriggeredLevel1 = true;
                         PlayAudio(suspicionSound);
-                        StartInvestigation(lastSeenPosition);
+                        if (canInvestigateMovement)
+                        {
+                            StartInvestigation(lastSeenPosition);
+                        }
                         if (OnSuspicionLevel1Reached != null)
                         {
                             OnSuspicionLevel1Reached(lastSeenPosition);
@@ -290,7 +314,7 @@ public class NPCSuspicionSystem : MonoBehaviour
             if (!hasTriggeredLevel2)
             {
                 // Si el NPC te vio y llegó al 40% antes de que te escondas, va al último lugar donde te vio
-                if (currentSuspicion >= 0.4f && !isInvestigating)
+                if (canInvestigateMovement && currentSuspicion >= 0.4f && !isInvestigating)
                 {
                     StartInvestigation(lastSeenPosition);
                 }
@@ -340,6 +364,16 @@ public class NPCSuspicionSystem : MonoBehaviour
         if (customDuration > 0f)
         {
             investigateDuration = customDuration;
+        }
+
+        // Si la investigación es llamada por un ruido de distracción u otro estímulo,
+        // elevar la sospecha al Nivel 1 (barra azul / icono '?') mientras investiga
+        if (currentSuspicion < 1.0f)
+        {
+            currentSuspicion = 1.0f;
+            hasTriggeredLevel1 = true;
+            PlayAudio(suspicionSound);
+            BroadcastGlobalSuspicion();
         }
 
         if (NavMesh.SamplePosition(targetPosition, out NavMeshHit hit, 3.0f, NavMesh.AllAreas))
@@ -459,6 +493,9 @@ public class NPCSuspicionSystem : MonoBehaviour
             }
             npcBase.SetState(returnState);
         }
+
+        ResetSuspicion();
+        BroadcastGlobalSuspicion();
     }
 
     public void CancelInvestigation()

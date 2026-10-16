@@ -100,8 +100,29 @@ public class DetectionSystem : MonoBehaviour
     private static bool IsTargetDisguised(Transform target)
     {
         PlayerDisguiseSystem disguiseSystem = target.GetComponentInParent<PlayerDisguiseSystem>();
-        return disguiseSystem != null
-            && disguiseSystem.CurrentDisguise == PlayerDisguiseSystem.DisguiseType.GuardDisguise;
+        if (disguiseSystem == null || disguiseSystem.CurrentDisguise != PlayerDisguiseSystem.DisguiseType.GuardDisguise)
+        {
+            return false;
+        }
+
+        // Si está arrastrando un cadáver, el disfraz queda comprometido y los enemigos/cámaras sospechan
+        if (BodyInteractable.IsDraggingAnyBody)
+        {
+            return false;
+        }
+
+        // Si sostiene un arma en la mano (pistola silenciada o cable de fibra), el disfraz queda comprometido
+        PlayerHotbar hotbar = target.GetComponentInParent<PlayerHotbar>();
+        if (hotbar != null)
+        {
+            ItemInteractable selectedItem = hotbar.GetSelectedItem();
+            if (selectedItem != null && (selectedItem.ItemType == ItemType.SilencedPistol || selectedItem.ItemType == ItemType.FiberWire))
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private static bool IsTargetHidden(Transform target)
