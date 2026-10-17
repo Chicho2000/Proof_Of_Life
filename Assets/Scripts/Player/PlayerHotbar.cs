@@ -55,7 +55,7 @@ public class PlayerHotbar : MonoBehaviour
 {
     [Header("Configuración de Ranuras")]
     [Range(1, 10)]
-    [SerializeField] private int slotCount = 5;
+    [SerializeField] private int slotCount = 6;
 
     [Header("Slots (Visualización en Inspector)")]
     [SerializeField] private List<HotbarSlot> slots = new List<HotbarSlot>();
@@ -96,7 +96,13 @@ public class PlayerHotbar : MonoBehaviour
 
     private void Update()
     {
-        if (Cursor.lockState != CursorLockMode.Locked || Time.timeScale <= 0f)
+        if (Time.timeScale <= 0f)
+        {
+            return;
+        }
+
+        bool isInventoryOpen = InventoryUI.Instance != null && InventoryUI.Instance.IsInventoryOpen;
+        if (Cursor.lockState != CursorLockMode.Locked && !isInventoryOpen)
         {
             return;
         }
@@ -108,13 +114,19 @@ public class PlayerHotbar : MonoBehaviour
 
     private void InitializeSlots()
     {
-        if (slots.Count != slotCount)
+        if (slots == null)
         {
-            slots.Clear();
-            for (int i = 0; i < slotCount; i++)
-            {
-                slots.Add(new HotbarSlot());
-            }
+            slots = new List<HotbarSlot>();
+        }
+
+        while (slots.Count < slotCount)
+        {
+            slots.Add(new HotbarSlot());
+        }
+
+        while (slots.Count > slotCount)
+        {
+            slots.RemoveAt(slots.Count - 1);
         }
     }
 
@@ -273,6 +285,23 @@ public class PlayerHotbar : MonoBehaviour
 
         Debug.Log($"[Hotbar] Se soltó '{selectedItem.ItemName}' desde el Slot {selectedSlotIndex + 1}.");
         return true;
+    }
+
+    public bool DropItemAt(int slotIndex)
+    {
+        if (slotIndex < 0 || slotIndex >= slots.Count || slots[slotIndex].IsEmpty)
+        {
+            return false;
+        }
+
+        int previousSelection = selectedSlotIndex;
+        SelectSlot(slotIndex);
+        bool dropped = DropSelectedItem();
+        if (!dropped && previousSelection != selectedSlotIndex)
+        {
+            SelectSlot(previousSelection);
+        }
+        return dropped;
     }
 
     private bool TryGetDropPosition(out Vector3 spawnPosition)
@@ -619,6 +648,9 @@ public class PlayerHotbar : MonoBehaviour
 
         ReleaseSourceIfUnused(storedSource);
 
+        // Compactar los slots para que no queden huecos (el siguiente ítem sube al slot libre)
+        CompactSlots();
+
         return true;
     }
 
@@ -655,6 +687,57 @@ public class PlayerHotbar : MonoBehaviour
         }
 
         return amount <= 0;
+    }
+
+    /// <summary>
+    /// Mueve todos los ítems hacia la izquierda para eliminar huecos en el inventario.
+    /// Garantiza que el primer ítem siempre esté en Slot 1, el segundo en Slot 2, etc.
+    /// </summary>
+    private void CompactSlots()
+    {
+        bool anyMoved = false;
+        int writeIndex = 0;
+
+        for (int readIndex = 0; readIndex < slots.Count; readIndex++)
+        {
+            if (slots[readIndex].IsEmpty) continue;
+
+            if (writeIndex != readIndex)
+            {
+                // Mover ítem de readIndex → writeIndex
+                slots[writeIndex].Set(slots[readIndex].Item, slots[readIndex].Count);
+                slots[readIndex].Clear();
+
+                OnSlotUpdated?.Invoke(writeIndex, slots[writeIndex]);
+                OnSlotUpdated?.Invoke(readIndex,  slots[readIndex]);
+
+                anyMoved = true;
+            }
+
+            writeIndex++;
+        }
+
+        if (!anyMoved) return;
+
+        // Ajustar el slot seleccionado al rango de slots con contenido
+        int filledCount = writeIndex; // número de ítems que quedaron
+        if (filledCount == 0)
+        {
+            // Inventario vacío: deseleccionar
+            if (selectedSlotIndex != 0)
+            {
+                selectedSlotIndex = 0;
+                OnSlotSelected?.Invoke(selectedSlotIndex);
+            }
+        }
+        else if (selectedSlotIndex >= filledCount)
+        {
+            // El slot seleccionado quedó vacío; ir al último con ítem
+            selectedSlotIndex = filledCount - 1;
+            OnSlotSelected?.Invoke(selectedSlotIndex);
+        }
+
+        UpdateInHandVisual();
     }
 
     public bool HasItem(ItemType type)

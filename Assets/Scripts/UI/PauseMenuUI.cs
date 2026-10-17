@@ -30,6 +30,13 @@ public class PauseMenuUI : MonoBehaviour
         // Escuchar la tecla de pausa (Escape o P)
         if (Input.GetKeyDown(KeyCode.Escape) || Input.GetKeyDown(KeyCode.P))
         {
+            // Si el inventario está abierto, la tecla Escape cierra primero el inventario
+            if (Input.GetKeyDown(KeyCode.Escape) && InventoryUI.Instance != null && InventoryUI.Instance.IsInventoryOpen)
+            {
+                InventoryUI.Instance.CloseInventory();
+                return;
+            }
+
             // Solo pausar si el juego está corriendo o si ya estamos en el menú de pausa
             // Evita abrir la pausa si el jugador está muerto o en la pantalla de inicio
             if (isPaused)

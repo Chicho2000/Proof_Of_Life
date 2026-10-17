@@ -128,7 +128,7 @@ MonoBehaviour:
   itemName: Plato de Cerámica
   itemType: 2
   description: Objeto arrojadizo para distracción sonora de los guardias.
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: ad7e480939388d04c97e5c9d787ecf35, type: 3}
   isStackable: 1
   maxStack: 3
   amount: 1
