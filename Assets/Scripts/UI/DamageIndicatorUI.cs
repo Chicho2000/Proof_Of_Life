@@ -1,33 +1,37 @@
+using System;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.Serialization;
 
 public class DamageIndicatorUI : MonoBehaviour
 {
     [Header("Referencias de UI")]
+    [Tooltip("CanvasGroup de la viñeta (opcional si se usa directamente la Image)")]
     [SerializeField] private CanvasGroup vignetteGroup;
+    [Tooltip("Componente Image que muestra la textura de la viñeta de daño")]
     [SerializeField] private Image vignetteImage;
+
+    [Header("Configuración de Transición")]
+    [Tooltip("Velocidad de transición suave de la viñeta (0 para cambio instantáneo)")]
+    [SerializeField] private float vignetteTransitionSpeed = 8f;
+
+    [Header("Configuración de Indicador Direccional")]
     [SerializeField] private CanvasGroup indicatorGroup;
     [SerializeField] private Image indicatorImage;
     [SerializeField] private RectTransform indicatorRect;
-
-    [Header("Configuración de Viñeta (Payday 2 Flash)")]
-    [SerializeField] private float vignetteDuration = 1.0f;
-    [SerializeField] private float maxVignetteAlpha = 0.85f;
-    [SerializeField] private float flickerSpeed = 36f;
-    [SerializeField] private float flickerIntensity = 0.25f;
-
-    [Header("Configuración de Salud Crítica (Latido Cardíaco)")]
-    [Tooltip("Umbral de HP por debajo del cual comienza a palpitar la pantalla")]
-    [SerializeField] private float criticalHealthThreshold = 25f;
-    [SerializeField] private float heartbeatSpeed = 5.5f;
-    [SerializeField] private float minHeartbeatAlpha = 0.18f;
-    [SerializeField] private float maxHeartbeatAlpha = 0.52f;
-
-    [Header("Configuración de Indicador Direccional")]
     [SerializeField] private float indicatorDuration = 1.4f;
     [SerializeField] private float maxIndicatorAlpha = 0.95f;
 
-    private float vignetteTimer = 0f;
+    // Opacidades fijas exactas para cada golpe (sin sliders en el Inspector)
+    private const float OPACITY_FULL_HEALTH = 0.0f; // 0 golpes (100% de vida) -> 0%
+    private const float OPACITY_FIRST_HIT   = 0.37f; // 1er golpe (~75% de vida) -> 37%
+    private const float OPACITY_SECOND_HIT  = 0.69f; // 2do golpe (~50% de vida) -> 69%
+    private const float OPACITY_THIRD_HIT   = 0.90f; // 3er golpe (~25% de vida) -> 90%
+    private const float OPACITY_DEAD        = 1.0f;  // Muerte    (0% de vida)   -> 100%
+
+    private float currentVignetteAlpha = 0f;
+    private float targetVignetteAlpha = 0f;
+
     private float indicatorTimer = 0f;
     private Vector3 lastAttackerPosition = Vector3.zero;
     private bool hasAttackerPosition = false;
@@ -35,12 +39,12 @@ public class DamageIndicatorUI : MonoBehaviour
 
     private int cachedCurrentHealth = 100;
     private int cachedMaxHealth = 100;
+    private PlayerHealth playerHealthRef;
 
     private void Awake()
     {
         AutoFindReferences();
         EnsureParentCanvasGroupVisible();
-        ResetAlpha();
     }
 
     private void OnEnable()
@@ -48,6 +52,8 @@ public class DamageIndicatorUI : MonoBehaviour
         PlayerHealth.OnPlayerDamagedWithSource += HandleDamageWithSource;
         PlayerHealth.OnPlayerDamaged += HandleSimpleDamage;
         PlayerHealth.OnPlayerHealthChangedStatic += HandleHealthChanged;
+
+        HookPlayerHealthInstanceEvents();
     }
 
     private void OnDisable()
@@ -55,20 +61,27 @@ public class DamageIndicatorUI : MonoBehaviour
         PlayerHealth.OnPlayerDamagedWithSource -= HandleDamageWithSource;
         PlayerHealth.OnPlayerDamaged -= HandleSimpleDamage;
         PlayerHealth.OnPlayerHealthChangedStatic -= HandleHealthChanged;
+
+        UnhookPlayerHealthInstanceEvents();
     }
 
     private void Start()
     {
         AutoFindReferences();
         EnsureParentCanvasGroupVisible();
-        ResetAlpha();
 
-        PlayerHealth ph = FindFirstObjectByType<PlayerHealth>();
-        if (ph != null)
+        HookPlayerHealthInstanceEvents();
+
+        if (playerHealthRef != null)
         {
-            cachedCurrentHealth = ph.CurrentHealth;
-            cachedMaxHealth = ph.MaxHealth;
+            cachedCurrentHealth = playerHealthRef.CurrentHealth;
+            cachedMaxHealth = playerHealthRef.MaxHealth;
         }
+
+        UpdateVignetteTargetAlpha();
+        currentVignetteAlpha = targetVignetteAlpha;
+        SetVignetteAlpha(currentVignetteAlpha);
+        SetIndicatorAlpha(0f);
     }
 
     private void Update()
@@ -77,21 +90,55 @@ public class DamageIndicatorUI : MonoBehaviour
         UpdateIndicator();
     }
 
+    private void HookPlayerHealthInstanceEvents()
+    {
+        if (playerHealthRef == null)
+        {
+            playerHealthRef = FindFirstObjectByType<PlayerHealth>();
+        }
+
+        if (playerHealthRef != null)
+        {
+            playerHealthRef.OnDeath -= HandlePlayerDeath;
+            playerHealthRef.OnPlayerDeath -= HandlePlayerDeath;
+
+            playerHealthRef.OnDeath += HandlePlayerDeath;
+            playerHealthRef.OnPlayerDeath += HandlePlayerDeath;
+        }
+    }
+
+    private void UnhookPlayerHealthInstanceEvents()
+    {
+        if (playerHealthRef != null)
+        {
+            playerHealthRef.OnDeath -= HandlePlayerDeath;
+            playerHealthRef.OnPlayerDeath -= HandlePlayerDeath;
+        }
+    }
+
+    private void HandlePlayerDeath()
+    {
+        cachedCurrentHealth = 0;
+        targetVignetteAlpha = OPACITY_DEAD;
+        currentVignetteAlpha = OPACITY_DEAD;
+        SetVignetteAlpha(OPACITY_DEAD);
+    }
+
     private void HandleHealthChanged(int current, int max)
     {
-        cachedCurrentHealth = current;
-        cachedMaxHealth = max;
+        cachedCurrentHealth = Mathf.Max(0, current);
+        cachedMaxHealth = Mathf.Max(1, max);
+
+        UpdateVignetteTargetAlpha();
     }
 
     private void HandleSimpleDamage(int damageAmount)
     {
-        vignetteTimer = vignetteDuration;
+        // Se actualiza directamente por HandleHealthChanged
     }
 
     private void HandleDamageWithSource(int damageAmount, bool hasAttacker, Vector3 attackerPos)
     {
-        vignetteTimer = vignetteDuration;
-
         if (hasAttacker)
         {
             lastAttackerPosition = attackerPos;
@@ -101,43 +148,77 @@ public class DamageIndicatorUI : MonoBehaviour
         }
     }
 
+    private void UpdateVignetteTargetAlpha()
+    {
+        if (cachedMaxHealth <= 0)
+        {
+            targetVignetteAlpha = OPACITY_FULL_HEALTH;
+            return;
+        }
+
+        float healthNormalized = (float)cachedCurrentHealth / cachedMaxHealth;
+        targetVignetteAlpha = CalculateFixedVignetteOpacity(healthNormalized);
+    }
+
+    private float CalculateFixedVignetteOpacity(float healthNormalized)
+    {
+        healthNormalized = Mathf.Clamp01(healthNormalized);
+
+        if (healthNormalized >= 1f)
+        {
+            return OPACITY_FULL_HEALTH; // 0%
+        }
+        else if (healthNormalized > 0.75f)
+        {
+            // Entre 100% y 75% de salud (hacia el 1er golpe)
+            float t = Mathf.InverseLerp(1.0f, 0.75f, healthNormalized);
+            return Mathf.Lerp(OPACITY_FULL_HEALTH, OPACITY_FIRST_HIT, t);
+        }
+        else if (healthNormalized > 0.50f)
+        {
+            // Entre 75% y 50% de salud (del 1er al 2do golpe)
+            float t = Mathf.InverseLerp(0.75f, 0.50f, healthNormalized);
+            return Mathf.Lerp(OPACITY_FIRST_HIT, OPACITY_SECOND_HIT, t);
+        }
+        else if (healthNormalized > 0.25f)
+        {
+            // Entre 50% y 25% de salud (del 2do al 3er golpe)
+            float t = Mathf.InverseLerp(0.50f, 0.25f, healthNormalized);
+            return Mathf.Lerp(OPACITY_SECOND_HIT, OPACITY_THIRD_HIT, t);
+        }
+        else if (healthNormalized > 0f)
+        {
+            // Entre 25% y 0% de salud (del 3er golpe a la muerte)
+            float t = Mathf.InverseLerp(0.25f, 0.0f, healthNormalized);
+            return Mathf.Lerp(OPACITY_THIRD_HIT, OPACITY_DEAD, t);
+        }
+        else
+        {
+            return OPACITY_DEAD; // 100%
+        }
+    }
+
     private void UpdateVignette()
     {
-        // 1. Alpha por impacto directo
-        float flashAlpha = 0f;
-        if (vignetteTimer > 0f)
+        float dt = Time.unscaledDeltaTime;
+
+        if (vignetteTransitionSpeed > 0f)
         {
-            vignetteTimer -= Time.deltaTime;
-            float progress = Mathf.Clamp01(vignetteTimer / vignetteDuration);
-
-            float flicker = 1f;
-            if (progress > 0.35f)
-            {
-                flicker = 1f - (flickerIntensity * Mathf.Abs(Mathf.Sin(Time.time * flickerSpeed)));
-            }
-
-            flashAlpha = progress * maxVignetteAlpha * flicker;
+            currentVignetteAlpha = Mathf.MoveTowards(currentVignetteAlpha, targetVignetteAlpha, vignetteTransitionSpeed * dt);
+        }
+        else
+        {
+            currentVignetteAlpha = targetVignetteAlpha;
         }
 
-        // 2. Alpha por latido cardíaco de salud crítica
-        float heartbeatAlpha = 0f;
-        if (cachedCurrentHealth > 0 && cachedCurrentHealth <= criticalHealthThreshold)
-        {
-            // Pulso sístole/diástole (pico rápido y caída suave)
-            float pulse = Mathf.Pow(Mathf.Max(0f, Mathf.Sin(Time.time * heartbeatSpeed)), 2.5f);
-            heartbeatAlpha = Mathf.Lerp(minHeartbeatAlpha, maxHeartbeatAlpha, pulse);
-        }
-
-        // Se toma el mayor entre el impacto reciente y el latido continuo
-        float finalAlpha = Mathf.Max(flashAlpha, heartbeatAlpha);
-        SetVignetteAlpha(finalAlpha);
+        SetVignetteAlpha(currentVignetteAlpha);
     }
 
     private void UpdateIndicator()
     {
         if (indicatorTimer > 0f)
         {
-            indicatorTimer -= Time.deltaTime;
+            indicatorTimer -= Time.unscaledDeltaTime;
             float progress = Mathf.Clamp01(indicatorTimer / indicatorDuration);
             SetIndicatorAlpha(progress * maxIndicatorAlpha);
 
@@ -207,12 +288,6 @@ public class DamageIndicatorUI : MonoBehaviour
         }
     }
 
-    private void ResetAlpha()
-    {
-        SetVignetteAlpha(0f);
-        SetIndicatorAlpha(0f);
-    }
-
     private void EnsureParentCanvasGroupVisible()
     {
         CanvasGroup selfGroup = GetComponent<CanvasGroup>();
@@ -226,13 +301,11 @@ public class DamageIndicatorUI : MonoBehaviour
     {
         FindCameraReference();
 
-        // 1. Auto-corregir si se arrastró el mismo CanvasGroup en ambos slots
         if (indicatorGroup != null && indicatorGroup == vignetteGroup)
         {
             indicatorGroup = null;
         }
 
-        // 2. Si indicatorRect está asignado, enlazar su propio CanvasGroup e Image
         if (indicatorRect != null)
         {
             indicatorRect.pivot = new Vector2(0.5f, 0.5f);
@@ -249,7 +322,12 @@ public class DamageIndicatorUI : MonoBehaviour
             }
         }
 
-        // 3. Si vignetteGroup está asignado, enlazar su Image
+        if (vignetteGroup != null && vignetteImage == null)
+        {
+            vignetteImage = vignetteGroup.GetComponent<Image>();
+        }
+
+   // 3. Si vignetteGroup está asignado, enlazar su Image
         if (vignetteGroup != null && vignetteImage == null)
         {
             vignetteImage = vignetteGroup.GetComponent<Image>();
