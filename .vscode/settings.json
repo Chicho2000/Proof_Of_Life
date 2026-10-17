@@ -67,5 +67,5 @@
         "*.sln": "*.csproj",
         "*.slnx": "*.csproj"
     },
-    "dotnet.defaultSolution": "Proof_Of_Life2.slnx"
+    "dotnet.defaultSolution": "Proof_Of_Life.slnx"
 }
