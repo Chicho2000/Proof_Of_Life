@@ -383,36 +383,9 @@ public class InventoryUI : MonoBehaviour
     {
         if (playerHotbar == null) return;
 
-        ItemInteractable selectedItem = playerHotbar.GetSelectedItem();
-        if (selectedItem != null)
+        if (dropButton != null)
         {
-            SetDetailText(selectedItem.ItemName, selectedItem.Description);
-
-            if (selectedItemIcon != null)
-            {
-                selectedItemIcon.sprite = selectedItem.Icon;
-                selectedItemIcon.enabled = selectedItem.Icon != null;
-            }
-
-            if (dropButton != null)
-            {
-                dropButton.interactable = playerHotbar.GetSelectedItem() != null;
-            }
-        }
-        else
-        {
-            SetDetailText(string.Empty, string.Empty);
-
-            if (selectedItemIcon != null)
-            {
-                selectedItemIcon.sprite = null;
-                selectedItemIcon.enabled = false;
-            }
-
-            if (dropButton != null)
-            {
-                dropButton.interactable = false;
-            }
+            dropButton.interactable = playerHotbar.GetSelectedItem() != null;
         }
     }
 
