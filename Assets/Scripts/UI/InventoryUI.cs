@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using TMPro;
 
@@ -219,6 +220,8 @@ public class InventoryUI : MonoBehaviour
 
         // 4. Teclas numéricas 1 al 6 para selección rápida dentro del inventario
         HandleNumericSlotSelection();
+        HandleDirectionalSlotSelection();
+        ConfirmSelectedSlot();
     }
 
     public void ToggleInventory()
@@ -276,6 +279,7 @@ public class InventoryUI : MonoBehaviour
         {
             RefreshAll();
             UpdateItemDetails();
+            FocusSlotButton(playerHotbar != null ? playerHotbar.SelectedSlotIndex : -1);
 
             if (unlockCursorWhenOpen)
             {
@@ -322,6 +326,10 @@ public class InventoryUI : MonoBehaviour
 
         RefreshSelectionVisuals();
         UpdateItemDetails();
+        if (isOpen)
+        {
+            FocusSlotButton(slotIndex);
+        }
         PlaySound(selectSound);
 
         OnSlotSelected?.Invoke(slotIndex);
@@ -401,6 +409,10 @@ public class InventoryUI : MonoBehaviour
     {
         RefreshSelectionVisuals();
         UpdateItemDetails();
+        if (isOpen)
+        {
+            FocusSlotButton(selectedIndex);
+        }
     }
 
     private void HandleNumericSlotSelection()
@@ -416,6 +428,94 @@ public class InventoryUI : MonoBehaviour
         }
     }
 
+    private void HandleDirectionalSlotSelection()
+    {
+        if (playerHotbar == null) return;
+
+        Vector2 direction = Vector2.zero;
+        if (Input.GetKeyDown(KeyCode.LeftArrow)) direction = Vector2.left;
+        else if (Input.GetKeyDown(KeyCode.RightArrow)) direction = Vector2.right;
+        else if (Input.GetKeyDown(KeyCode.UpArrow)) direction = Vector2.up;
+        else if (Input.GetKeyDown(KeyCode.DownArrow)) direction = Vector2.down;
+
+        if (direction == Vector2.zero) return;
+
+        int activeCount = Mathf.Min(uiSlots.Count, playerHotbar.SlotCount);
+        if (activeCount == 0) return;
+
+        int currentIndex = Mathf.Clamp(playerHotbar.SelectedSlotIndex, 0, activeCount - 1);
+        int nextIndex = FindAdjacentSlot(currentIndex, direction, activeCount);
+        if (nextIndex >= 0)
+        {
+            SelectSlot(nextIndex);
+        }
+    }
+
+    private int FindAdjacentSlot(int currentIndex, Vector2 direction, int activeCount)
+    {
+        RectTransform currentSlot = uiSlots[currentIndex].slotRoot;
+        if (currentSlot == null) return -1;
+
+        Vector2 perpendicular = new Vector2(-direction.y, direction.x);
+        float bestScore = float.MaxValue;
+        int bestIndex = -1;
+
+        for (int i = 0; i < activeCount; i++)
+        {
+            if (i == currentIndex || uiSlots[i].slotRoot == null) continue;
+
+            Vector2 delta = uiSlots[i].slotRoot.anchoredPosition - currentSlot.anchoredPosition;
+            float distanceInDirection = Vector2.Dot(delta, direction);
+            if (distanceInDirection <= 0.01f) continue;
+
+            float lateralDistance = Mathf.Abs(Vector2.Dot(delta, perpendicular));
+            float score = distanceInDirection + lateralDistance * 2f;
+            if (score < bestScore)
+            {
+                bestScore = score;
+                bestIndex = i;
+            }
+        }
+
+        return bestIndex;
+    }
+
+    private void ConfirmSelectedSlot()
+    {
+        if (!Input.GetKeyDown(KeyCode.Return) && !Input.GetKeyDown(KeyCode.KeypadEnter)) return;
+        if (playerHotbar == null) return;
+
+        HotbarSlot selectedSlot = playerHotbar.GetSlot(playerHotbar.SelectedSlotIndex);
+        if (selectedSlot != null && !selectedSlot.IsEmpty)
+        {
+            CloseInventory();
+        }
+    }
+
+    private void SelectSlotFromInventory(int slotIndex)
+    {
+        SelectSlot(slotIndex);
+
+        HotbarSlot selectedSlot = playerHotbar != null ? playerHotbar.GetSlot(slotIndex) : null;
+        if (selectedSlot != null && !selectedSlot.IsEmpty)
+        {
+            CloseInventory();
+        }
+    }
+
+    private void FocusSlotButton(int slotIndex)
+    {
+        if (slotIndex < 0 || slotIndex >= uiSlots.Count) return;
+
+        Button slotButton = uiSlots[slotIndex].slotButton;
+        if (slotButton == null || !slotButton.isActiveAndEnabled) return;
+
+        if (EventSystem.current != null)
+        {
+            EventSystem.current.SetSelectedGameObject(slotButton.gameObject);
+        }
+    }
+
     private void SetupSlotButtons()
     {
         for (int i = 0; i < uiSlots.Count; i++)
@@ -426,14 +526,40 @@ public class InventoryUI : MonoBehaviour
             if (slotUI.slotButton == null && slotUI.slotRoot != null)
             {
                 slotUI.slotButton = slotUI.slotRoot.GetComponent<Button>();
+                if (slotUI.slotButton == null)
+                {
+                    slotUI.slotButton = slotUI.slotRoot.gameObject.AddComponent<Button>();
+                }
             }
 
             if (slotUI.slotButton != null)
             {
+                ConfigureSlotButton(slotUI);
                 slotUI.slotButton.onClick.RemoveAllListeners();
-                slotUI.slotButton.onClick.AddListener(() => SelectSlot(index));
+                slotUI.slotButton.onClick.AddListener(() => SelectSlotFromInventory(index));
             }
         }
+    }
+
+    private void ConfigureSlotButton(InventorySlotUI slotUI)
+    {
+        Button slotButton = slotUI.slotButton;
+        if (slotButton == null) return;
+
+        slotButton.targetGraphic = slotUI.slotBackground;
+
+        ColorBlock colors = slotButton.colors;
+        colors.normalColor = slotUI.slotBackground != null ? slotUI.slotBackground.color : Color.white;
+        colors.highlightedColor = new Color(1f, 0.3f, 0.3f, 1f);
+        colors.pressedColor = new Color(0.8f, 0.1f, 0.1f, 1f);
+        colors.selectedColor = new Color(1f, 0.3f, 0.3f, 1f);
+        colors.colorMultiplier = 1f;
+        colors.fadeDuration = 0.08f;
+        slotButton.colors = colors;
+
+        Navigation navigation = slotButton.navigation;
+        navigation.mode = Navigation.Mode.None;
+        slotButton.navigation = navigation;
     }
 
     public void AutoFindSlots()
@@ -545,7 +671,11 @@ public class InventoryUI : MonoBehaviour
         {
             slot.itemIcon          = slotUIComp.ItemIconImage;
             slot.selectionHighlight = slotUIComp.Highlight;
-            return slot;
+
+            if (slot.itemIcon != null)
+            {
+                return slot;
+            }
         }
 
         // Buscar imagen de ícono en los hijos
