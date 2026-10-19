@@ -396,7 +396,7 @@ public class InventoryUI : MonoBehaviour
 
             if (dropButton != null)
             {
-                dropButton.interactable = true;
+                dropButton.interactable = playerHotbar.GetSelectedItem() != null;
             }
         }
         else
