@@ -8,6 +8,11 @@ public class NPCHealth : MonoBehaviour
     [SerializeField] private int maxHealth = 100;
     [SerializeField] private int currentHealth;
 
+    [Header("Zonas de impacto")]
+    [Tooltip("Porción superior de la cápsula que cuenta como cabeza.")]
+    [Range(0.5f, 0.95f)]
+    [SerializeField] private float headshotStartHeight = 0.78f;
+
     [Header("Orientacion")]
     [SerializeField] private Transform facingReference;
 
@@ -19,6 +24,7 @@ public class NPCHealth : MonoBehaviour
     [SerializeField] private NPCRagdoll ragdoll;
 
     private bool isDead = false;
+    private CapsuleCollider rootCapsule;
 
     // Eventos
     public event Action<int, int> OnHealthChanged;
@@ -38,6 +44,8 @@ public class NPCHealth : MonoBehaviour
         {
             ragdoll = GetComponent<NPCRagdoll>();
         }
+
+        rootCapsule = GetComponent<CapsuleCollider>();
     }
 
     private void Start()
@@ -67,6 +75,34 @@ public class NPCHealth : MonoBehaviour
         {
             Die();
         }
+    }
+
+    /// <summary>
+    /// Aplica daño de bala según la altura del impacto en la cápsula del NPC.
+    /// </summary>
+    public bool TakeBulletDamage(int torsoDamage, int headshotDamage, Vector3 hitPoint)
+    {
+        bool isHeadshot = IsHeadshot(hitPoint);
+        TakeDamage(isHeadshot ? headshotDamage : torsoDamage);
+        return isHeadshot;
+    }
+
+    private bool IsHeadshot(Vector3 hitPoint)
+    {
+        if (rootCapsule == null)
+        {
+            rootCapsule = GetComponent<CapsuleCollider>();
+        }
+
+        if (rootCapsule == null)
+        {
+            return false;
+        }
+
+        Vector3 localHitPoint = transform.InverseTransformPoint(hitPoint);
+        float capsuleBottom = rootCapsule.center.y - (rootCapsule.height * 0.5f);
+        float headshotHeight = capsuleBottom + (rootCapsule.height * headshotStartHeight);
+        return localHitPoint.y >= headshotHeight;
     }
 
     /// <summary>

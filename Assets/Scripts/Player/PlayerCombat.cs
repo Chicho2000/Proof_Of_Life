@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -8,7 +9,11 @@ public class PlayerCombat : MonoBehaviour
 
     [Header("Configuracion de Pistola Silenciada")]
     [SerializeField] private float range = 50f;
-    [SerializeField] private int damage = 100;
+    [FormerlySerializedAs("damage")]
+    [SerializeField] private int headshotDamage = 100;
+    [SerializeField] private int torsoDamage = 34;
+    [SerializeField, Min(0.05f)] private float shotCooldown = 0.45f;
+    [SerializeField, Min(0.1f)] private float reloadDuration = 2.25f;
     [SerializeField] private AudioClip shootSound;
     [SerializeField] private AudioClip reloadSound;
     [SerializeField] private AudioClip emptyAmmoSound;
@@ -28,6 +33,8 @@ public class PlayerCombat : MonoBehaviour
     public event System.Action<int, int> OnAmmoChanged;
 
     private Camera playerCamera;
+    private float nextShotTime;
+    private bool isReloading;
 
     private void Awake()
     {
@@ -118,7 +125,7 @@ public class PlayerCombat : MonoBehaviour
 
     private bool CanShootSilencedPistol()
     {
-        if (currentAmmo <= 0)
+        if (currentAmmo <= 0 || isReloading || Time.time < nextShotTime)
         {
             return false;
         }
@@ -128,6 +135,7 @@ public class PlayerCombat : MonoBehaviour
 
     private void Shoot()
     {
+        nextShotTime = Time.time + shotCooldown;
         currentAmmo--;
 
         Debug.Log("Pistola Silenciada: ¡Disparo realizado! Balas restantes: " + currentAmmo + "/" + maxAmmo);
@@ -154,8 +162,15 @@ public class PlayerCombat : MonoBehaviour
 
             if (npcHealth != null)
             {
-                Debug.Log("Pistola Silenciada: Impacto confirmado en NPC -> " + hit.collider.name);
-                npcHealth.TakeDamage(damage);
+                bool wasHeadshot = npcHealth.TakeBulletDamage(torsoDamage, headshotDamage, hit.point);
+                Debug.Log("Pistola Silenciada: Impacto confirmado en NPC -> " + hit.collider.name
+                    + (wasHeadshot ? " (cabeza)" : " (torso)"));
+
+                if (!npcHealth.IsDead && AlarmManager.Instance != null)
+                {
+                    Debug.Log("Pistola Silenciada: El NPC sobrevivió al disparo. Activando alarma.");
+                    AlarmManager.Instance.TriggerAlarm();
+                }
             }
         }
         else
@@ -166,19 +181,30 @@ public class PlayerCombat : MonoBehaviour
 
     public void Reload()
     {
-        if (currentAmmo == maxAmmo)
+        if (currentAmmo == maxAmmo || isReloading)
         {
             return;
         }
 
-        currentAmmo = maxAmmo;
-        Debug.Log("Pistola Silenciada: Recargada. Municion completa: " + currentAmmo + "/" + maxAmmo);
+        StartCoroutine(ReloadRoutine());
+    }
+
+    private IEnumerator ReloadRoutine()
+    {
+        isReloading = true;
+        Debug.Log("Pistola Silenciada: Recargando...");
 
         if (reloadSound != null)
         {
             Vector3 soundPos = playerCamera != null ? playerCamera.transform.position : transform.position;
             AudioSource.PlayClipAtPoint(reloadSound, soundPos);
         }
+
+        yield return new WaitForSeconds(reloadDuration);
+
+        currentAmmo = maxAmmo;
+        isReloading = false;
+        Debug.Log("Pistola Silenciada: Recargada. Municion completa: " + currentAmmo + "/" + maxAmmo);
 
         if (OnAmmoChanged != null)
         {
