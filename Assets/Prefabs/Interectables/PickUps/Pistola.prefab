@@ -1,0 +1,119 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1001 &8559075084183375772
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: -1703341388288365413, guid: 2d49f7f42945b4d4199cb0e9c247f908, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -14.051021
+      objectReference: {fileID: 0}
+    - target: {fileID: -1703341388288365413, guid: 2d49f7f42945b4d4199cb0e9c247f908, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 1.595166
+      objectReference: {fileID: 0}
+    - target: {fileID: -1703341388288365413, guid: 2d49f7f42945b4d4199cb0e9c247f908, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -22.284
+      objectReference: {fileID: 0}
+    - target: {fileID: -1703341388288365413, guid: 2d49f7f42945b4d4199cb0e9c247f908, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: -1703341388288365413, guid: 2d49f7f42945b4d4199cb0e9c247f908, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -1703341388288365413, guid: 2d49f7f42945b4d4199cb0e9c247f908, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -1703341388288365413, guid: 2d49f7f42945b4d4199cb0e9c247f908, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -1703341388288365413, guid: 2d49f7f42945b4d4199cb0e9c247f908, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -1703341388288365413, guid: 2d49f7f42945b4d4199cb0e9c247f908, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -1703341388288365413, guid: 2d49f7f42945b4d4199cb0e9c247f908, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8377486004490831690, guid: 2d49f7f42945b4d4199cb0e9c247f908, type: 3}
+      propertyPath: m_Name
+      value: Pistolita (1)
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 8377486004490831690, guid: 2d49f7f42945b4d4199cb0e9c247f908, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8656948117442882094}
+    - targetCorrespondingSourceObject: {fileID: 8377486004490831690, guid: 2d49f7f42945b4d4199cb0e9c247f908, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 5678761561741769538}
+  m_SourcePrefab: {fileID: -4161369568681901532, guid: 2d49f7f42945b4d4199cb0e9c247f908, type: 3}
+--- !u!1 &181619883209787606 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 8377486004490831690, guid: 2d49f7f42945b4d4199cb0e9c247f908, type: 3}
+  m_PrefabInstance: {fileID: 8559075084183375772}
+  m_PrefabAsset: {fileID: 0}
+--- !u!65 &8656948117442882094
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 181619883209787606}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.3, y: 0.3, z: 0.3}
+  m_Center: {x: 0, y: 0.05, z: 0.1}
+--- !u!114 &5678761561741769538
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 181619883209787606}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f14bfaf11523dfe4395b709470f8c7e1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ItemInteractable
+  interactionPrompt: Recoger Pistola Silenciada
+  canInteract: 1
+  itemId: silenced-pistol
+  itemName: Pistola Silenciada
+  itemType: 3
+  description: "Arma t\xE1ctica con supresor para eliminaci\xF3n silenciosa."
+  icon: {fileID: 21300000, guid: 80e98815417748f44befaf186e61baf0, type: 3}
+  isStackable: 0
+  maxStack: 1
+  amount: 1
+  worldPrefab: {fileID: 0}
+  inHandPrefab: {fileID: 8377486004490831690, guid: 2d49f7f42945b4d4199cb0e9c247f908, type: 3}
+  inHandPositionOffset: {x: 0.25, y: -0.2, z: 0.45}
+  inHandRotationOffset: {x: 0, y: 0, z: 0}
+  inHandScale: {x: 0.6, y: 0.6, z: 0.6}
+  pickupSound: {fileID: 8300000, guid: 88580c45aea4ea2408e9afae0a0fd7b7, type: 3}

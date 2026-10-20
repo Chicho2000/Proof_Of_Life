@@ -371,6 +371,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::NPCHealth
   maxHealth: 100
   currentHealth: 100
+  headshotStartHeight: 0.78
   facingReference: {fileID: 1802494221}
   hurtSound: {fileID: 0}
   deathSound: {fileID: 0}
@@ -560,6 +561,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::NPCHealth
   maxHealth: 100
   currentHealth: 100
+  headshotStartHeight: 0.78
   facingReference: {fileID: 0}
   hurtSound: {fileID: 0}
   deathSound: {fileID: 0}
@@ -3776,8 +3778,8 @@ MonoBehaviour:
 
 '
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 6f6bbffee58de38419b789d0a33a1a15, type: 2}
-  m_sharedMaterial: {fileID: 480137793046566832, guid: 6f6bbffee58de38419b789d0a33a1a15, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -6857,63 +6859,6 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1283075837}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
---- !u!1001 &1335441529
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 5853348977932776716, guid: 1f5726fe522e4db47ac69789b1e58182, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: -14.051021
-      objectReference: {fileID: 0}
-    - target: {fileID: 5853348977932776716, guid: 1f5726fe522e4db47ac69789b1e58182, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 1.595166
-      objectReference: {fileID: 0}
-    - target: {fileID: 5853348977932776716, guid: 1f5726fe522e4db47ac69789b1e58182, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: -22.37538
-      objectReference: {fileID: 0}
-    - target: {fileID: 5853348977932776716, guid: 1f5726fe522e4db47ac69789b1e58182, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 5853348977932776716, guid: 1f5726fe522e4db47ac69789b1e58182, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5853348977932776716, guid: 1f5726fe522e4db47ac69789b1e58182, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5853348977932776716, guid: 1f5726fe522e4db47ac69789b1e58182, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5853348977932776716, guid: 1f5726fe522e4db47ac69789b1e58182, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5853348977932776716, guid: 1f5726fe522e4db47ac69789b1e58182, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5853348977932776716, guid: 1f5726fe522e4db47ac69789b1e58182, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6516872825371127734, guid: 1f5726fe522e4db47ac69789b1e58182, type: 3}
-      propertyPath: m_Name
-      value: Pistolita
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 1f5726fe522e4db47ac69789b1e58182, type: 3}
 --- !u!1 &1362623778
 GameObject:
   m_ObjectHideFlags: 0
@@ -8755,6 +8700,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::NPCHealth
   maxHealth: 100
   currentHealth: 100
+  headshotStartHeight: 0.78
   facingReference: {fileID: 0}
   hurtSound: {fileID: 0}
   deathSound: {fileID: 0}
@@ -9996,7 +9942,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerCombat
   playerHotbar: {fileID: 0}
   range: 50
-  damage: 100
+  headshotDamage: 100
+  torsoDamage: 34
+  shotCooldown: 0.45
+  reloadDuration: 2.25
   shootSound: {fileID: 8300000, guid: 88580c45aea4ea2408e9afae0a0fd7b7, type: 3}
   reloadSound: {fileID: 0}
   emptyAmmoSound: {fileID: 0}
@@ -11531,6 +11480,63 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3581071795653231831}
   m_Mesh: {fileID: -5337934478442346630, guid: ab1f3d9caca7faf49b96a6d42b51834d, type: 3}
+--- !u!1001 &1007084807655773665
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 181619883209787606, guid: 821068436cc1d8640a95389dc8f00fbf, type: 3}
+      propertyPath: m_Name
+      value: Pistolita (1)
+      objectReference: {fileID: 0}
+    - target: {fileID: 2205485604500431623, guid: 821068436cc1d8640a95389dc8f00fbf, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -14.051021
+      objectReference: {fileID: 0}
+    - target: {fileID: 2205485604500431623, guid: 821068436cc1d8640a95389dc8f00fbf, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 1.595166
+      objectReference: {fileID: 0}
+    - target: {fileID: 2205485604500431623, guid: 821068436cc1d8640a95389dc8f00fbf, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -22.37538
+      objectReference: {fileID: 0}
+    - target: {fileID: 2205485604500431623, guid: 821068436cc1d8640a95389dc8f00fbf, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2205485604500431623, guid: 821068436cc1d8640a95389dc8f00fbf, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2205485604500431623, guid: 821068436cc1d8640a95389dc8f00fbf, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2205485604500431623, guid: 821068436cc1d8640a95389dc8f00fbf, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2205485604500431623, guid: 821068436cc1d8640a95389dc8f00fbf, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2205485604500431623, guid: 821068436cc1d8640a95389dc8f00fbf, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2205485604500431623, guid: 821068436cc1d8640a95389dc8f00fbf, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 821068436cc1d8640a95389dc8f00fbf, type: 3}
 --- !u!23 &1121681154030107939
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -12633,7 +12639,6 @@ SceneRoots:
   - {fileID: 30945973}
   - {fileID: 1994794042}
   - {fileID: 750329747}
-  - {fileID: 1335441529}
   - {fileID: 2090984367}
   - {fileID: 1683420404}
   - {fileID: 236297107}
@@ -12643,3 +12648,4 @@ SceneRoots:
   - {fileID: 6746231402749089864}
   - {fileID: 1958332111}
   - {fileID: 6637534216460534251}
+  - {fileID: 1007084807655773665}
