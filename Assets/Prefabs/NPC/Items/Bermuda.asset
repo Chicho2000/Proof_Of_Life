@@ -12,9 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cc1aa954978f77001807063709473b66, type: 3}
   m_Name: Bermuda
   m_EditorClassIdentifier: Assembly-CSharp::ClothItemData
-  itemName: Bermuda
   clothingPrefab: {fileID: 8675552849105891635, guid: 2f4ade63e5725472ea31f157392d9911, type: 3}
   availableMaterials:
   - {fileID: 2100000, guid: e746c9c0df3decfe2af562e162f3ebd2, type: 2}
   - {fileID: 2100000, guid: dc5496c994f4fe104adc642ce742a954, type: 2}
   - {fileID: 2100000, guid: 97159a7b108d175688b6e6ae082e5e72, type: 2}
+  - {fileID: 2100000, guid: cff46648b777cf5d1b8afc73cbd770a6, type: 2}
+  - {fileID: 2100000, guid: 73e2873ae3ecc0824af6d46b87118dee, type: 2}
+  - {fileID: 2100000, guid: bfa86ea0be4f6586aa6c5cd5ef8a735c, type: 2}

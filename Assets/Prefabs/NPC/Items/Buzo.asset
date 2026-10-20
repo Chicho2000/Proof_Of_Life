@@ -12,8 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cc1aa954978f77001807063709473b66, type: 3}
   m_Name: Buzo
   m_EditorClassIdentifier: Assembly-CSharp::ClothItemData
-  itemName: Buzo
   clothingPrefab: {fileID: 919132149155446097, guid: 9a9e99f3e00530002bfb883fe7637514, type: 3}
   availableMaterials:
   - {fileID: 2100000, guid: 97159a7b108d175688b6e6ae082e5e72, type: 2}
   - {fileID: 2100000, guid: dc5496c994f4fe104adc642ce742a954, type: 2}
+  - {fileID: 2100000, guid: 8a5275eb4e03278d5b1afa31ca2f06e8, type: 2}
+  - {fileID: 2100000, guid: 73e2873ae3ecc0824af6d46b87118dee, type: 2}
+  - {fileID: 2100000, guid: 0d690e74c3f8211618cc1a20faa7366b, type: 2}
+  - {fileID: 2100000, guid: 1a0063efcaad8417d847406a7842ed7b, type: 2}
+  - {fileID: 2100000, guid: edf0153bccb9f338aba2679ab3667895, type: 2}
+  - {fileID: 2100000, guid: 165df60ced18c70a8ae12acff25b61ed, type: 2}

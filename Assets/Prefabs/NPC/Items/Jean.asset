@@ -12,8 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cc1aa954978f77001807063709473b66, type: 3}
   m_Name: Jean
   m_EditorClassIdentifier: Assembly-CSharp::ClothItemData
-  itemName: Jean
   clothingPrefab: {fileID: 1069897332680682395, guid: c07972cd40bf5c0d8aaeca31eab24d07, type: 3}
   availableMaterials:
   - {fileID: 2100000, guid: e746c9c0df3decfe2af562e162f3ebd2, type: 2}
   - {fileID: 2100000, guid: 97159a7b108d175688b6e6ae082e5e72, type: 2}
+  - {fileID: 2100000, guid: cff46648b777cf5d1b8afc73cbd770a6, type: 2}
+  - {fileID: 2100000, guid: 73e2873ae3ecc0824af6d46b87118dee, type: 2}
+  - {fileID: 2100000, guid: 3cfb36a024624bd6b857f7dda72fe0fa, type: 2}
+  - {fileID: 2100000, guid: 491a18c64aff1cd6188b35267a5333e0, type: 2}

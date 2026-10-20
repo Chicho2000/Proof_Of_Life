@@ -12,9 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cc1aa954978f77001807063709473b66, type: 3}
   m_Name: Chaqueta
   m_EditorClassIdentifier: Assembly-CSharp::ClothItemData
-  itemName: Chaqueta
   clothingPrefab: {fileID: 1069897332680682395, guid: e3fe86543d4b4bc87bca75398ca1235c, type: 3}
   availableMaterials:
   - {fileID: 2100000, guid: e746c9c0df3decfe2af562e162f3ebd2, type: 2}
   - {fileID: 2100000, guid: 97159a7b108d175688b6e6ae082e5e72, type: 2}
   - {fileID: 2100000, guid: 0e729da2ff3b5eb6fa2175589118a9d0, type: 2}
+  - {fileID: 2100000, guid: 3cfb36a024624bd6b857f7dda72fe0fa, type: 2}
+  - {fileID: 2100000, guid: 66a34a15ce2904c2690a6da7e4ee0d0c, type: 2}
+  - {fileID: 2100000, guid: bfa86ea0be4f6586aa6c5cd5ef8a735c, type: 2}
+  - {fileID: 2100000, guid: 8a5275eb4e03278d5b1afa31ca2f06e8, type: 2}
+  - {fileID: 2100000, guid: cff46648b777cf5d1b8afc73cbd770a6, type: 2}

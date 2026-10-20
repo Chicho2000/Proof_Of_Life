@@ -12,8 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cc1aa954978f77001807063709473b66, type: 3}
   m_Name: Camisa
   m_EditorClassIdentifier: Assembly-CSharp::ClothItemData
-  itemName: Camisa
   clothingPrefab: {fileID: 1069897332680682395, guid: ca0ce946528480439b945649432dce6e, type: 3}
   availableMaterials:
   - {fileID: 2100000, guid: adf48126d89829db38f9dcea9cdd7099, type: 2}
   - {fileID: 2100000, guid: 0e729da2ff3b5eb6fa2175589118a9d0, type: 2}
+  - {fileID: 2100000, guid: 4e469804f5b3c35d6809efda08bdcdd5, type: 2}
+  - {fileID: 2100000, guid: 38264b053521172ceb022ca8228c4134, type: 2}
+  - {fileID: 2100000, guid: edf0153bccb9f338aba2679ab3667895, type: 2}
