@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc1aa954978f77001807063709473b66, type: 3}
+  m_Name: Buzo
+  m_EditorClassIdentifier: Assembly-CSharp::ClothItemData
+  itemName: Buzo
+  clothingPrefab: {fileID: 919132149155446097, guid: 9a9e99f3e00530002bfb883fe7637514, type: 3}
+  availableMaterials:
+  - {fileID: 2100000, guid: 97159a7b108d175688b6e6ae082e5e72, type: 2}
+  - {fileID: 2100000, guid: dc5496c994f4fe104adc642ce742a954, type: 2}

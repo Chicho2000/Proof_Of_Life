@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc1aa954978f77001807063709473b66, type: 3}
+  m_Name: PeloCorto
+  m_EditorClassIdentifier: Assembly-CSharp::ClothItemData
+  itemName: Pelo Corto
+  clothingPrefab: {fileID: 919132149155446097, guid: 271608e164fe625a3b9250bdfafb1c35, type: 3}
+  availableMaterials:
+  - {fileID: 2100000, guid: 475d83b1bcffb656183f0e64c3a22f11, type: 2}
+  - {fileID: 2100000, guid: a70ac899e96ca5793ba15139b9fc1798, type: 2}
+  - {fileID: 2100000, guid: 529e500b530c55aa0b58027a2d59eb0e, type: 2}

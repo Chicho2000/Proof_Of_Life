@@ -567,7 +567,7 @@ public class GuardNPC : NPCBase
 
     private void UpdateAnimation()
     {
-        if (animator == null)
+        if (animators == null)
         {
             return;
         }
@@ -584,7 +584,9 @@ public class GuardNPC : NPCBase
             speed = 2f;
         }
 
-        animator.SetFloat("SpeedY", speed);
+	foreach (var animator in animators) {
+		animator.SetFloat("SpeedY", speed);
+	}
     }
 
     private void OnDrawGizmosSelected()

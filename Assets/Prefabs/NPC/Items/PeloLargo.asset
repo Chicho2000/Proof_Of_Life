@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc1aa954978f77001807063709473b66, type: 3}
+  m_Name: PeloLargo
+  m_EditorClassIdentifier: Assembly-CSharp::ClothItemData
+  itemName: Pelo Largo
+  clothingPrefab: {fileID: 1069897332680682395, guid: 40b2232faae8768abbc11f866893f8a5, type: 3}
+  availableMaterials:
+  - {fileID: 2100000, guid: 297464139b8a3c42eabc50e1885169f8, type: 2}
+  - {fileID: 2100000, guid: 2aa114646a3c747ae80b6a9a314d6289, type: 2}
+  - {fileID: 2100000, guid: 1636fdc4cb3893cc98541c5c35d26623, type: 2}

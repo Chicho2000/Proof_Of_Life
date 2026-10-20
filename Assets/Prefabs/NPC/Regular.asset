@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b4d27b6f4d7bcb94a942e293b90c4c4c, type: 3}
+  m_Name: Regular
+  m_EditorClassIdentifier: Assembly-CSharp::NPCConfigData
+  possibleHair:
+  - {fileID: 11400000, guid: 3e0fb325d10812c509d14dde5b2cde75, type: 2}
+  - {fileID: 11400000, guid: 35c7964817b08ec089dbc245f998ca64, type: 2}
+  - {fileID: 11400000, guid: d4ed61b04387236d9bef936569e376d8, type: 2}
+  possibleShirts:
+  - {fileID: 11400000, guid: f6d89b2120be7292bb0d4401e45105d5, type: 2}
+  - {fileID: 11400000, guid: 806ef0d569d6214e099afff96bfac1c7, type: 2}
+  - {fileID: 11400000, guid: 7104c21fd79978322a68678a3839b82a, type: 2}
+  possiblePants:
+  - {fileID: 11400000, guid: 019856f9ab374eb42ab084c7156b784a, type: 2}
+  - {fileID: 11400000, guid: 382f4b0e516e1834581b4c5f159f1430, type: 2}
+  possibleSkins:
+  - {fileID: 0}

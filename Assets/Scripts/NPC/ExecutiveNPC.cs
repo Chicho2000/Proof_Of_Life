@@ -374,12 +374,14 @@ public class ExecutiveNPC : NPCBase
 
     private void UpdateAnimation()
     {
-        if (animator == null)
+        if (animators == null)
         {
             return;
         }
 
         float speed = CanUseAgent() && agent.velocity.sqrMagnitude > 0.01f ? 2f : 0f;
-        animator.SetFloat("SpeedY", speed);
+	foreach (var animator in animators) {
+		animator.SetFloat("SpeedY", speed);
+	}
     }
 }

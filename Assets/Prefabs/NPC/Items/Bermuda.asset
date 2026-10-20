@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc1aa954978f77001807063709473b66, type: 3}
+  m_Name: Bermuda
+  m_EditorClassIdentifier: Assembly-CSharp::ClothItemData
+  itemName: Bermuda
+  clothingPrefab: {fileID: 8675552849105891635, guid: 2f4ade63e5725472ea31f157392d9911, type: 3}
+  availableMaterials:
+  - {fileID: 2100000, guid: e746c9c0df3decfe2af562e162f3ebd2, type: 2}
+  - {fileID: 2100000, guid: dc5496c994f4fe104adc642ce742a954, type: 2}
+  - {fileID: 2100000, guid: 97159a7b108d175688b6e6ae082e5e72, type: 2}

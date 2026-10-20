@@ -10,7 +10,7 @@ public abstract class NPCBase : MonoBehaviour
     [Header("Componentes Base")]
     protected NavMeshAgent agent;
     protected NPCHealth health;
-    protected Animator animator;
+    protected Animator[] animators;
 
     public NPCState GetCurrentState()
     {
@@ -31,7 +31,7 @@ public abstract class NPCBase : MonoBehaviour
     {
         agent = GetComponent<NavMeshAgent>();
         health = GetComponent<NPCHealth>();
-        animator = GetComponentInChildren<Animator>();
+        animators = GetComponentsInChildren<Animator>();
     }
 
     protected virtual void Start()

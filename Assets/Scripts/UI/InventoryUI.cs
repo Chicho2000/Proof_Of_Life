@@ -14,6 +14,8 @@ public class InventorySlotUI
     [Tooltip("Fondo visual del slot (opcional)")]
     public Image slotBackground;
 
+    public Image selectedItemIcon;
+
     [Tooltip("Componente Image donde se muestra el icono del ítem")]
     public Image itemIcon;
 
