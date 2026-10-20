@@ -8,10 +8,20 @@ public class SecurityPanelInteractable : Interactable
     [SerializeField] private string resetAlarmPrompt = "Silenciar alarma activa";
     [SerializeField] private string systemDisabledPrompt = "Sistema de cámaras saboteado";
 
+    [Header("Requisito de Ítem")]
+    [SerializeField] private bool requireDecoder = true;
+    [SerializeField] private ItemType requiredItemType = ItemType.Decoder;
+    [Tooltip("Si es true, el jugador debe tener el decodificador seleccionado y sostenido en la mano.")]
+    [SerializeField] private bool requireEquippedInHand = true;
+    [Tooltip("Si es true, se consume el decodificador al piratear el panel.")]
+    [SerializeField] private bool consumeDecoderOnUse = false;
+    [SerializeField] private string missingDecoderWarning = "<color=#EF4444>[ ! ] SE REQUIERE DECODIFICADOR</color>";
+
     private bool areCamerasDisabled = false;
     private bool isHacking = false;
     private float currentHackProgress = 0f;
     private PlayerInteraction playerInteraction;
+    private PlayerHotbar playerHotbar;
 
     private void Start()
     {
@@ -43,9 +53,50 @@ public class SecurityPanelInteractable : Interactable
             return;
         }
 
+        PlayerHotbar hotbar = interactor.GetComponent<PlayerHotbar>();
+        if (hotbar == null)
+        {
+            hotbar = interactor.GetComponentInParent<PlayerHotbar>();
+        }
+
+        if (!HasDecoder(hotbar))
+        {
+            InteractionPromptUI promptUI = FindFirstObjectByType<InteractionPromptUI>();
+            if (promptUI != null)
+            {
+                promptUI.ShowTemporaryWarning(missingDecoderWarning, 2.0f);
+            }
+            Debug.Log("[SecurityPanel] Necesitás tener el decodificador equipado para interactuar con este panel.");
+            return;
+        }
+
         playerInteraction = interactor.GetComponent<PlayerInteraction>();
+        playerHotbar = hotbar;
         isHacking = true;
         currentHackProgress = 0f;
+    }
+
+    private bool HasDecoder(PlayerHotbar hotbar)
+    {
+        if (!requireDecoder)
+        {
+            return true;
+        }
+
+        if (hotbar == null)
+        {
+            return false;
+        }
+
+        if (requireEquippedInHand)
+        {
+            ItemInteractable selectedItem = hotbar.GetSelectedItem();
+            return selectedItem != null && selectedItem.ItemType == requiredItemType;
+        }
+        else
+        {
+            return hotbar.HasItem(requiredItemType);
+        }
     }
 
     private void Update()
@@ -57,11 +108,11 @@ public class SecurityPanelInteractable : Interactable
 
         bool stillFocused = playerInteraction != null && playerInteraction.currentInteractable == this;
         bool keyHeld = playerInteraction != null && Input.GetKey(playerInteraction.interactKey);
+        bool decoderStillEquipped = HasDecoder(playerHotbar);
 
-        if (!stillFocused || !keyHeld)
+        if (!stillFocused || !keyHeld || !decoderStillEquipped)
         {
-            isHacking = false;
-            currentHackProgress = 0f;
+            CancelHacking();
             return;
         }
 
@@ -73,11 +124,27 @@ public class SecurityPanelInteractable : Interactable
         }
     }
 
+    private void CancelHacking()
+    {
+        isHacking = false;
+        currentHackProgress = 0f;
+        playerInteraction = null;
+        playerHotbar = null;
+    }
+
     private void FinishHacking()
     {
         isHacking = false;
         currentHackProgress = 0f;
         areCamerasDisabled = true;
+
+        if (consumeDecoderOnUse && playerHotbar != null)
+        {
+            ConsumeDecoder(playerHotbar);
+        }
+
+        playerInteraction = null;
+        playerHotbar = null;
 
         // 1. Apagar todas las cámaras de seguridad
         SecurityCamera[] cameras = FindObjectsByType<SecurityCamera>(FindObjectsSortMode.None);
@@ -103,6 +170,24 @@ public class SecurityPanelInteractable : Interactable
         }
 
         UpdatePromptState();
+    }
+
+    private void ConsumeDecoder(PlayerHotbar hotbar)
+    {
+        if (hotbar == null)
+        {
+            return;
+        }
+
+        for (int i = 0; i < hotbar.SlotCount; i++)
+        {
+            HotbarSlot slot = hotbar.GetSlot(i);
+            if (slot != null && !slot.IsEmpty && slot.Item != null && slot.Item.ItemType == requiredItemType)
+            {
+                hotbar.RemoveItem(i, 1);
+                break;
+            }
+        }
     }
 
     public bool IsHacking()

@@ -7,5 +7,6 @@ public enum ItemType
     FiberWire = 4,
     Keycard = 5,
     MissionItem = 6,
-    Disguise = 7
+    Disguise = 7,
+    Decoder = 8
 }
