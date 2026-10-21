@@ -26,6 +26,12 @@ public class DisguiseUI : MonoBehaviour
             disguiseType = PlayerDisguiseSystem.DisguiseType.GuardDisguise,
             displayName = "[ DISFRAZ: GUARDIA ]",
             iconSprite = null
+        },
+        new DisguiseVisualConfig
+        {
+            disguiseType = PlayerDisguiseSystem.DisguiseType.EliteGuardDisguise,
+            displayName = "[ DISFRAZ: SEGURIDAD DE ÉLITE ]",
+            iconSprite = null
         }
     };
 

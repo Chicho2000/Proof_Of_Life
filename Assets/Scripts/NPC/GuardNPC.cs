@@ -14,11 +14,11 @@ public class GuardNPC : NPCBase
     [SerializeField] private int currentPatrolIndex;
 
     [Header("Configuración de Persecución")]
-    [SerializeField] private float chaseSpeed = 4.8f;
+    [SerializeField] protected float chaseSpeed = 4.8f;
 
     [Header("Configuración de Ataque")]
-    [SerializeField] private int attackDamage = 25;
-    [SerializeField] private float attackRange = 1.8f;
+    [SerializeField] protected int attackDamage = 25;
+    [SerializeField] protected float attackRange = 1.8f;
     [SerializeField] private float attackRate = 1.2f;
     [SerializeField] private AudioClip attackSound;
 
@@ -492,7 +492,7 @@ public class GuardNPC : NPCBase
         }
     }
 
-    private void ExecuteAttack()
+    protected virtual void ExecuteAttack()
     {
         lastAttackTime = Time.time;
 

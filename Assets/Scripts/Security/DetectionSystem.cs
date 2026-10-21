@@ -2,6 +2,13 @@ using UnityEngine;
 
 public class DetectionSystem : MonoBehaviour
 {
+    public enum DisguiseAuthorization
+    {
+        AllowGuardAndElite, // Autoriza disfraces de Guardia común y de Élite (Cámaras estándar, Guardia normal)
+        AllowEliteOnly,     // Solo autoriza disfraz de Élite (Cámaras de zonas críticas, Guardia de Élite)
+        AllowNone           // No autoriza ningún disfraz (Zonas prohibidas / detección absoluta)
+    }
+
     [Header("Detección")]
     [SerializeField] private Transform detectionOrigin;
     [SerializeField, Min(0f)] private float detectionRange = 15f;
@@ -9,6 +16,36 @@ public class DetectionSystem : MonoBehaviour
     [SerializeField] private LayerMask targetMask = ~0;
     [SerializeField] private LayerMask obstacleMask = ~0;
     [SerializeField] private bool drawDebug = true;
+
+    [Header("Permisos de Disfraz")]
+    [SerializeField] private DisguiseAuthorization disguiseAuthorization = DisguiseAuthorization.AllowGuardAndElite;
+
+    [Header("Gizmos")]
+    [SerializeField] private Color gizmoColor = Color.cyan;
+
+    public float DetectionRange
+    {
+        get => detectionRange;
+        set => detectionRange = Mathf.Max(0f, value);
+    }
+
+    public float DetectionAngle
+    {
+        get => detectionAngle;
+        set => detectionAngle = Mathf.Clamp(value, 0f, 360f);
+    }
+
+    public DisguiseAuthorization DisguiseAuth
+    {
+        get => disguiseAuthorization;
+        set => disguiseAuthorization = value;
+    }
+
+    public Color GizmoColor
+    {
+        get => gizmoColor;
+        set => gizmoColor = value;
+    }
 
     public bool CanDetectTarget(Transform target)
     {
@@ -97,10 +134,10 @@ public class DetectionSystem : MonoBehaviour
         return (mask.value & (1 << layer)) != 0;
     }
 
-    private static bool IsTargetDisguised(Transform target)
+    private bool IsTargetDisguised(Transform target)
     {
         PlayerDisguiseSystem disguiseSystem = target.GetComponentInParent<PlayerDisguiseSystem>();
-        if (disguiseSystem == null || disguiseSystem.CurrentDisguise != PlayerDisguiseSystem.DisguiseType.GuardDisguise)
+        if (disguiseSystem == null || disguiseSystem.CurrentDisguise == PlayerDisguiseSystem.DisguiseType.None)
         {
             return false;
         }
@@ -122,7 +159,19 @@ public class DetectionSystem : MonoBehaviour
             }
         }
 
-        return true;
+        switch (disguiseAuthorization)
+        {
+            case DisguiseAuthorization.AllowGuardAndElite:
+                return disguiseSystem.CurrentDisguise == PlayerDisguiseSystem.DisguiseType.GuardDisguise
+                    || disguiseSystem.CurrentDisguise == PlayerDisguiseSystem.DisguiseType.EliteGuardDisguise;
+
+            case DisguiseAuthorization.AllowEliteOnly:
+                return disguiseSystem.CurrentDisguise == PlayerDisguiseSystem.DisguiseType.EliteGuardDisguise;
+
+            case DisguiseAuthorization.AllowNone:
+            default:
+                return false;
+        }
     }
 
     private static bool IsTargetHidden(Transform target)
@@ -147,7 +196,7 @@ public class DetectionSystem : MonoBehaviour
         }
 
         Transform origin = detectionOrigin != null ? detectionOrigin : transform;
-        Gizmos.color = Color.cyan;
+        Gizmos.color = gizmoColor;
         Gizmos.DrawWireSphere(origin.position, detectionRange);
         Gizmos.DrawRay(origin.position, origin.forward * detectionRange);
         DrawHorizontalCone(origin);

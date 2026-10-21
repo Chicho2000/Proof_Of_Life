@@ -6,7 +6,8 @@ public class PlayerDisguiseSystem : MonoBehaviour
     public enum DisguiseType
     {
         None,
-        GuardDisguise
+        GuardDisguise,
+        EliteGuardDisguise
         // Se pueden agregar más tipos aquí a futuro: Waiter, Executive, etc.
     }
 
