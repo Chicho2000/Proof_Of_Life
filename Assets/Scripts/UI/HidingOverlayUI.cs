@@ -7,7 +7,7 @@ public class HidingOverlayUI : MonoBehaviour
 
     [Header("Configuración")]
     [Range(0f, 1f)]
-    [SerializeField] private float maxDarknessAlpha = 0.75f;
+    [SerializeField] private float maxDarknessAlpha = 0.90f;
     [SerializeField] private float fadeSpeed = 4.5f;
 
     private float targetAlpha = 0f;
