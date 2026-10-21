@@ -1,6 +1,7 @@
 using System.Collections;
 using UnityEngine;
-using UnityEngine.Rendering.PostProcessing;
+using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
 
 public class TakeDamage : MonoBehaviour
 {
@@ -23,7 +24,7 @@ public class TakeDamage : MonoBehaviour
     [Tooltip("Permite probar el efecto con clic izquierdo.")]
     [SerializeField] private bool testWithLeftClick = true;
 
-    private PostProcessVolume _volume;
+    private Volume _volume;
     private Vignette _vignette;
     private float targetIntensity = 0f;
     private float currentIntensity = 0f;
@@ -32,7 +33,6 @@ public class TakeDamage : MonoBehaviour
     private void Awake()
     {
         SetupVolumeAndVignette();
-        FixCameraPostProcessLayer();
     }
 
     private void OnEnable()
@@ -59,7 +59,6 @@ public class TakeDamage : MonoBehaviour
         {
             SetupVolumeAndVignette();
         }
-        FixCameraPostProcessLayer();
     }
 
     private void Update()
@@ -84,14 +83,14 @@ public class TakeDamage : MonoBehaviour
     {
         if (_volume == null)
         {
-            _volume = GetComponent<PostProcessVolume>();
-            if (_volume == null) _volume = GetComponentInChildren<PostProcessVolume>();
-            if (_volume == null) _volume = FindFirstObjectByType<PostProcessVolume>();
+            _volume = GetComponent<Volume>();
+            if (_volume == null) _volume = GetComponentInChildren<Volume>();
+            if (_volume == null) _volume = FindFirstObjectByType<Volume>();
         }
 
         if (_volume == null)
         {
-            Debug.LogWarning("[TakeDamage] No se encontró ningún PostProcessVolume en la escena.");
+            Debug.LogWarning("[TakeDamage] No se encontró ningún Volume en la escena.");
             return;
         }
 
@@ -100,38 +99,21 @@ public class TakeDamage : MonoBehaviour
         _volume.weight = 1f;
 
         // Obtener o instanciar perfil
-        PostProcessProfile profile = _volume.profile ?? _volume.sharedProfile;
+        VolumeProfile profile = _volume.profile != null ? _volume.profile : _volume.sharedProfile;
         if (profile == null) return;
 
-        if (!profile.TryGetSettings(out _vignette))
+        if (!profile.TryGet(out _vignette))
         {
-            _vignette = profile.AddSettings<Vignette>();
+            _vignette = profile.Add<Vignette>();
         }
 
         if (_vignette != null)
         {
-            _vignette.enabled.Override(true);
+            _vignette.active = true;
             _vignette.color.Override(color);
             _vignette.smoothness.Override(smoothness);
-            _vignette.roundness.Override(1f);
+            _vignette.rounded.Override(true);
             _vignette.intensity.Override(currentIntensity);
-        }
-    }
-
-    /// <summary>
-    /// Corrige la cámara si su PostProcessLayer tiene LayerMask en 0 (Nothing), lo cual impediría ver los efectos.
-    /// </summary>
-    private void FixCameraPostProcessLayer()
-    {
-        Camera cam = Camera.main ?? FindFirstObjectByType<Camera>();
-        if (cam != null && cam.TryGetComponent(out PostProcessLayer ppLayer))
-        {
-            if (ppLayer.volumeLayer.value == 0)
-            {
-                // Si la capa está en Nothing, habilitar todas las capas para que el volumen sea visible
-                ppLayer.volumeLayer = ~0;
-                Debug.Log("[TakeDamage] PostProcessLayer tenía volumeLayer en 0 (Nothing). Se corrigió automáticamente a Everything.");
-            }
         }
     }
 
