@@ -122,17 +122,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f14bfaf11523dfe4395b709470f8c7e1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ItemInteractable
-  interactionPrompt: Recoger Plato de Cerámica
+  interactionPrompt: "Recoger Plato de Cer\xE1mica"
   canInteract: 1
   itemId: throwable-plate
-  itemName: Plato de Cerámica
+  itemName: "Plato de Cer\xE1mica"
   itemType: 2
-  description: Objeto arrojadizo para distracción sonora de los guardias.
+  description: "Objeto arrojadizo para distracci\xF3n sonora de los guardias."
   icon: {fileID: 21300000, guid: a3186a4813e97144ca53a871272e0119, type: 3}
   isStackable: 1
   maxStack: 3
   amount: 1
-  worldPrefab: {fileID: 3999984762954176684, guid: dbf9b50852bcb014287d181803da813c, type: 3}
+  worldPrefab: {fileID: 3999984762954176684}
   inHandPrefab: {fileID: 919132149155446097, guid: 8471c77d67146aa4ca1c38a99eb7dd4d, type: 3}
   inHandPositionOffset: {x: 0.22, y: -0.2, z: 0.45}
   inHandRotationOffset: {x: 15, y: 30, z: 0}
@@ -160,8 +160,8 @@ Rigidbody:
     m_Bits: 0
   m_ImplicitCom: 1
   m_ImplicitTensor: 1
-  m_UseGravity: 0
-  m_IsKinematic: 1
+  m_UseGravity: 1
+  m_IsKinematic: 0
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
@@ -175,11 +175,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e68ac0011cdb4f1db6c0f80164dbabf5, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ThrowableObject
   breakOnImpact: 1
   minimumImpactSpeed: 1.5
-  impactSound: {fileID: 0}
+  impactSound: {fileID: 8300000, guid: 2c3a13850fa70e94083a3309df8b0a33, type: 3}
 --- !u!114 &8650720093712536462
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -190,7 +190,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e1a5c254666148a3810624cd7078a175, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NoiseEmitter
   noiseRadius: 12
   drawDebug: 0
