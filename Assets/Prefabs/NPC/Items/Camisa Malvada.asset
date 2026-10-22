@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc1aa954978f77001807063709473b66, type: 3}
+  m_Name: Camisa Malvada
+  m_EditorClassIdentifier: Assembly-CSharp::ClothItemData
+  clothingPrefab: {fileID: 1069897332680682395, guid: ca0ce946528480439b945649432dce6e, type: 3}
+  availableMaterials:
+  - {fileID: 2100000, guid: adf48126d89829db38f9dcea9cdd7099, type: 2}
+  - {fileID: 2100000, guid: edf0153bccb9f338aba2679ab3667895, type: 2}
+  - {fileID: 2100000, guid: 8a5275eb4e03278d5b1afa31ca2f06e8, type: 2}
+  - {fileID: 2100000, guid: 73e2873ae3ecc0824af6d46b87118dee, type: 2}
