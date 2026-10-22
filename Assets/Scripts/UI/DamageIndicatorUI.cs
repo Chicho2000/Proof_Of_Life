@@ -24,9 +24,9 @@ public class DamageIndicatorUI : MonoBehaviour
 
     // Opacidades fijas exactas para cada golpe (sin sliders en el Inspector)
     private const float OPACITY_FULL_HEALTH = 0.0f; // 0 golpes (100% de vida) -> 0%
-    private const float OPACITY_FIRST_HIT   = 0.37f; // 1er golpe (~75% de vida) -> 37%
-    private const float OPACITY_SECOND_HIT  = 0.69f; // 2do golpe (~50% de vida) -> 69%
-    private const float OPACITY_THIRD_HIT   = 0.90f; // 3er golpe (~25% de vida) -> 90%
+    private const float OPACITY_FIRST_HIT   = 0.25f; // 1er golpe (~75% de vida) -> 25%
+    private const float OPACITY_SECOND_HIT  = 0.50f; // 2do golpe (~50% de vida) -> 50%
+    private const float OPACITY_THIRD_HIT   = 0.75f; // 3er golpe (~25% de vida) -> 75%
     private const float OPACITY_DEAD        = 1.0f;  // Muerte    (0% de vida)   -> 100%
 
     private float currentVignetteAlpha = 0f;

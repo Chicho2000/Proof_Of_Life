@@ -704,7 +704,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::IconUI
   iconContainer: {fileID: 70629318}
   defaultIconImage: {fileID: 0}
-  defaultIconSprite: {fileID: 21300000, guid: f80f55f4fb1542541b714801198a61ea, type: 3}
+  defaultIconSprite: {fileID: 21300000, guid: 15ed2ed4e6889174ca8ac278b0da2405, type: 3}
   fadeDuration: 0.4
 --- !u!222 &70629321
 CanvasRenderer:
@@ -3902,7 +3902,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 21.3, y: 0}
+  m_AnchoredPosition: {x: 21.3, y: -13}
   m_SizeDelta: {x: 290, y: 25}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &742962404
@@ -4285,7 +4285,7 @@ PrefabInstance:
     - target: {fileID: 6152394932788526886, guid: 944ed236dc00a1a43a363cb564605aad, type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: 21300000, guid: 217ee255226a79343900e7c59603f186, type: 3}
+      objectReference: {fileID: 21300000, guid: fc888ea6a801a6744a46f6415c7e0c64, type: 3}
     - target: {fileID: 6163919224931123637, guid: 944ed236dc00a1a43a363cb564605aad, type: 3}
       propertyPath: playerHotbar
       value: 
@@ -9964,7 +9964,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 217ee255226a79343900e7c59603f186, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 15ed2ed4e6889174ca8ac278b0da2405, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -11020,7 +11020,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: b1a89c31405e49cf9d75a1e2f7b82301, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 7debe0e02c299da4cb91f0bad47f2526, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -11864,7 +11864,7 @@ GameObject:
   - component: {fileID: 2128447763}
   - component: {fileID: 2128447762}
   m_Layer: 0
-  m_Name: GameObject
+  m_Name: BarraGanzua
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
