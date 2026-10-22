@@ -9850,7 +9850,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::AlarmManager
   isAlarmActive: 0
   alarmAudioSource: {fileID: 1717301557}
-  alarmClip: {fileID: 8300000, guid: adb234fc04f65614992ebee2441e2602, type: 3}
+  alarmClip: {fileID: 8300000, guid: 8ba7e01bd8cacd346a7e729a906acd94, type: 3}
   loopAlarmSound: 1
   playAlarmSound: 1
 --- !u!82 &1717301557
@@ -11234,8 +11234,8 @@ MonoBehaviour:
   shotCooldown: 0.45
   reloadDuration: 2.25
   shootSound: {fileID: 8300000, guid: 88580c45aea4ea2408e9afae0a0fd7b7, type: 3}
-  reloadSound: {fileID: 0}
-  emptyAmmoSound: {fileID: 0}
+  reloadSound: {fileID: 8300000, guid: e5e46e413ae532845ada92bf789aeb97, type: 3}
+  emptyAmmoSound: {fileID: 8300000, guid: 50c06b79d173c694b91b7f74f35c4a37, type: 3}
   maxAmmo: 12
   currentAmmo: 12
   fiberWireRange: 2.2
