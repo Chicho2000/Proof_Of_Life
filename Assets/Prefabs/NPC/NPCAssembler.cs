@@ -163,24 +163,31 @@ public class NPCAssembler : MonoBehaviour {
 		}
 	}
 
-	private void ApplyRandomSkin(Material[] skins) {
+	private void ApplyRandomSkin(SkinVariantData[] skins) {
 		if (skins == null || skins.Length == 0 || humanoid == null) {
 			return;
 		}
 
-		Material skin = skins[UnityEngine.Random.Range(0, skins.Length)];
+		SkinVariantData skin = skins[UnityEngine.Random.Range(0, skins.Length)];
 		if (skin == null) {
 			return;
 		}
 
+		Material head = (skin.heads != null && skin.heads.Length > 0)
+			? skin.heads[UnityEngine.Random.Range(0, skin.heads.Length)]
+			: null;
+
+		Material body = skin.body;
+
 		SkinnedMeshRenderer[] renderers = humanoid.GetComponentsInChildren<SkinnedMeshRenderer>(true);
 		foreach (SkinnedMeshRenderer renderer in renderers) {
 			Material[] materials = renderer.sharedMaterials;
+			if (materials.Length > 0) {
+				materials[0] = body;
+			}
 
-			for (int i = 0; i < materials.Length; i++) {
-				if (materials[i] != null && materials[i].name.IndexOf("skin", StringComparison.OrdinalIgnoreCase) >= 0) {
-					materials[i] = skin;
-				}
+			if (materials.Length > 1) {
+				materials[1] = head;
 			}
 
 			renderer.sharedMaterials = materials;

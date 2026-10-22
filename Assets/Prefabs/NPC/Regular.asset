@@ -24,4 +24,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 019856f9ab374eb42ab084c7156b784a, type: 2}
   - {fileID: 11400000, guid: 382f4b0e516e1834581b4c5f159f1430, type: 2}
   possibleSkins:
-  - {fileID: 0}
+  - {fileID: 11400000, guid: 9dba115fbf1319969aeff42b2f88a934, type: 2}
+  - {fileID: 11400000, guid: d9d85da909b027887ad5441803a70a21, type: 2}
+  - {fileID: 11400000, guid: d0e831115e3b8aebebf41eeb2dfd3d31, type: 2}
+  - {fileID: 11400000, guid: 6033ea79ac2ab09f1803a1bee4235892, type: 2}

@@ -6,5 +6,5 @@ public class NPCConfigData : ScriptableObject {
 	public ClothItemData[] possibleHair;
 	public ClothItemData[] possibleShirts;
 	public ClothItemData[] possiblePants;
-	public Material[] possibleSkins;
+	public SkinVariantData[] possibleSkins;
 }
