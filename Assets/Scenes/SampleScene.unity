@@ -174,7 +174,7 @@ PrefabInstance:
     - target: {fileID: 8650720093712536461, guid: dbf9b50852bcb014287d181803da813c, type: 3}
       propertyPath: impactSound
       value: 
-      objectReference: {fileID: 8300000, guid: 8f9bec281bac50a45b8837960f6bf1eb, type: 3}
+      objectReference: {fileID: 8300000, guid: 2c3a13850fa70e94083a3309df8b0a33, type: 3}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -550,7 +550,7 @@ MonoBehaviour:
   attackDamage: 25
   attackRange: 1.8
   attackRate: 1.2
-  attackSound: {fileID: 0}
+  attackSound: {fileID: 8300000, guid: 10d35d4de6439a74099101f4ca16097c, type: 3}
   detectionSystem: {fileID: 44803122}
   suspicionSystem: {fileID: 0}
   investigateDuration: 5
@@ -2792,6 +2792,7 @@ GameObject:
   - component: {fileID: 474174688}
   - component: {fileID: 474174690}
   - component: {fileID: 474174689}
+  - component: {fileID: 474174691}
   m_Layer: 0
   m_Name: AlarmBanner
   m_TagString: Untagged
@@ -2817,7 +2818,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 820, y: 358.23}
+  m_AnchoredPosition: {x: 735, y: 351}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &474174689
@@ -2858,6 +2859,21 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 474174687}
   m_CullTransparentMesh: 1
+--- !u!114 &474174691
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 474174687}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0fc85ce85d6999849ace552b1e8e354b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AlarmUI
+  alarmBanner: {fileID: 474174687}
+  alarmText: {fileID: 540496132}
+  alarmMessage: '[ ! ] ALARMA ACTIVADA'
 --- !u!1 &525440390
 GameObject:
   m_ObjectHideFlags: 0
@@ -5675,10 +5691,14 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 8650720093712536460, guid: dbf9b50852bcb014287d181803da813c, type: 3}
+      propertyPath: m_CollisionDetection
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 8650720093712536461, guid: dbf9b50852bcb014287d181803da813c, type: 3}
       propertyPath: impactSound
       value: 
-      objectReference: {fileID: 8300000, guid: 8f9bec281bac50a45b8837960f6bf1eb, type: 3}
+      objectReference: {fileID: 8300000, guid: 2c3a13850fa70e94083a3309df8b0a33, type: 3}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -8541,7 +8561,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -67, y: -42}
+  m_AnchoredPosition: {x: -134.99998, y: -52.999996}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1564320729
@@ -9694,7 +9714,7 @@ MonoBehaviour:
   attackDamage: 25
   attackRange: 1.8
   attackRate: 1.2
-  attackSound: {fileID: 0}
+  attackSound: {fileID: 8300000, guid: 10d35d4de6439a74099101f4ca16097c, type: 3}
   detectionSystem: {fileID: 1712067206}
   suspicionSystem: {fileID: 0}
   investigateDuration: 5
@@ -10014,7 +10034,7 @@ MonoBehaviour:
   attackDamage: 45
   attackRange: 2
   attackRate: 1.2
-  attackSound: {fileID: 0}
+  attackSound: {fileID: 8300000, guid: 10d35d4de6439a74099101f4ca16097c, type: 3}
   detectionSystem: {fileID: 0}
   suspicionSystem: {fileID: 0}
   investigateDuration: 5
@@ -10116,8 +10136,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 49de6ab8d69a58f4497125976e8a7822, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NPCHealth
-  maxHealth: 200
-  currentHealth: 200
+  maxHealth: 100000
+  currentHealth: 100000
   headshotStartHeight: 0.78
   facingReference: {fileID: 0}
   hurtSound: {fileID: 0}
@@ -11240,7 +11260,7 @@ MonoBehaviour:
   currentAmmo: 12
   fiberWireRange: 2.2
   backstabAngle: 60
-  fiberWireKillSound: {fileID: 0}
+  fiberWireKillSound: {fileID: 8300000, guid: 684d4b04106f0994cb19697615ec8373, type: 3}
 --- !u!114 &1901548863
 MonoBehaviour:
   m_ObjectHideFlags: 0
