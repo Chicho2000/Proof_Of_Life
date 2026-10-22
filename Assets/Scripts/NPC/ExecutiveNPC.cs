@@ -89,6 +89,9 @@ public class ExecutiveNPC : NPCBase
         switch (currentState)
         {
             case NPCState.Idle:
+                TickIdle();
+                break;
+
             case NPCState.Investigate:
             case NPCState.Suspicious:
                 break;
@@ -312,10 +315,6 @@ public class ExecutiveNPC : NPCBase
         }
     }
 
-    private bool CanUseAgent()
-    {
-        return agent != null && agent.enabled && agent.isOnNavMesh;
-    }
 
     private void StopAgent()
     {
@@ -379,9 +378,19 @@ public class ExecutiveNPC : NPCBase
             return;
         }
 
-        float speed = CanUseAgent() && agent.velocity.sqrMagnitude > 0.01f ? 2f : 0f;
-	foreach (var animator in animators) {
-		animator.SetFloat("SpeedY", speed);
-	}
+        float speed = 0f;
+        bool isMoving = CanUseAgent() && !agent.isStopped && agent.velocity.sqrMagnitude > 0.01f;
+        if (isMoving)
+        {
+            speed = currentState == NPCState.Flee ? 2f : 1f;
+        }
+
+        for (int i = 0; i < animators.Length; i++)
+        {
+            if (animators[i] != null)
+            {
+                animators[i].SetFloat("SpeedY", speed);
+            }
+        }
     }
 }

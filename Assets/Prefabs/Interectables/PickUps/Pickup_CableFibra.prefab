@@ -119,7 +119,7 @@ MonoBehaviour:
   itemName: Cable de Fibra
   itemType: 4
   description: Cuerda reforzada para noquear o neutralizar en silencio desde la espalda.
-  icon: {fileID: 21300000, guid: 0b0ec3f75045c054d832dee63ed0433b, type: 3}
+  icon: {fileID: 21300000, guid: 3f02b9d31c607654489d50730193417b, type: 3}
   isStackable: 0
   maxStack: 1
   amount: 1

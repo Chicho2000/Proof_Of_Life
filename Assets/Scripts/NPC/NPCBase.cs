@@ -12,6 +12,14 @@ public abstract class NPCBase : MonoBehaviour
     protected NPCHealth health;
     protected Animator[] animators;
 
+    [Header("Retorno a Posición Inicial (Sin Patrulla)")]
+    [SerializeField] protected float returnToSpawnSpeed = 2f;
+    [SerializeField] protected float returnStoppingDistance = 0.3f;
+
+    protected Vector3 spawnPosition;
+    protected Quaternion spawnRotation;
+    protected bool hasSpawnPosition = false;
+
     public NPCState GetCurrentState()
     {
         return currentState;
@@ -27,6 +35,26 @@ public abstract class NPCBase : MonoBehaviour
         return health;
     }
 
+    public Vector3 SpawnPosition
+    {
+        get { return spawnPosition; }
+    }
+
+    public Quaternion SpawnRotation
+    {
+        get { return spawnRotation; }
+    }
+
+    public virtual bool HasPatrolPoints()
+    {
+        return false;
+    }
+
+    protected bool CanUseAgent()
+    {
+        return agent != null && agent.enabled && agent.isOnNavMesh;
+    }
+
     protected virtual void Awake()
     {
         agent = GetComponent<NavMeshAgent>();
@@ -36,6 +64,10 @@ public abstract class NPCBase : MonoBehaviour
 
     protected virtual void Start()
     {
+        spawnPosition = transform.position;
+        spawnRotation = transform.rotation;
+        hasSpawnPosition = true;
+
         // Aplica el estado seleccionado desde el Inspector al comenzar el juego
         SetState(currentState);
     }
@@ -74,5 +106,42 @@ public abstract class NPCBase : MonoBehaviour
     protected virtual void HandleDeath()
     {
         currentState = NPCState.Dead;
+    }
+
+    protected virtual void TickIdle()
+    {
+        TickReturnToSpawn();
+    }
+
+    protected virtual void TickReturnToSpawn(float speed = -1f)
+    {
+        if (!hasSpawnPosition || HasPatrolPoints())
+        {
+            return;
+        }
+
+        if (!CanUseAgent())
+        {
+            return;
+        }
+
+        float currentSpeed = speed > 0f ? speed : returnToSpawnSpeed;
+        float distToSpawn = Vector3.Distance(transform.position, spawnPosition);
+
+        if (distToSpawn > 0.6f)
+        {
+            agent.isStopped = false;
+            agent.speed = currentSpeed;
+            agent.stoppingDistance = returnStoppingDistance;
+            agent.SetDestination(spawnPosition);
+        }
+        else
+        {
+            if (!agent.isStopped)
+            {
+                agent.isStopped = true;
+            }
+            transform.rotation = Quaternion.RotateTowards(transform.rotation, spawnRotation, 180f * Time.deltaTime);
+        }
     }
 }

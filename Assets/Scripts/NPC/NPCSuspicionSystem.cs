@@ -92,19 +92,7 @@ public class NPCSuspicionSystem : MonoBehaviour
     {
         get
         {
-            if (currentSuspicion >= 2.0f)
-            {
-                return 1.0f;
-            }
-            if (currentSuspicion > 1.0f)
-            {
-                return Mathf.Clamp01(currentSuspicion - 1.0f);
-            }
-            if (currentSuspicion > 0.01f)
-            {
-                return Mathf.Clamp01(currentSuspicion);
-            }
-            return 0f;
+            return Mathf.Clamp01(currentSuspicion / 2.0f);
         }
     }
 
@@ -241,11 +229,33 @@ public class NPCSuspicionSystem : MonoBehaviour
         {
             lastSeenPosition = playerTarget.position;
 
+            if (isInvestigating)
+            {
+                CancelInvestigation();
+            }
+
+            // Multiplicador por distancia suave:
+            // Lejos (más de 5m) velocidad normal a moderada (0.85x - 1.0x).
+            // Solo cuando está realmente cerca (menos de 5m) sube gradualmente hasta un máximo suave de 1.45x.
+            float distance = Vector3.Distance(transform.position, playerTarget.position);
+            float distanceMultiplier = 1.0f;
+            if (distance <= 5.0f)
+            {
+                float closeFactor = Mathf.Clamp01(1f - (distance / 5.0f));
+                distanceMultiplier = Mathf.Lerp(1.0f, 1.45f, closeFactor);
+            }
+            else
+            {
+                float maxRange = detectionSystem != null ? detectionSystem.DetectionRange : 15f;
+                float farFactor = Mathf.Clamp01((distance - 5.0f) / Mathf.Max(1f, maxRange - 5.0f));
+                distanceMultiplier = Mathf.Lerp(1.0f, 0.85f, farFactor);
+            }
+
             // Nivel 1 (0.0f a 1.0f)
             if (currentSuspicion < 1.0f)
             {
                 float rate = 1.0f / Mathf.Max(0.1f, level1TimeToFill);
-                currentSuspicion += rate * Time.deltaTime;
+                currentSuspicion += (rate * distanceMultiplier) * Time.deltaTime;
 
                 // Al llegar al 40% de sospecha, se detiene en seco y gira el cuerpo hacia el jugador
                 if (currentSuspicion >= 0.4f && !isInvestigating)
@@ -290,7 +300,7 @@ public class NPCSuspicionSystem : MonoBehaviour
             else if (currentSuspicion < 2.0f)
             {
                 float rate = 1.0f / Mathf.Max(0.1f, level2TimeToFill);
-                currentSuspicion += rate * Time.deltaTime;
+                currentSuspicion += (rate * distanceMultiplier) * Time.deltaTime;
 
                 if (currentSuspicion >= 2.0f)
                 {
@@ -366,11 +376,11 @@ public class NPCSuspicionSystem : MonoBehaviour
             investigateDuration = customDuration;
         }
 
-        // Si la investigación es llamada por un ruido de distracción u otro estímulo,
-        // elevar la sospecha al Nivel 1 (barra azul / icono '?') mientras investiga
-        if (currentSuspicion < 1.0f)
+        // Si la investigación es llamada por un ruido de distracción u otro estímulo desde 0,
+        // asegurar que haya sospecha mínima activa sin forzar la barra al final
+        if (currentSuspicion <= 0.01f)
         {
-            currentSuspicion = 1.0f;
+            currentSuspicion = 0.5f;
             hasTriggeredLevel1 = true;
             PlayAudio(suspicionSound);
             BroadcastGlobalSuspicion();
@@ -449,12 +459,6 @@ public class NPCSuspicionSystem : MonoBehaviour
 
             float reachDistance = Mathf.Max(0.8f, agent.stoppingDistance);
             if (agent.hasPath && agent.remainingDistance <= reachDistance)
-            {
-                agent.isStopped = true;
-                isWaitingAtInvestigatePoint = true;
-                investigateWaitTimer = 0f;
-            }
-            else if (!agent.hasPath && agent.velocity.sqrMagnitude < 0.01f)
             {
                 agent.isStopped = true;
                 isWaitingAtInvestigatePoint = true;

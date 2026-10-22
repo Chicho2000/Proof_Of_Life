@@ -3,6 +3,7 @@ using UnityEngine;
 public class BodyInteractable : Interactable
 {
     public static BodyInteractable CurrentCarriedBody { get; private set; }
+    public static readonly System.Collections.Generic.List<BodyInteractable> ActiveBodies = new System.Collections.Generic.List<BodyInteractable>();
     private static int bodyDropInputFrame = -1;
 
     public static bool IsDraggingAnyBody => CurrentCarriedBody != null && CurrentCarriedBody.isBeingCarried;
@@ -39,6 +40,7 @@ public class BodyInteractable : Interactable
     public bool IsBeingCarried => isBeingCarried;
     public bool IsHidden => isHidden;
     public string NPCName => npcName;
+    public bool IsDiscovered { get; set; }
 
     private void Awake()
     {
@@ -49,11 +51,24 @@ public class BodyInteractable : Interactable
         UpdatePrompt();
     }
 
+    private void OnEnable()
+    {
+        if (!ActiveBodies.Contains(this))
+        {
+            ActiveBodies.Add(this);
+        }
+    }
+
     private void OnDisable()
     {
         if (CurrentCarriedBody == this)
         {
             CurrentCarriedBody = null;
+        }
+
+        if (ActiveBodies.Contains(this))
+        {
+            ActiveBodies.Remove(this);
         }
     }
 

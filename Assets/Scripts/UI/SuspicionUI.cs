@@ -126,7 +126,8 @@ public class SuspicionUI : MonoBehaviour
         }
         else
         {
-            currentColor = Color.Lerp(level2StartColor, level2EndColor, targetFill);
+            float level2Progress = Mathf.Clamp01((targetFill - 0.5f) / 0.5f);
+            currentColor = Color.Lerp(level2StartColor, level2EndColor, level2Progress);
             symbol = "!";
         }
 

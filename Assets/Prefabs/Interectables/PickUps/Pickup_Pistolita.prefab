@@ -107,7 +107,7 @@ MonoBehaviour:
   itemName: Pistola Silenciada
   itemType: 3
   description: "Arma t\xE1ctica con supresor para eliminaci\xF3n silenciosa."
-  icon: {fileID: 21300000, guid: 80e98815417748f44befaf186e61baf0, type: 3}
+  icon: {fileID: 21300000, guid: 9197f58c878ff964cbe6e4e235452c6c, type: 3}
   isStackable: 0
   maxStack: 1
   amount: 1

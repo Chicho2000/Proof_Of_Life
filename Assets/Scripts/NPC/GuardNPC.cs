@@ -29,12 +29,18 @@ public class GuardNPC : NPCBase
     [Header("Investigacion de ruido")]
     [Min(0f)] [SerializeField] private float investigateDuration = 5f;
 
+    [Header("Configuración de Alerta")]
+    [SerializeField] private float alertPatrolSpeed = 3.2f;
+
+    public static event System.Action<Vector3> OnDeadBodyDiscovered;
+
     private Transform playerTarget;
     private PlayerHealth playerHealth;
     private float lastAttackTime = -999f;
     private float patrolWaitTimer;
     private bool hasPatrolDestination;
     private bool isWaitingAtPatrolPoint;
+
 
     protected override void Awake()
     {
@@ -57,6 +63,7 @@ public class GuardNPC : NPCBase
         AlarmManager.OnAlarmTriggered += HandleAlarm;
         AlarmManager.OnAlarmStopped += HandleAlarmStopped;
         NoiseEmitter.OnNoiseEmitted += HandleNoise;
+        GuardNPC.OnDeadBodyDiscovered += HandleDeadBodyDiscovered;
 
         if (suspicionSystem != null)
         {
@@ -69,6 +76,7 @@ public class GuardNPC : NPCBase
         AlarmManager.OnAlarmTriggered -= HandleAlarm;
         AlarmManager.OnAlarmStopped -= HandleAlarmStopped;
         NoiseEmitter.OnNoiseEmitted -= HandleNoise;
+        GuardNPC.OnDeadBodyDiscovered -= HandleDeadBodyDiscovered;
 
         if (suspicionSystem != null)
         {
@@ -82,6 +90,7 @@ public class GuardNPC : NPCBase
     {
         EnsureNavMeshPlacement();
         FindPlayerReference();
+
 
         currentState = NPCState.Idle;
         base.Start();
@@ -123,10 +132,15 @@ public class GuardNPC : NPCBase
         switch (currentState)
         {
             case NPCState.Idle:
+                TickIdle();
                 break;
 
             case NPCState.Patrol:
-                TickPatrol();
+                TickPatrol(patrolSpeed);
+                break;
+
+            case NPCState.Alert:
+                TickAlert();
                 break;
 
             case NPCState.Investigate:
@@ -145,7 +159,24 @@ public class GuardNPC : NPCBase
         }
     }
 
-    private void TickPatrol()
+    protected override void TickIdle()
+    {
+        TickReturnToSpawn(patrolSpeed);
+    }
+
+    private void TickAlert()
+    {
+        if (HasPatrolPoints())
+        {
+            TickPatrol(alertPatrolSpeed);
+        }
+        else
+        {
+            TickIdle();
+        }
+    }
+
+    private void TickPatrol(float currentSpeed = -1f)
     {
         if (!HasPatrolPoints())
         {
@@ -157,6 +188,8 @@ public class GuardNPC : NPCBase
         {
             return;
         }
+
+        float speedToUse = currentSpeed > 0f ? currentSpeed : patrolSpeed;
 
         Transform currentPoint = GetCurrentPatrolPoint();
         if (currentPoint == null)
@@ -179,7 +212,7 @@ public class GuardNPC : NPCBase
         if (!hasPatrolDestination)
         {
             agent.isStopped = false;
-            agent.speed = patrolSpeed;
+            agent.speed = speedToUse;
             agent.stoppingDistance = Mathf.Max(0f, waypointReachDistance);
             hasPatrolDestination = agent.SetDestination(currentPoint.position);
             return;
@@ -201,7 +234,93 @@ public class GuardNPC : NPCBase
 
     private void TickDetection()
     {
-        // La detección y sospecha gradual se procesan de forma desacoplada en NPCSuspicionSystem
+        CheckForDeadBodies();
+    }
+
+    private void CheckForDeadBodies()
+    {
+        if (currentState == NPCState.Dead || currentState == NPCState.Chase || currentState == NPCState.Attack)
+        {
+            return;
+        }
+
+        for (int i = 0; i < BodyInteractable.ActiveBodies.Count; i++)
+        {
+            BodyInteractable body = BodyInteractable.ActiveBodies[i];
+            if (body != null && !body.IsDiscovered && CanSeeBody(body))
+            {
+                body.IsDiscovered = true;
+                Debug.Log($"[GuardNPC] {gameObject.name} descubrió un cuerpo en el suelo ({body.NPCName})! Entrando en SOSPECHA Y ALERTA.");
+                Vector3 bodyPos = body.transform.position;
+                if (OnDeadBodyDiscovered != null)
+                {
+                    OnDeadBodyDiscovered(bodyPos);
+                }
+                break;
+            }
+        }
+    }
+
+    private bool CanSeeBody(BodyInteractable body)
+    {
+        if (body == null || body.IsHidden || !body.gameObject.activeInHierarchy || detectionSystem == null)
+        {
+            return false;
+        }
+
+        Vector3 bodyPos = body.transform.position + Vector3.up * 0.35f;
+        Vector3 originPos = transform.position + Vector3.up * 1.6f;
+        Vector3 toBody = bodyPos - originPos;
+        float dist = toBody.magnitude;
+
+        if (dist > detectionSystem.DetectionRange)
+        {
+            return false;
+        }
+
+        // Verificación de ángulo horizontal
+        Vector3 hDir = Vector3.ProjectOnPlane(toBody, Vector3.up);
+        if (hDir.sqrMagnitude > 0.001f)
+        {
+            float angle = Vector3.Angle(transform.forward, hDir.normalized);
+            if (angle > detectionSystem.DetectionAngle * 0.5f && dist > 2.0f)
+            {
+                return false;
+            }
+        }
+
+        // Raycast de línea de visión hacia el cuerpo
+        RaycastHit hit;
+        if (Physics.Raycast(originPos, toBody.normalized, out hit, dist, ~0, QueryTriggerInteraction.Ignore))
+        {
+            if (hit.transform == body.transform || hit.transform.IsChildOf(body.transform))
+            {
+                return true;
+            }
+            if (hit.distance >= dist - 0.5f)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        return true;
+    }
+
+    private void HandleDeadBodyDiscovered(Vector3 bodyPosition)
+    {
+        if (currentState == NPCState.Dead || currentState == NPCState.Chase || currentState == NPCState.Attack)
+        {
+            return;
+        }
+
+        SetState(NPCState.Alert);
+
+        // Se desplaza e investiga el cuerpo una vez
+        if (suspicionSystem != null && !suspicionSystem.IsInvestigating)
+        {
+            suspicionSystem.StartInvestigation(bodyPosition, 5.0f);
+        }
     }
 
     private void HandleSuspicionLevel2()
@@ -222,6 +341,7 @@ public class GuardNPC : NPCBase
     private void HandleNoise(Vector3 position, float radius)
     {
         if (currentState != NPCState.Idle && currentState != NPCState.Patrol
+            && currentState != NPCState.Alert
             && currentState != NPCState.Suspicious && currentState != NPCState.Investigate)
         {
             return;
@@ -304,6 +424,16 @@ public class GuardNPC : NPCBase
 
             case NPCState.Patrol:
                 EnterPatrolState();
+                break;
+
+            case NPCState.Alert:
+                ResetPatrolTick();
+                if (CanUseAgent())
+                {
+                    agent.isStopped = false;
+                    agent.speed = alertPatrolSpeed;
+                    agent.stoppingDistance = 0f;
+                }
                 break;
 
             case NPCState.Suspicious:
@@ -424,7 +554,7 @@ public class GuardNPC : NPCBase
         return -1;
     }
 
-    private bool HasPatrolPoints()
+    public override bool HasPatrolPoints()
     {
         return FindNextValidPatrolIndex(0, false) >= 0;
     }
@@ -538,10 +668,6 @@ public class GuardNPC : NPCBase
         }
     }
 
-    private bool CanUseAgent()
-    {
-        return agent != null && agent.enabled && agent.isOnNavMesh;
-    }
 
     private void StopAgent()
     {
@@ -575,18 +701,25 @@ public class GuardNPC : NPCBase
         float speed = 0f;
         bool isMoving = CanUseAgent() && !agent.isStopped && agent.velocity.sqrMagnitude > 0.01f;
 
-        if (isMoving && (currentState == NPCState.Patrol || currentState == NPCState.Investigate))
+        if (isMoving)
         {
-            speed = 1f;
-        }
-        else if (isMoving && currentState == NPCState.Chase)
-        {
-            speed = 2f;
+            speed = currentState == NPCState.Chase ? 2f : 1f;
         }
 
-	foreach (var animator in animators) {
-		animator.SetFloat("SpeedY", speed);
-	}
+        for (int i = 0; i < animators.Length; i++)
+        {
+            if (animators[i] != null)
+            {
+                animators[i].SetFloat("SpeedX", 0f);
+                animators[i].SetFloat("SpeedY", speed);
+
+                // Si el animator tiene capas adicionales (como 'Hand layer' con Hand EXtend), asegurar peso en 0
+                if (animators[i].layerCount > 1)
+                {
+                    animators[i].SetLayerWeight(1, 0f);
+                }
+            }
+        }
     }
 
     private void OnDrawGizmosSelected()

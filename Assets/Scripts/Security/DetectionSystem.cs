@@ -13,6 +13,8 @@ public class DetectionSystem : MonoBehaviour
     [SerializeField] private Transform detectionOrigin;
     [SerializeField, Min(0f)] private float detectionRange = 15f;
     [SerializeField, Range(0f, 360f)] private float detectionAngle = 70f;
+    [Tooltip("Radio cercano donde el enemigo te detecta si estás en su semicírculo frontal.")]
+    [SerializeField, Min(0f)] private float proximityRange = 1.4f;
     [SerializeField] private LayerMask targetMask = ~0;
     [SerializeField] private LayerMask obstacleMask = ~0;
     [SerializeField] private bool drawDebug = true;
@@ -33,6 +35,12 @@ public class DetectionSystem : MonoBehaviour
     {
         get => detectionAngle;
         set => detectionAngle = Mathf.Clamp(value, 0f, 360f);
+    }
+
+    public float ProximityRange
+    {
+        get => proximityRange;
+        set => proximityRange = Mathf.Max(0f, value);
     }
 
     public DisguiseAuthorization DisguiseAuth
@@ -60,28 +68,79 @@ public class DetectionSystem : MonoBehaviour
         }
 
         Transform origin = detectionOrigin != null ? detectionOrigin : transform;
-        Vector3 targetPosition = GetTargetPosition(target);
-        Vector3 directionToTarget = targetPosition - origin.position;
-        float distanceToTarget = directionToTarget.magnitude;
+        Vector3 originPos = origin.position;
+        Vector3 targetCenter = GetTargetPosition(target);
+        Vector3 toTargetVector = targetCenter - originPos;
+        float distanceToTarget = toTargetVector.magnitude;
 
         if (distanceToTarget <= Mathf.Epsilon || distanceToTarget > detectionRange)
         {
-            DrawDetectionRay(origin.position, directionToTarget, Color.gray);
+            DrawDetectionRay(originPos, toTargetVector, Color.gray);
             return false;
         }
 
-        Vector3 normalizedDirection = directionToTarget / distanceToTarget;
-        float angleToTarget = Vector3.Angle(origin.forward, normalizedDirection);
-        if (angleToTarget > detectionAngle * 0.5f)
+        Vector3 horizontalDir = Vector3.ProjectOnPlane(toTargetVector, Vector3.up);
+
+        // 1. Proximidad cercana: si estás a menos de proximityRange frente al enemigo
+        bool isInsideProximity = false;
+        if (distanceToTarget <= proximityRange)
         {
-            DrawDetectionRay(origin.position, directionToTarget, Color.yellow);
-            return false;
+            float hAngle = horizontalDir.sqrMagnitude > 0.001f 
+                ? Vector3.Angle(origin.forward, horizontalDir.normalized) 
+                : 0f;
+            if (hAngle <= 90f)
+            {
+                isInsideProximity = true;
+            }
+        }
+
+        // 2. Cono de visión
+        if (!isInsideProximity)
+        {
+            float horizontalAngle = horizontalDir.sqrMagnitude > 0.001f 
+                ? Vector3.Angle(origin.forward, horizontalDir.normalized) 
+                : 0f;
+
+            if (horizontalAngle > detectionAngle * 0.5f)
+            {
+                DrawDetectionRay(originPos, toTargetVector, Color.yellow);
+                return false;
+            }
+
+            // Límite vertical cónico (permite mirar objetivos en altura o desniveles hasta 50°)
+            float verticalAngle = Mathf.Abs(Mathf.Asin(Mathf.Clamp(toTargetVector.y / distanceToTarget, -1f, 1f)) * Mathf.Rad2Deg);
+            if (verticalAngle > 50f)
+            {
+                DrawDetectionRay(originPos, toTargetVector, Color.yellow);
+                return false;
+            }
+        }
+
+        // 3. Comprobación de línea de visión multi-punto (centro y cabeza)
+        Vector3 targetHead = GetTargetHeadPosition(target);
+        bool seeCenter = HasLineOfSight(originPos, targetCenter, target);
+        bool seeHead = HasLineOfSight(originPos, targetHead, target);
+
+        bool canSee = seeCenter || seeHead;
+        Vector3 visiblePoint = seeHead ? targetHead : targetCenter;
+
+        DrawDetectionRay(originPos, visiblePoint - originPos, canSee ? Color.green : Color.red);
+        return canSee;
+    }
+
+    private bool HasLineOfSight(Vector3 originPos, Vector3 targetPoint, Transform target)
+    {
+        Vector3 dir = targetPoint - originPos;
+        float dist = dir.magnitude;
+        if (dist <= 0.01f)
+        {
+            return true;
         }
 
         RaycastHit[] hits = Physics.RaycastAll(
-            origin.position,
-            normalizedDirection,
-            distanceToTarget,
+            originPos,
+            dir / dist,
+            dist,
             obstacleMask,
             QueryTriggerInteraction.Ignore
         );
@@ -89,8 +148,9 @@ public class DetectionSystem : MonoBehaviour
         RaycastHit closestHit = default;
         float closestDistance = float.PositiveInfinity;
 
-        foreach (RaycastHit hit in hits)
+        for (int i = 0; i < hits.Length; i++)
         {
+            RaycastHit hit = hits[i];
             if (IsDetectorTransform(hit.transform) || hit.distance >= closestDistance)
             {
                 continue;
@@ -102,12 +162,9 @@ public class DetectionSystem : MonoBehaviour
 
         if (closestDistance < float.PositiveInfinity)
         {
-            bool hitTarget = IsTargetTransform(closestHit.transform, target);
-            DrawDetectionRay(origin.position, directionToTarget, hitTarget ? Color.green : Color.red);
-            return hitTarget;
+            return IsTargetTransform(closestHit.transform, target);
         }
 
-        DrawDetectionRay(origin.position, directionToTarget, Color.green);
         return true;
     }
 
@@ -115,6 +172,16 @@ public class DetectionSystem : MonoBehaviour
     {
         Collider targetCollider = target.GetComponentInChildren<Collider>();
         return targetCollider != null ? targetCollider.bounds.center : target.position;
+    }
+
+    private static Vector3 GetTargetHeadPosition(Transform target)
+    {
+        Collider targetCollider = target.GetComponentInChildren<Collider>();
+        if (targetCollider != null)
+        {
+            return targetCollider.bounds.center + Vector3.up * (targetCollider.bounds.extents.y * 0.85f);
+        }
+        return target.position + Vector3.up * 1.6f;
     }
 
     private static bool IsTargetTransform(Transform hitTransform, Transform target)
