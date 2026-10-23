@@ -13517,15 +13517,15 @@ PrefabInstance:
       objectReference: {fileID: 9215214549755836912, guid: 947e4a25e5bec0c4994d5afd6a7f8bf9, type: 3}
     - target: {fileID: 6809879270663013983, guid: 947e4a25e5bec0c4994d5afd6a7f8bf9, type: 3}
       propertyPath: inHandScale.x
-      value: 1.4
+      value: 2.4
       objectReference: {fileID: 0}
     - target: {fileID: 6809879270663013983, guid: 947e4a25e5bec0c4994d5afd6a7f8bf9, type: 3}
       propertyPath: inHandScale.y
-      value: 1.4
+      value: 2.4
       objectReference: {fileID: 0}
     - target: {fileID: 6809879270663013983, guid: 947e4a25e5bec0c4994d5afd6a7f8bf9, type: 3}
       propertyPath: inHandScale.z
-      value: 1.4
+      value: 2.4
       objectReference: {fileID: 0}
     - target: {fileID: 6809879270663013983, guid: 947e4a25e5bec0c4994d5afd6a7f8bf9, type: 3}
       propertyPath: inHandPositionOffset.x
@@ -13533,7 +13533,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6809879270663013983, guid: 947e4a25e5bec0c4994d5afd6a7f8bf9, type: 3}
       propertyPath: inHandPositionOffset.y
-      value: -0.18
+      value: -0.12
       objectReference: {fileID: 0}
     - target: {fileID: 6809879270663013983, guid: 947e4a25e5bec0c4994d5afd6a7f8bf9, type: 3}
       propertyPath: inHandPositionOffset.z

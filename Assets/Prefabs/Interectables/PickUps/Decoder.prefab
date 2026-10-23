@@ -260,7 +260,7 @@ MonoBehaviour:
   amount: 1
   worldPrefab: {fileID: 9215214549755836912}
   inHandPrefab: {fileID: 9215214549755836912}
-  inHandPositionOffset: {x: 0.25, y: -0.2, z: 0.45}
+  inHandPositionOffset: {x: 0.25, y: -0.12, z: 0.45}
   inHandRotationOffset: {x: 0, y: 0, z: 0}
-  inHandScale: {x: 1, y: 1, z: 1}
+  inHandScale: {x: 2.4, y: 2.4, z: 2.4}
   pickupSound: {fileID: 0}
