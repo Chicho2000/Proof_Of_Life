@@ -255,9 +255,9 @@ public class MissionUI : MonoBehaviour
         }
 
         if (activeObj != null)
-            objectivesContentTMP.text = $"• {activeObj.ObjectiveTitle}";
+            objectivesContentTMP.text = $"{activeObj.ObjectiveTitle}";
         else
-            objectivesContentTMP.text = "• Huir por el punto de extracción";
+            objectivesContentTMP.text = "Huir por el punto de extracción";
     }
 
     // --- VICTORIA ---

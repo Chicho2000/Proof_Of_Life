@@ -2253,7 +2253,7 @@ RectTransform:
   m_GameObject: {fileID: 394772555}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.15147446, y: 0.84722817, z: 0.84722817}
+  m_LocalScale: {x: 0.14011388, y: 0.84722817, z: 0.84722817}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 474174688}
@@ -2809,7 +2809,7 @@ RectTransform:
   m_GameObject: {fileID: 474174687}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 3.5673432, y: 0.5760484, z: 0.94696}
+  m_LocalScale: {x: 3.4412022, y: 0.52130497, z: 0.9134755}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 540496131}
@@ -2818,7 +2818,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 735, y: 351}
+  m_AnchoredPosition: {x: 796.1, y: 322}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &474174689
@@ -2871,9 +2871,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0fc85ce85d6999849ace552b1e8e354b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AlarmUI
-  alarmBanner: {fileID: 474174687}
-  alarmText: {fileID: 540496132}
-  alarmMessage: '[ ! ] ALARMA ACTIVADA'
+  alarmBanner: {fileID: 0}
+  alarmText: {fileID: 0}
 --- !u!1 &525440390
 GameObject:
   m_ObjectHideFlags: 0
@@ -4581,11 +4580,11 @@ PrefabInstance:
     - target: {fileID: 3976673792485280308, guid: 944ed236dc00a1a43a363cb564605aad, type: 3}
       propertyPath: objectivesPanel
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 1547883751}
     - target: {fileID: 3976673792485280308, guid: 944ed236dc00a1a43a363cb564605aad, type: 3}
       propertyPath: objectivesContentTMP
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 1181164138}
     - target: {fileID: 4399971165193847061, guid: 944ed236dc00a1a43a363cb564605aad, type: 3}
       propertyPath: m_LocalScale.x
       value: 1.4485701
@@ -5743,14 +5742,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1901548858}
     m_Modifications:
-    - target: {fileID: 5866666021909216657, guid: 101aea0e26dca6c429bbd4de713fb32b, type: 3}
-      propertyPath: m_Controller
-      value: 
-      objectReference: {fileID: 9100000, guid: f7bb0038d12323bdfac413bff44acaa0, type: 2}
-    - target: {fileID: 5866666021909216657, guid: 101aea0e26dca6c429bbd4de713fb32b, type: 3}
-      propertyPath: m_ApplyRootMotion
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 3159650235303737281, guid: 2af7d90953760d2cdb8328c98b46e39b, type: 3}
       propertyPath: m_Name
       value: Humanoid
@@ -5826,6 +5817,14 @@ PrefabInstance:
     - target: {fileID: 8550298448845719217, guid: 2af7d90953760d2cdb8328c98b46e39b, type: 3}
       propertyPath: m_AABB.m_Extent.z
       value: 0.19904807
+      objectReference: {fileID: 0}
+    - target: {fileID: 5866666021909216657, guid: 101aea0e26dca6c429bbd4de713fb32b, type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 9100000, guid: f7bb0038d12323bdfac413bff44acaa0, type: 2}
+    - target: {fileID: 5866666021909216657, guid: 101aea0e26dca6c429bbd4de713fb32b, type: 3}
+      propertyPath: m_ApplyRootMotion
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -7302,7 +7301,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 858.4, y: 446.8}
+  m_AnchoredPosition: {x: 858.4, y: 449.4}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1181164138
@@ -7391,7 +7390,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: -35.713806, y: 0, z: -42.284782, w: 0}
+  m_margin: {x: -35.713806, y: 0, z: -152.41086, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 0
@@ -8142,14 +8141,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 39539284}
     m_Modifications:
-    - target: {fileID: 5866666021909216657, guid: 101aea0e26dca6c429bbd4de713fb32b, type: 3}
-      propertyPath: m_Controller
-      value: 
-      objectReference: {fileID: 9100000, guid: f7bb0038d12323bdfac413bff44acaa0, type: 2}
-    - target: {fileID: 5866666021909216657, guid: 101aea0e26dca6c429bbd4de713fb32b, type: 3}
-      propertyPath: m_ApplyRootMotion
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 3159650235303737281, guid: 2af7d90953760d2cdb8328c98b46e39b, type: 3}
       propertyPath: m_Name
       value: Humanoid
@@ -8217,6 +8208,14 @@ PrefabInstance:
     - target: {fileID: 8550298448845719217, guid: 2af7d90953760d2cdb8328c98b46e39b, type: 3}
       propertyPath: m_AABB.m_Extent.z
       value: 0.19904807
+      objectReference: {fileID: 0}
+    - target: {fileID: 5866666021909216657, guid: 101aea0e26dca6c429bbd4de713fb32b, type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 9100000, guid: f7bb0038d12323bdfac413bff44acaa0, type: 2}
+    - target: {fileID: 5866666021909216657, guid: 101aea0e26dca6c429bbd4de713fb32b, type: 3}
+      propertyPath: m_ApplyRootMotion
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -8561,7 +8560,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -134.99998, y: -52.999996}
+  m_AnchoredPosition: {x: -97, y: -49}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1564320729

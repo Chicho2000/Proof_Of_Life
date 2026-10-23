@@ -7,9 +7,6 @@ public class AlarmUI : MonoBehaviour
     [SerializeField] private GameObject alarmBanner;
     [SerializeField] private TMP_Text alarmText;
 
-    [Header("Configuración")]
-    [SerializeField] private string alarmMessage = "[ ! ] ALARMA ACTIVADA";
-
     private CanvasGroup canvasGroup;
 
     private void Awake()
@@ -26,11 +23,6 @@ public class AlarmUI : MonoBehaviour
         }
 
         canvasGroup.alpha = 0f;
-
-        if (alarmText != null)
-        {
-            alarmText.text = alarmMessage;
-        }
     }
 
     private void OnEnable()
@@ -68,11 +60,7 @@ public class AlarmUI : MonoBehaviour
 
     private void HandleAlarm()
     {
-        if (alarmText != null)
-        {
-            alarmText.text = alarmMessage;
-        }
-
+     
         if (canvasGroup != null)
         {
             canvasGroup.alpha = 1f;
