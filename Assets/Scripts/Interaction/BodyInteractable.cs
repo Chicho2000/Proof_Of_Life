@@ -41,6 +41,25 @@ public class BodyInteractable : Interactable
     public bool IsHidden => isHidden;
     public string NPCName => npcName;
     public bool IsDiscovered { get; set; }
+    public float LastDiscoveredTime { get; set; } = -999f;
+    public GuardNPC InvestigatingGuard { get; set; }
+
+    public Vector3 GetVisualPosition()
+    {
+        if (ragdoll != null && ragdoll.IsRagdollActive && ragdoll.Pelvis != null)
+        {
+            return ragdoll.Pelvis.position;
+        }
+
+        Renderer meshRenderer = GetComponentInChildren<Renderer>();
+        if (meshRenderer != null)
+        {
+            Bounds bounds = meshRenderer.bounds;
+            return new Vector3(bounds.center.x, bounds.min.y + 0.15f, bounds.center.z);
+        }
+
+        return transform.position;
+    }
 
     private void Awake()
     {
@@ -98,7 +117,8 @@ public class BodyInteractable : Interactable
             GuardDisguise disguise = GetComponent<GuardDisguise>();
             if (disguise != null && disguise.canBeStolen)
             {
-                interactionPrompt += "\n[F] Robar disfraz";
+                bool isElite = GetComponent<EliteGuardNPC>() != null || disguise.disguiseType == PlayerDisguiseSystem.DisguiseType.EliteGuardDisguise;
+                interactionPrompt += isElite ? "\n[F] Robar disfraz de Élite" : "\n[F] Robar disfraz";
             }
         }
     }
@@ -152,6 +172,9 @@ public class BodyInteractable : Interactable
         if (isHidden || interactor == null) return;
 
         grabTime = Time.time;
+        IsDiscovered = false;
+        LastDiscoveredTime = -999f;
+        InvestigatingGuard = null;
         isBeingCarried = true;
         CurrentCarriedBody = this;
         carrier = interactor.transform;
@@ -191,6 +214,9 @@ public class BodyInteractable : Interactable
         }
 
         carrier = null;
+        IsDiscovered = false;
+        LastDiscoveredTime = -999f;
+        InvestigatingGuard = null;
         playerCamera = null;
 
         // Apoyar en el piso mediante raycast hacia abajo

@@ -49,15 +49,17 @@ public class DetectionSystem : MonoBehaviour
         set => disguiseAuthorization = value;
     }
 
+    public LayerMask ObstacleMask => obstacleMask;
+    public Transform DetectionOrigin => detectionOrigin != null ? detectionOrigin : transform;
     public Color GizmoColor
     {
         get => gizmoColor;
         set => gizmoColor = value;
     }
 
-    public bool CanDetectTarget(Transform target)
+    public bool CanDetectTarget(Transform target, bool ignoreDisguise = false)
     {
-        if (target == null || IsTargetDisguised(target) || IsTargetHidden(target))
+        if (target == null || (!ignoreDisguise && IsTargetDisguised(target)) || IsTargetHidden(target))
         {
             return false;
         }
@@ -83,12 +85,12 @@ public class DetectionSystem : MonoBehaviour
 
         // 1. Proximidad cercana: si estás a menos de proximityRange frente al enemigo
         bool isInsideProximity = false;
-        if (distanceToTarget <= proximityRange)
+        if (distanceToTarget <= (ignoreDisguise ? Mathf.Max(proximityRange, 3.5f) : proximityRange))
         {
             float hAngle = horizontalDir.sqrMagnitude > 0.001f 
                 ? Vector3.Angle(origin.forward, horizontalDir.normalized) 
                 : 0f;
-            if (hAngle <= 90f)
+            if (hAngle <= (ignoreDisguise ? 105f : 90f))
             {
                 isInsideProximity = true;
             }
@@ -220,7 +222,7 @@ public class DetectionSystem : MonoBehaviour
         if (hotbar != null)
         {
             ItemInteractable selectedItem = hotbar.GetSelectedItem();
-            if (selectedItem != null && (selectedItem.ItemType == ItemType.SilencedPistol || selectedItem.ItemType == ItemType.FiberWire))
+            if (selectedItem != null && (selectedItem.ItemType == ItemType.SilencedPistol || selectedItem.ItemType == ItemType.FiberWire || selectedItem.ItemType == ItemType.MissionItem))
             {
                 return false;
             }

@@ -247,11 +247,20 @@ public class GuardNPC : NPCBase
         for (int i = 0; i < BodyInteractable.ActiveBodies.Count; i++)
         {
             BodyInteractable body = BodyInteractable.ActiveBodies[i];
-            if (body != null && !body.IsDiscovered && CanSeeBody(body))
+            if (CanDiscoverBody(body) && CanSeeBody(body))
             {
                 body.IsDiscovered = true;
+                body.LastDiscoveredTime = Time.time;
+                body.InvestigatingGuard = this;
                 Debug.Log($"[GuardNPC] {gameObject.name} descubrió un cuerpo en el suelo ({body.NPCName})! Entrando en SOSPECHA Y ALERTA.");
-                Vector3 bodyPos = body.transform.position;
+                Vector3 bodyPos = body.GetVisualPosition();
+
+                SetState(NPCState.Alert);
+                if (suspicionSystem != null)
+                {
+                    suspicionSystem.StartInvestigation(bodyPos, 5.0f, 1.0f);
+                }
+
                 if (OnDeadBodyDiscovered != null)
                 {
                     OnDeadBodyDiscovered(bodyPos);
@@ -268,8 +277,10 @@ public class GuardNPC : NPCBase
             return false;
         }
 
-        Vector3 bodyPos = body.transform.position + Vector3.up * 0.35f;
-        Vector3 originPos = transform.position + Vector3.up * 1.6f;
+        Vector3 baseBodyPos = body.GetVisualPosition();
+        Vector3 bodyPos = baseBodyPos + Vector3.up * 0.35f;
+        Transform detOrigin = detectionSystem.DetectionOrigin;
+        Vector3 originPos = (detOrigin != null && detOrigin != transform) ? detOrigin.position : transform.position + Vector3.up * 1.6f;
         Vector3 toBody = bodyPos - originPos;
         float dist = toBody.magnitude;
 
@@ -283,13 +294,83 @@ public class GuardNPC : NPCBase
         if (hDir.sqrMagnitude > 0.001f)
         {
             float angle = Vector3.Angle(transform.forward, hDir.normalized);
-            if (angle > detectionSystem.DetectionAngle * 0.5f && dist > 2.0f)
+            float hDist = hDir.magnitude;
+            bool inCloseFront = hDist <= 3.5f && angle <= 95f;
+            float halfAngle = Mathf.Max(detectionSystem.DetectionAngle * 0.5f, 55f);
+            if (!inCloseFront && angle > halfAngle)
             {
                 return false;
             }
         }
 
         // Raycast de línea de visión hacia el cuerpo
+        return HasLineOfSightToBody(originPos, bodyPos, body)
+            || HasLineOfSightToBody(originPos, baseBodyPos + Vector3.up * 0.8f, body)
+            || ((baseBodyPos - body.transform.position).sqrMagnitude > 0.05f && HasLineOfSightToBody(originPos, body.transform.position + Vector3.up * 0.45f, body));
+    }
+
+    private bool CanDiscoverBody(BodyInteractable body)
+    {
+        if (body == null || body.IsHidden || !body.gameObject.activeInHierarchy)
+        {
+            return false;
+        }
+
+        if (!body.IsDiscovered)
+        {
+            return true;
+        }
+
+        if (suspicionSystem != null && suspicionSystem.IsInvestigating)
+        {
+            return false;
+        }
+
+        if (currentState == NPCState.Suspicious || currentState == NPCState.Investigate)
+        {
+            return false;
+        }
+
+        if (body.InvestigatingGuard != null && body.InvestigatingGuard.GetCurrentState() == NPCState.Investigate)
+        {
+            return false;
+        }
+
+        float elapsed = Time.time - body.LastDiscoveredTime;
+        return (elapsed >= 1.0f && elapsed < 4.5f) || elapsed >= 8.0f;
+    }
+
+    private bool HasLineOfSightToBody(Vector3 originPos, Vector3 targetPoint, BodyInteractable body)
+    {
+        Vector3 dir = targetPoint - originPos;
+        float dist = dir.magnitude;
+        if (dist <= 0.05f)
+        {
+            return true;
+        }
+
+        RaycastHit[] hits = Physics.RaycastAll(originPos, dir / dist, dist, detectionSystem.ObstacleMask, QueryTriggerInteraction.Ignore);
+        for (int i = 0; i < hits.Length; i++)
+        {
+            RaycastHit hit = hits[i];
+            if (hit.transform == null
+                || hit.transform == transform || hit.transform.IsChildOf(transform)
+                || hit.transform == body.transform || hit.transform.IsChildOf(body.transform)
+                || hit.transform.GetComponentInParent<BodyInteractable>() != null
+                || hit.transform.GetComponentInParent<NPCBase>() != null
+                || hit.transform.GetComponentInParent<PlayerHealth>() != null
+                || hit.transform.GetComponentInParent<CharacterController>() != null
+                || hit.distance >= dist - 0.6f)
+            {
+                continue;
+            }
+            return false;
+        }
+        return true;
+    }
+
+    private bool CheckDirectHitFallback(Vector3 originPos, Vector3 toBody, float dist, BodyInteractable body)
+    {
         RaycastHit hit;
         if (Physics.Raycast(originPos, toBody.normalized, out hit, dist, ~0, QueryTriggerInteraction.Ignore))
         {
@@ -314,12 +395,19 @@ public class GuardNPC : NPCBase
             return;
         }
 
-        SetState(NPCState.Alert);
+        if (currentState != NPCState.Investigate && currentState != NPCState.Suspicious)
+        {
+            SetState(NPCState.Alert);
+        }
 
-        // Se desplaza e investiga el cuerpo una vez
+        // Solo el guardia que lo vio o los guardias cercanos (<= 10m) se desplazan a inspeccionar el cuerpo
         if (suspicionSystem != null && !suspicionSystem.IsInvestigating)
         {
-            suspicionSystem.StartInvestigation(bodyPosition, 5.0f);
+            float distanceToBody = Vector3.Distance(transform.position, bodyPosition);
+            if (distanceToBody <= 10.0f)
+            {
+                suspicionSystem.StartInvestigation(bodyPosition, 5.0f, 1.0f);
+            }
         }
     }
 

@@ -91,6 +91,11 @@ public class ItemInteractable : Interactable
             bool added = hotbar.AddItem(this, amount);
             if (added)
             {
+                if (itemType == ItemType.MissionItem || GetComponent<StealObjective>() != null)
+                {
+                    NPCSuspicionSystem.NotifyIllegalAction(interactor.transform, transform.position);
+                }
+
                 if (pickupSound != null)
                 {
                     AudioSource.PlayClipAtPoint(pickupSound, transform.position);

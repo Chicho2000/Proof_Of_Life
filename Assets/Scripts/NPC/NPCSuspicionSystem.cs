@@ -61,6 +61,9 @@ public class NPCSuspicionSystem : MonoBehaviour
     private bool hasInvestigateDestination = false;
     private bool isWaitingAtInvestigatePoint = false;
     private float investigateWaitTimer = 0f;
+    private float investigationMinSuspicion = 0f;
+    private float targetVisibleTime = 0f;
+    private Vector3 investigateLookTarget;
     private NPCState stateBeforeSuspicion = NPCState.Idle;
 
     public float CurrentSuspicion
@@ -228,11 +231,7 @@ public class NPCSuspicionSystem : MonoBehaviour
         if (isTargetVisible)
         {
             lastSeenPosition = playerTarget.position;
-
-            if (isInvestigating)
-            {
-                CancelInvestigation();
-            }
+            targetVisibleTime += Time.deltaTime;
 
             // Multiplicador por distancia suave:
             // Lejos (más de 5m) velocidad normal a moderada (0.85x - 1.0x).
@@ -252,17 +251,25 @@ public class NPCSuspicionSystem : MonoBehaviour
             }
 
             // Nivel 1 (0.0f a 1.0f)
-            if (currentSuspicion < 1.0f)
+            if (currentSuspicion < 1.0f || (isInvestigating && targetVisibleTime < 0.35f))
             {
                 float rate = 1.0f / Mathf.Max(0.1f, level1TimeToFill);
                 currentSuspicion += (rate * distanceMultiplier) * Time.deltaTime;
 
                 // Al llegar al 40% de sospecha, se detiene en seco y gira el cuerpo hacia el jugador
-                if (currentSuspicion >= 0.4f && !isInvestigating)
+                if (currentSuspicion >= 0.4f && (!isInvestigating || targetVisibleTime >= 0.35f))
                 {
-                    if (npcBase != null && npcBase.GetCurrentState() != NPCState.Suspicious && npcBase.GetCurrentState() != NPCState.Investigate)
+                    if (isInvestigating)
                     {
-                        stateBeforeSuspicion = npcBase.GetCurrentState();
+                        CancelInvestigation();
+                    }
+
+                    if (npcBase != null && npcBase.GetCurrentState() != NPCState.Suspicious)
+                    {
+                        if (npcBase.GetCurrentState() != NPCState.Investigate)
+                        {
+                            stateBeforeSuspicion = npcBase.GetCurrentState();
+                        }
                         npcBase.SetState(NPCState.Suspicious);
                     }
 
@@ -299,13 +306,24 @@ public class NPCSuspicionSystem : MonoBehaviour
             // Nivel 2 (1.0f a 2.0f) - De Naranja a Rojo
             else if (currentSuspicion < 2.0f)
             {
+                if (isInvestigating)
+                {
+                    CancelInvestigation();
+                }
+
+                if (canRotateTowardsTarget && playerTarget != null)
+                {
+                    FaceTarget(playerTarget.position);
+                }
+
                 float rate = 1.0f / Mathf.Max(0.1f, level2TimeToFill);
                 currentSuspicion += (rate * distanceMultiplier) * Time.deltaTime;
 
                 if (currentSuspicion >= 2.0f)
                 {
                     currentSuspicion = 2.0f;
-                    if (!hasTriggeredLevel2)
+                    targetVisibleTime = 0f;
+            if (!hasTriggeredLevel2)
                     {
                         hasTriggeredLevel2 = true;
                         CancelInvestigation();
@@ -321,6 +339,7 @@ public class NPCSuspicionSystem : MonoBehaviour
         else
         {
             // El jugador no está a la vista: la sospecha decae de inmediato
+            targetVisibleTime = 0f;
             if (!hasTriggeredLevel2)
             {
                 // Si el NPC te vio y llegó al 40% antes de que te escondas, va al último lugar donde te vio
@@ -332,7 +351,8 @@ public class NPCSuspicionSystem : MonoBehaviour
                 // La sospecha se enfría inmediatamente hacia 0
                 if (currentSuspicion > 0f)
                 {
-                    currentSuspicion -= decaySpeed * Time.deltaTime;
+                    float minFloor = isInvestigating ? Mathf.Max(0.5f, investigationMinSuspicion) : 0f;
+                    currentSuspicion = Mathf.Max(minFloor, currentSuspicion - decaySpeed * Time.deltaTime);
 
                     if (currentSuspicion < 1.0f && hasTriggeredLevel1)
                     {
@@ -342,14 +362,9 @@ public class NPCSuspicionSystem : MonoBehaviour
                     if (currentSuspicion <= 0f)
                     {
                         ResetSuspicion();
-                        if (npcBase != null && npcBase.GetCurrentState() == NPCState.Suspicious)
+                        if (npcBase != null && (npcBase.GetCurrentState() == NPCState.Suspicious || (!isInvestigating && npcBase.GetCurrentState() == NPCState.Investigate)))
                         {
-                            NPCState returnState = stateBeforeSuspicion;
-                            if (returnState == NPCState.Suspicious || returnState == NPCState.Investigate)
-                            {
-                                returnState = NPCState.Patrol;
-                            }
-                            npcBase.SetState(returnState);
+                            npcBase.SetState(GetReturnState());
                         }
                     }
                 }
@@ -364,7 +379,7 @@ public class NPCSuspicionSystem : MonoBehaviour
         BroadcastGlobalSuspicion();
     }
 
-    public void StartInvestigation(Vector3 targetPosition, float customDuration = -1f)
+    public void StartInvestigation(Vector3 targetPosition, float customDuration = -1f, float minSuspicion = 0.5f)
     {
         if (AlarmManager.Instance != null && AlarmManager.Instance.IsAlarmActive)
         {
@@ -378,9 +393,11 @@ public class NPCSuspicionSystem : MonoBehaviour
 
         // Si la investigación es llamada por un ruido de distracción u otro estímulo desde 0,
         // asegurar que haya sospecha mínima activa sin forzar la barra al final
-        if (currentSuspicion <= 0.01f)
+        investigateLookTarget = targetPosition;
+        investigationMinSuspicion = Mathf.Max(investigationMinSuspicion, Mathf.Clamp(minSuspicion, 0.5f, 1.0f));
+        if (currentSuspicion < investigationMinSuspicion)
         {
-            currentSuspicion = 0.5f;
+            currentSuspicion = investigationMinSuspicion;
             hasTriggeredLevel1 = true;
             PlayAudio(suspicionSound);
             BroadcastGlobalSuspicion();
@@ -467,6 +484,10 @@ public class NPCSuspicionSystem : MonoBehaviour
         }
         else
         {
+            if (canRotateTowardsTarget)
+            {
+                FaceTarget(investigateLookTarget, 240f);
+            }
             investigateWaitTimer += Time.deltaTime;
             if (investigateWaitTimer >= investigateDuration)
             {
@@ -490,16 +511,25 @@ public class NPCSuspicionSystem : MonoBehaviour
 
         if (npcBase != null && npcBase.GetCurrentState() == NPCState.Investigate)
         {
-            NPCState returnState = stateBeforeSuspicion;
-            if (returnState == NPCState.Suspicious || returnState == NPCState.Investigate)
-            {
-                returnState = NPCState.Patrol;
-            }
-            npcBase.SetState(returnState);
+            npcBase.SetState(GetReturnState());
         }
 
         ResetSuspicion();
         BroadcastGlobalSuspicion();
+    }
+
+    private NPCState GetReturnState()
+    {
+        NPCState returnState = stateBeforeSuspicion;
+        if (returnState == NPCState.Suspicious || returnState == NPCState.Investigate)
+        {
+            returnState = (npcBase != null && npcBase.HasPatrolPoints()) ? NPCState.Patrol : NPCState.Idle;
+        }
+        else if (returnState == NPCState.Patrol && npcBase != null && !npcBase.HasPatrolPoints())
+        {
+            returnState = NPCState.Idle;
+        }
+        return returnState;
     }
 
     public void CancelInvestigation()
@@ -515,9 +545,67 @@ public class NPCSuspicionSystem : MonoBehaviour
         }
     }
 
+    public void TriggerInstantAlert()
+    {
+        if (AlarmManager.Instance != null && AlarmManager.Instance.IsAlarmActive)
+        {
+            return;
+        }
+
+        currentSuspicion = 2.0f;
+        targetVisibleTime = 0f;
+        hasTriggeredLevel1 = true;
+
+        if (!hasTriggeredLevel2)
+        {
+            hasTriggeredLevel2 = true;
+            CancelInvestigation();
+            PlayAudio(alertSound);
+            BroadcastGlobalSuspicion();
+            if (OnSuspicionLevel2Reached != null)
+            {
+                OnSuspicionLevel2Reached();
+            }
+        }
+    }
+
+    public static void NotifyIllegalAction(Transform actor, Vector3 actionPosition)
+    {
+        if (actor == null || (AlarmManager.Instance != null && AlarmManager.Instance.IsAlarmActive))
+        {
+            return;
+        }
+
+        for (int i = 0; i < activeSystems.Count; i++)
+        {
+            NPCSuspicionSystem system = activeSystems[i];
+            if (system == null || !system.isActiveAndEnabled)
+            {
+                continue;
+            }
+
+            if ((system.npcHealth != null && system.npcHealth.IsDead)
+                || (system.npcBase != null && system.npcBase.GetCurrentState() == NPCState.Dead))
+            {
+                continue;
+            }
+
+            if (system.detectionSystem != null && system.detectionSystem.CanDetectTarget(actor, true))
+            {
+                if (system.canRotateTowardsTarget)
+                {
+                    system.FaceTarget(actor.position, 720f);
+                }
+                system.TriggerInstantAlert();
+            }
+        }
+    }
+
     public void ResetSuspicion()
     {
         currentSuspicion = 0f;
+        investigationMinSuspicion = 0f;
+        targetVisibleTime = 0f;
         hasTriggeredLevel1 = false;
         hasTriggeredLevel2 = false;
 

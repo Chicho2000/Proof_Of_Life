@@ -89,6 +89,7 @@ public class ExecutiveNPC : NPCBase
         switch (currentState)
         {
             case NPCState.Idle:
+            case NPCState.Patrol:
                 TickIdle();
                 break;
 
