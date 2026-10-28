@@ -250,6 +250,19 @@ public class NPCSuspicionSystem : MonoBehaviour
                 distanceMultiplier = Mathf.Lerp(1.0f, 0.85f, farFactor);
             }
 
+            float proximityRadius = detectionSystem != null ? detectionSystem.ProximityRange : 1.4f;
+            if (distance <= proximityRadius)
+            {
+                if (currentSuspicion < 0.4f)
+                {
+                    currentSuspicion = 0.4f;
+                }
+                if (targetVisibleTime < 0.35f)
+                {
+                    targetVisibleTime = 0.35f;
+                }
+            }
+
             // Nivel 1 (0.0f a 1.0f)
             if (currentSuspicion < 1.0f || (isInvestigating && targetVisibleTime < 0.35f))
             {
@@ -516,6 +529,11 @@ public class NPCSuspicionSystem : MonoBehaviour
 
         ResetSuspicion();
         BroadcastGlobalSuspicion();
+    }
+
+    public void SetReturnState(NPCState state)
+    {
+        stateBeforeSuspicion = state;
     }
 
     private NPCState GetReturnState()

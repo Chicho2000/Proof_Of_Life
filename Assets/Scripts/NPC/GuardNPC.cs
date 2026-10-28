@@ -400,6 +400,11 @@ public class GuardNPC : NPCBase
             SetState(NPCState.Alert);
         }
 
+        if (suspicionSystem != null)
+        {
+            suspicionSystem.SetReturnState(NPCState.Alert);
+        }
+
         // Solo el guardia que lo vio o los guardias cercanos (<= 10m) se desplazan a inspeccionar el cuerpo
         if (suspicionSystem != null && !suspicionSystem.IsInvestigating)
         {
