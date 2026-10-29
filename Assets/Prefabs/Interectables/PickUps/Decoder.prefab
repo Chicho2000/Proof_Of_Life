@@ -253,7 +253,7 @@ MonoBehaviour:
   itemId: decoder
   itemName: Decoder
   itemType: 8
-  description: 
+  description: "Herramienta \xFAtil para decodificar datos encriptados a datos legibles."
   icon: {fileID: 21300000, guid: 22dc2304c39a7214ca047a16ec52a79a, type: 3}
   isStackable: 0
   maxStack: 1

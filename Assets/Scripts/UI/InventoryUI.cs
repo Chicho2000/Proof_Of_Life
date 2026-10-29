@@ -119,6 +119,15 @@ public class InventoryUI : MonoBehaviour
 
     [SerializeField] private Button dropButton;
 
+    [Header("Descripción del Ítem (Hover / Selección)")]
+    [Tooltip("TMP_Text 'ItemDescripcion' hijo del panel Inventory. Se rellena automáticamente con la descripción del ítem.")]
+    [SerializeField] private TMP_Text itemDescriptionTMP;
+
+    [Tooltip("TMP_Text 'ItemTitulo' hijo del panel Inventory (opcional). Si existe, el título se muestra aquí; si no, se muestra integrado en la descripción.")]
+    [SerializeField] private TMP_Text itemTitleTMP;
+
+    private int hoveredSlotIndex = -1;
+
     [Header("Audio (Opcional)")]
     [SerializeField] private AudioClip openSound;
     [SerializeField] private AudioClip closeSound;
@@ -148,6 +157,7 @@ public class InventoryUI : MonoBehaviour
         ResolvePlayerHotbar();
         AutoFindSlots();
         SetupSlotButtons();
+        ResolveDescriptionText();
 
         if (dropButton != null)
         {
@@ -244,6 +254,7 @@ public class InventoryUI : MonoBehaviour
     public void SetInventoryOpen(bool open)
     {
         isOpen = open;
+        hoveredSlotIndex = -1;
 
         if (canvasGroup == null && inventoryPanel != null)
         {
@@ -393,9 +404,84 @@ public class InventoryUI : MonoBehaviour
     {
         if (playerHotbar == null) return;
 
+        ItemInteractable selectedItem = playerHotbar.GetSelectedItem();
+
         if (dropButton != null)
         {
-            dropButton.interactable = playerHotbar.GetSelectedItem() != null;
+            dropButton.interactable = selectedItem != null;
+        }
+
+        if (hoveredSlotIndex >= 0 && hoveredSlotIndex < playerHotbar.SlotCount)
+        {
+            HotbarSlot hoveredSlot = playerHotbar.GetSlot(hoveredSlotIndex);
+            SetDescriptionDisplay(hoveredSlot != null ? hoveredSlot.Item : null);
+        }
+        else
+        {
+            SetDescriptionDisplay(selectedItem);
+        }
+    }
+
+    private void SetDescriptionDisplay(ItemInteractable item)
+    {
+        if (itemTitleTMP != null)
+        {
+            itemTitleTMP.text = item != null ? item.ItemName : string.Empty;
+        }
+
+        if (itemDescriptionTMP != null)
+        {
+            if (item == null)
+            {
+                itemDescriptionTMP.text = string.Empty;
+            }
+            else if (itemTitleTMP != null)
+            {
+                itemDescriptionTMP.text = !string.IsNullOrEmpty(item.Description) ? item.Description : string.Empty;
+            }
+            else
+            {
+                bool hasName = !string.IsNullOrEmpty(item.ItemName);
+                bool hasDesc = !string.IsNullOrEmpty(item.Description);
+
+                if (hasName && hasDesc)
+                {
+                    itemDescriptionTMP.text = $"<b>{item.ItemName}</b>\n\n{item.Description}";
+                }
+                else if (hasName)
+                {
+                    itemDescriptionTMP.text = $"<b>{item.ItemName}</b>";
+                }
+                else if (hasDesc)
+                {
+                    itemDescriptionTMP.text = item.Description;
+                }
+                else
+                {
+                    itemDescriptionTMP.text = string.Empty;
+                }
+            }
+        }
+    }
+
+    private void OnSlotPointerEnter(int slotIndex)
+    {
+        hoveredSlotIndex = slotIndex;
+        if (playerHotbar == null) return;
+
+        HotbarSlot slot = (slotIndex >= 0 && slotIndex < playerHotbar.SlotCount)
+            ? playerHotbar.GetSlot(slotIndex)
+            : null;
+
+        SetDescriptionDisplay(slot != null ? slot.Item : null);
+    }
+
+    private void OnSlotPointerExit(int slotIndex)
+    {
+        if (hoveredSlotIndex == slotIndex)
+        {
+            hoveredSlotIndex = -1;
+            UpdateItemDetails();
         }
     }
 
@@ -539,8 +625,44 @@ public class InventoryUI : MonoBehaviour
                 ConfigureSlotButton(slotUI);
                 slotUI.slotButton.onClick.RemoveAllListeners();
                 slotUI.slotButton.onClick.AddListener(() => SelectSlotFromInventory(index));
+
+                SetupSlotHoverTriggers(slotUI.slotButton.gameObject, index);
+            }
+            else if (slotUI.slotRoot != null)
+            {
+                SetupSlotHoverTriggers(slotUI.slotRoot.gameObject, index);
             }
         }
+    }
+
+    private void SetupSlotHoverTriggers(GameObject target, int slotIndex)
+    {
+        if (target == null) return;
+
+        EventTrigger trigger = target.GetComponent<EventTrigger>();
+        if (trigger == null)
+        {
+            trigger = target.AddComponent<EventTrigger>();
+        }
+
+        if (trigger.triggers == null)
+        {
+            trigger.triggers = new List<EventTrigger.Entry>();
+        }
+        else
+        {
+            trigger.triggers.RemoveAll(entry =>
+                entry.eventID == EventTriggerType.PointerEnter ||
+                entry.eventID == EventTriggerType.PointerExit);
+        }
+
+        EventTrigger.Entry enterEntry = new EventTrigger.Entry { eventID = EventTriggerType.PointerEnter };
+        enterEntry.callback.AddListener((_) => OnSlotPointerEnter(slotIndex));
+        trigger.triggers.Add(enterEntry);
+
+        EventTrigger.Entry exitEntry = new EventTrigger.Entry { eventID = EventTriggerType.PointerExit };
+        exitEntry.callback.AddListener((_) => OnSlotPointerExit(slotIndex));
+        trigger.triggers.Add(exitEntry);
     }
 
     private void ConfigureSlotButton(InventorySlotUI slotUI)
@@ -789,6 +911,35 @@ public class InventoryUI : MonoBehaviour
         }
 
         inventoryPanel = gameObject;
+    }
+
+    /// <summary>
+    /// Auto-wires itemDescriptionTMP and optional itemTitleTMP from child objects
+    /// of the inventory panel if they have not been assigned manually in the Inspector.
+    /// </summary>
+    private void ResolveDescriptionText()
+    {
+        if (inventoryPanel == null) return;
+
+        if (itemDescriptionTMP == null)
+        {
+            Transform foundDesc = inventoryPanel.transform.Find("ItemDescripcion");
+            if (foundDesc == null) foundDesc = inventoryPanel.transform.Find("ItemDescription");
+            if (foundDesc != null)
+            {
+                itemDescriptionTMP = foundDesc.GetComponent<TMP_Text>();
+            }
+        }
+
+        if (itemTitleTMP == null)
+        {
+            Transform foundTitle = inventoryPanel.transform.Find("ItemTitulo");
+            if (foundTitle == null) foundTitle = inventoryPanel.transform.Find("ItemTitle");
+            if (foundTitle != null)
+            {
+                itemTitleTMP = foundTitle.GetComponent<TMP_Text>();
+            }
+        }
     }
 
     private void ResolvePlayerHotbar()

@@ -1,62 +1,62 @@
-using System.Collections;
 using System.Text;
 using TMPro;
 using UnityEngine;
-using UnityEngine.Serialization;
 using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class MissionUI : MonoBehaviour
 {
-    [Header("1. Briefing Inicial y Selección")]
-    [SerializeField] private GameObject panelBriefing;
-    [FormerlySerializedAs("boton_Extraccion")]
-    [SerializeField] private Button boton_Extraccion;
-    [FormerlySerializedAs("boton_Eliminacion")]
-    [SerializeField] private Button boton_Eliminacion;
-    [FormerlySerializedAs("texto_Titulo")]
-    [SerializeField] private TMP_Text texto_Titulo;
-    [FormerlySerializedAs("texto_Descripcion")]
-    [SerializeField] private TMP_Text texto_Descripcion;
-    [FormerlySerializedAs("texto_Objetivos")]
-    [SerializeField] private TMP_Text texto_Objetivos;
-    [FormerlySerializedAs("boton_IniciarMision")]
-    [SerializeField] private Button boton_IniciarMision;
-    [SerializeField] private bool showBriefingOnStart = true;
-    [SerializeField] private Color btnSelectedColor = new Color(0.96f, 0.62f, 0.04f, 1f);
-    [SerializeField] private Color btnNormalColor = new Color(0.22f, 0.25f, 0.32f, 1f);
+    // -- 1. Briefing ----------------------------------------------------------
+    [Header("1. Briefing")]
+    [SerializeField] private GameObject missionBriefRoot;  // Assign "Mission_Brief" in Inspector
+    [SerializeField] private bool  showBriefingOnStart = true;
+    [SerializeField] private Color btnSelectedColor    = new Color(0.96f, 0.62f, 0.04f, 1f);
+    [SerializeField] private Color btnNormalColor      = new Color(0.22f, 0.25f, 0.32f, 1f);
+
+    // Wired at runtime via transform.Find()
+    private TMP_Text texto_Titulo;
+    private TMP_Text texto_Descripcion;
+    private TMP_Text texto_Objetivos;
+    private Button   boton_Extraccion;
+    private Button   boton_Eliminacion;
+    private Button   boton_IniciarMision;
 
     private bool esModoEliminacion = false;
 
+    // -- 2. HUD Objetivo Actual ------------------------------------------------
     [Header("2. HUD Objetivo Actual")]
     [SerializeField] private GameObject objectivesPanel;
-    [SerializeField] private TMP_Text objectivesContentTMP;
+    [SerializeField] private TMP_Text   objectivesContentTMP;
 
+    // -- 3. Pantalla de Victoria -----------------------------------------------
     [Header("3. Pantalla de Victoria")]
     [SerializeField] private GameObject panelVictoria;
-    [SerializeField] private TMP_Text victoriaTimeTMP;
-    [SerializeField] private TMP_Text victoriaSummaryTMP;
-    [SerializeField] private Button btnRepetirVictoria;
-    [SerializeField] private Button btnSalirVictoria;
+    [SerializeField] private TMP_Text   victoriaTimeTMP;
+    [SerializeField] private TMP_Text   victoriaSummaryTMP;
+    [SerializeField] private Button     btnRepetirVictoria;
+    [SerializeField] private Button     btnSalirVictoria;
 
+    // -- 4. Pantalla de Muerte -------------------------------------------------
     [Header("4. Pantalla de Muerte")]
-    [SerializeField] private GameObject panelMuerte;
+    [SerializeField] private GameObject  panelMuerte;
     [SerializeField] private CanvasGroup deathCanvasGroup;
-    [SerializeField] private Button btnReiniciarMuerte;
-    [SerializeField] private float deathFadeDuration = 3.5f;
+    [SerializeField] private Button      btnReiniciarMuerte;
+    [SerializeField] private float       deathFadeDuration = 3.5f;
 
+    // -- 5. Pantalla de Derrota ------------------------------------------------
     [Header("5. Pantalla de Derrota")]
-    [SerializeField] private GameObject panelDerrota;
+    [SerializeField] private GameObject  panelDerrota;
     [SerializeField] private CanvasGroup defeatCanvasGroup;
-    [SerializeField] private Button btnReiniciarDerrota;
+    [SerializeField] private Button      btnReiniciarDerrota;
 
     private float missionStartTime;
 
     private void Awake()
     {
         EnsureEventSystem();
-        AutoFindReferences();
+        WireBriefingFromRoot();
+        AutoFindEndScreenRefs();
     }
 
     private void Start()
@@ -67,14 +67,10 @@ public class MissionUI : MonoBehaviour
 
         SetupButtonListeners();
 
-        if (showBriefingOnStart && panelBriefing != null)
-        {
+        if (showBriefingOnStart && missionBriefRoot != null)
             ShowBriefing();
-        }
         else
-        {
             StartGameplay();
-        }
     }
 
     private bool isDeathFading = false;
@@ -103,12 +99,10 @@ public class MissionUI : MonoBehaviour
         }
     }
 
-    private bool IsAnyEndScreenActive()
-    {
-        return (panelMuerte != null && panelMuerte.activeSelf) ||
-               (panelDerrota != null && panelDerrota.activeSelf) ||
-               (panelVictoria != null && panelVictoria.activeSelf);
-    }
+    private bool IsAnyEndScreenActive() =>
+        (panelMuerte   != null && panelMuerte  .activeSelf) ||
+        (panelDerrota  != null && panelDerrota .activeSelf) ||
+        (panelVictoria != null && panelVictoria.activeSelf);
 
     private void OnEnable()
     {
@@ -144,98 +138,96 @@ public class MissionUI : MonoBehaviour
         Cursor.visible = true;
     }
 
-    // --- BRIEFING ---
+    // -- Briefing -------------------------------------------------------------
+
+    /// <summary>Locates every briefing widget inside Mission_Brief by name.</summary>
+    private void WireBriefingFromRoot()
+    {
+        if (missionBriefRoot == null) return;
+        Transform root = missionBriefRoot.transform;
+
+        texto_Titulo        = root.Find("Titulo")                 ?.GetComponent<TMP_Text>();
+        texto_Descripcion   = root.Find("Briefing_Descripcion")   ?.GetComponent<TMP_Text>();
+        texto_Objetivos     = root.Find("Briefing_Objetivos")     ?.GetComponent<TMP_Text>();
+        boton_Extraccion    = root.Find("Boton_Mision_Extraccion") ?.GetComponent<Button>();
+        boton_Eliminacion   = root.Find("Boton_Mision_Eliminacion")?.GetComponent<Button>();
+        boton_IniciarMision = root.Find("Boton_IniciarMision")    ?.GetComponent<Button>();
+    }
+
     private void ShowBriefing()
     {
         Time.timeScale = 0f;
-        panelBriefing.SetActive(true);
+        missionBriefRoot.SetActive(true);
         if (objectivesPanel != null) objectivesPanel.SetActive(false);
-
-        // Seleccionar por defecto Extracción
-        SeleccionarMisionExtraccion();
-
+        SeleccionarMisionExtraccion();      // default selection
         Cursor.lockState = CursorLockMode.None;
-        Cursor.visible = true;
+        Cursor.visible   = true;
     }
 
     private void SeleccionarMisionExtraccion()
     {
         esModoEliminacion = false;
-        
-        if (boton_Extraccion != null) boton_Extraccion.GetComponent<Image>().color = btnSelectedColor;
-        if (boton_Eliminacion != null) boton_Eliminacion.GetComponent<Image>().color = btnNormalColor;
-
-        if (texto_Titulo != null) texto_Titulo.text = "OPERACIÓN: ROBO DE DATOS";
-        if (texto_Descripcion != null) texto_Descripcion.text = "Infiltrarse en el edificio, asegurar el pendrive con los planos y evacuar. El ejecutivo es un objetivo opcional, pero si escapa no hay penalización.";
-        
+        SetButtonColor(boton_Extraccion,  btnSelectedColor);
+        SetButtonColor(boton_Eliminacion, btnNormalColor);
+        if (texto_Titulo      != null) texto_Titulo.text      = "OPERACI\u00d3N: ROBO DE DATOS";
+        if (texto_Descripcion != null) texto_Descripcion.text = "Infiltrarse en el edificio, asegurar el pendrive con los planos y evacuar. El ejecutivo es un objetivo opcional, pero si escapa no hay penalizaci\u00f3n.";
         ActualizarTextoObjetivosBriefing();
     }
 
     private void SeleccionarMisionEliminacion()
     {
         esModoEliminacion = true;
-
-        if (boton_Extraccion != null) boton_Extraccion.GetComponent<Image>().color = btnNormalColor;
-        if (boton_Eliminacion != null) boton_Eliminacion.GetComponent<Image>().color = btnSelectedColor;
-
-        if (texto_Titulo != null) texto_Titulo.text = "OPERACIÓN: ASESINATO";
-        if (texto_Descripcion != null) texto_Descripcion.text = "El ejecutivo no debe escapar. Localiza y elimina al objetivo antes de que abandone el complejo. El pendrive no es relevante en esta misión.";
-        
+        SetButtonColor(boton_Extraccion,  btnNormalColor);
+        SetButtonColor(boton_Eliminacion, btnSelectedColor);
+        if (texto_Titulo      != null) texto_Titulo.text      = "OPERACI\u00d3N: ASESINATO";
+        if (texto_Descripcion != null) texto_Descripcion.text = "El ejecutivo no debe escapar. Localiza y elimina al objetivo antes de que abandone el complejo. El pendrive no es relevante en esta misi\u00f3n.";
         ActualizarTextoObjetivosBriefing();
     }
 
     private void ActualizarTextoObjetivosBriefing()
     {
-        if (texto_Objetivos != null)
+        if (texto_Objetivos == null) return;
+        StringBuilder sb = new StringBuilder();
+        sb.AppendLine("OBJETIVOS DE LA OPERACI\u00d3N:\n");
+        if (esModoEliminacion)
         {
-            StringBuilder sb = new StringBuilder();
-            sb.AppendLine("OBJETIVOS DE LA OPERACIÓN:\n");
-            
-            if (esModoEliminacion)
-            {
-                sb.AppendLine("• [1] Eliminar al Ejecutivo H. P. (Obligatorio)");
-                sb.AppendLine("• [2] Escapar por el punto de extracción");
-            }
-            else
-            {
-                sb.AppendLine("• [1] Robar el pendrive de los servidores (Obligatorio)");
-                sb.AppendLine("• [2] Eliminar al Ejecutivo H. P. (Opcional)");
-                sb.AppendLine("• [3] Escapar por el punto de extracción");
-            }
-            texto_Objetivos.text = sb.ToString().TrimEnd();
+            sb.AppendLine("\u2022 [1] Eliminar al Ejecutivo H. P. (Obligatorio)");
+            sb.AppendLine("\u2022 [2] Escapar por el punto de extracci\u00f3n");
         }
+        else
+        {
+            sb.AppendLine("\u2022 [1] Robar el pendrive de los servidores (Obligatorio)");
+            sb.AppendLine("\u2022 [2] Eliminar al Ejecutivo H. P. (Opcional)");
+            sb.AppendLine("\u2022 [3] Escapar por el punto de extracci\u00f3n");
+        }
+        texto_Objetivos.text = sb.ToString().TrimEnd();
+    }
+
+    private static void SetButtonColor(Button btn, Color color)
+    {
+        if (btn != null) btn.GetComponent<Image>().color = color;
     }
 
     private void StartGameplay()
     {
-        if (panelBriefing != null) panelBriefing.SetActive(false);
-        Time.timeScale = 1f;
+        if (missionBriefRoot != null) missionBriefRoot.SetActive(false);
+        Time.timeScale   = 1f;
         missionStartTime = Time.time;
 
         if (MissionManager.Instance != null)
         {
-            if (esModoEliminacion)
-            {
-                MissionManager.Instance.ConfigurarMisionEliminacion();
-            }
-            else
-            {
-                MissionManager.Instance.ConfigurarMisionExtraccion();
-            }
+            if (esModoEliminacion) MissionManager.Instance.ConfigurarMisionEliminacion();
+            else                   MissionManager.Instance.ConfigurarMisionExtraccion();
         }
 
         if (objectivesPanel != null) objectivesPanel.SetActive(true);
         UpdateObjectivesDisplay();
-
         Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
+        Cursor.visible   = false;
     }
 
-    // --- HUD OBJETIVO ACTUAL ---
-    private void OnObjectiveChanged(MissionObjective obj)
-    {
-        UpdateObjectivesDisplay();
-    }
+    // -- HUD Objetivo Actual --------------------------------------------------
+    private void OnObjectiveChanged(MissionObjective obj) => UpdateObjectivesDisplay();
 
     public void UpdateObjectivesDisplay()
     {
@@ -345,25 +337,18 @@ public class MissionUI : MonoBehaviour
             new GameObject("EventSystem", typeof(EventSystem), typeof(StandaloneInputModule));
     }
 
-    private void AutoFindReferences()
+    private void AutoFindEndScreenRefs()
     {
-        if (panelBriefing != null && boton_IniciarMision == null)
-            boton_IniciarMision = panelBriefing.GetComponentInChildren<Button>(true);
-
         if (panelMuerte != null)
         {
-            if (deathCanvasGroup == null) deathCanvasGroup = panelMuerte.GetComponent<CanvasGroup>();
+            if (deathCanvasGroup   == null) deathCanvasGroup   = panelMuerte.GetComponent<CanvasGroup>();
             if (btnReiniciarMuerte == null) btnReiniciarMuerte = panelMuerte.GetComponentInChildren<Button>(true);
         }
-
-        if (panelVictoria != null)
+        if (panelVictoria != null && btnRepetirVictoria == null)
         {
-            if (btnRepetirVictoria == null)
-            {
-                Button[] btns = panelVictoria.GetComponentsInChildren<Button>(true);
-                if (btns.Length > 0) btnRepetirVictoria = btns[0];
-                if (btns.Length > 1) btnSalirVictoria = btns[1];
-            }
+            Button[] btns = panelVictoria.GetComponentsInChildren<Button>(true);
+            if (btns.Length > 0) btnRepetirVictoria = btns[0];
+            if (btns.Length > 1) btnSalirVictoria   = btns[1];
         }
     }
 }
