@@ -82,6 +82,7 @@ public class PlayerHotbar : MonoBehaviour
     public int SlotCount => slotCount;
     public int SelectedSlotIndex => selectedSlotIndex;
     public Transform HandSocket => handSocket;
+    public GameObject CurrentInHandObject => currentInHandObject;
 
     private void Awake()
     {

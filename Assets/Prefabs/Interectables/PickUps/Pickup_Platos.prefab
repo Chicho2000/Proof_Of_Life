@@ -60,6 +60,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -4718040791104185828, guid: 8471c77d67146aa4ca1c38a99eb7dd4d, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: cc1d516af2ea95442a200ca994b2ada4, type: 2}
     - target: {fileID: 919132149155446097, guid: 8471c77d67146aa4ca1c38a99eb7dd4d, type: 3}
       propertyPath: m_Name
       value: Pickup_Platos
@@ -180,6 +184,7 @@ MonoBehaviour:
   breakOnImpact: 1
   minimumImpactSpeed: 1.5
   impactSound: {fileID: 8300000, guid: 2c3a13850fa70e94083a3309df8b0a33, type: 3}
+  breakEffectPrefab: {fileID: 5710053787032607436, guid: 781425004fd9de949a38289e74600242, type: 3}
 --- !u!114 &8650720093712536462
 MonoBehaviour:
   m_ObjectHideFlags: 0

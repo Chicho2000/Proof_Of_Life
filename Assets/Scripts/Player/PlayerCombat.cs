@@ -18,6 +18,10 @@ public class PlayerCombat : MonoBehaviour
     [SerializeField] private AudioClip reloadSound;
     [SerializeField] private AudioClip emptyAmmoSound;
 
+    [Header("Efectos Visuales")]
+    [SerializeField] private GameObject bulletTracerPrefab;
+    [SerializeField] private Transform firePoint;
+
     [Header("Municion")]
     [SerializeField] private int maxAmmo = 12;
     [SerializeField] private int currentAmmo = 12;
@@ -152,31 +156,100 @@ public class PlayerCombat : MonoBehaviour
         }
 
         Ray ray = new Ray(playerCamera.transform.position, playerCamera.transform.forward);
+        Vector3 targetPoint;
+        System.Action onHitAction = null;
 
         if (Physics.Raycast(ray, out RaycastHit hit, range))
         {
-            Debug.DrawLine(ray.origin, hit.point, Color.green, 1.0f);
-            Debug.Log("Pistola Silenciada: Impacto en " + hit.collider.name);
+            targetPoint = hit.point;
+            NPCHealth targetHealth = hit.collider.GetComponentInParent<NPCHealth>();
+            string hitColliderName = hit.collider.name;
+            Vector3 hitPosition = hit.point;
 
-            NPCHealth npcHealth = hit.collider.GetComponentInParent<NPCHealth>();
-
-            if (npcHealth != null)
+            onHitAction = delegate
             {
-                bool wasHeadshot = npcHealth.TakeBulletDamage(torsoDamage, headshotDamage, hit.point);
-                Debug.Log("Pistola Silenciada: Impacto confirmado en NPC -> " + hit.collider.name
-                    + (wasHeadshot ? " (cabeza)" : " (torso)"));
+                Debug.DrawLine(ray.origin, hitPosition, Color.green, 1.0f);
+                Debug.Log("Pistola Silenciada: Impacto en " + hitColliderName);
 
-                if (!npcHealth.IsDead && AlarmManager.Instance != null)
+                if (targetHealth != null)
                 {
-                    Debug.Log("Pistola Silenciada: El NPC sobrevivió al disparo. Activando alarma.");
-                    AlarmManager.Instance.TriggerAlarm();
+                    bool wasHeadshot = targetHealth.TakeBulletDamage(torsoDamage, headshotDamage, hitPosition);
+                    Debug.Log("Pistola Silenciada: Impacto confirmado en NPC -> " + hitColliderName
+                        + (wasHeadshot ? " (cabeza)" : " (torso)"));
+
+                    if (!targetHealth.IsDead && AlarmManager.Instance != null)
+                    {
+                        Debug.Log("Pistola Silenciada: El NPC sobrevivió al disparo. Activando alarma.");
+                        AlarmManager.Instance.TriggerAlarm();
+                    }
                 }
-            }
+            };
         }
         else
         {
-            Debug.DrawLine(ray.origin, ray.origin + ray.direction * range, Color.red, 1.0f);
+            targetPoint = ray.origin + ray.direction * range;
+            onHitAction = delegate
+            {
+                Debug.DrawLine(ray.origin, targetPoint, Color.red, 1.0f);
+            };
         }
+
+        if (bulletTracerPrefab != null)
+        {
+            SpawnBulletTracer(targetPoint, onHitAction);
+        }
+        else
+        {
+            if (onHitAction != null)
+            {
+                onHitAction.Invoke();
+            }
+        }
+    }
+
+    private void SpawnBulletTracer(Vector3 targetPoint, System.Action onHit)
+    {
+        Vector3 originPoint = GetMuzzleOrigin();
+
+        GameObject tracerObj = Instantiate(bulletTracerPrefab, originPoint, Quaternion.identity);
+        BulletTracer tracer = tracerObj.GetComponent<BulletTracer>();
+        if (tracer != null)
+        {
+            tracer.Initialize(originPoint, targetPoint, onHit);
+        }
+    }
+
+    private Vector3 GetMuzzleOrigin()
+    {
+        if (firePoint != null)
+        {
+            return firePoint.position;
+        }
+
+        // Si el arma fue recogida y equipada dinámicamente en la mano
+        if (playerHotbar != null && playerHotbar.CurrentInHandObject != null)
+        {
+            Transform inHand = playerHotbar.CurrentInHandObject.transform;
+            Transform foundPoint = inHand.Find("FirePoint");
+            if (foundPoint != null)
+            {
+                return foundPoint.position;
+            }
+
+            // inHand.forward apunta exactamente a lo largo del cañón del arma
+            return inHand.position + (inHand.forward * 0.32f) + (inHand.up * 0.05f);
+        }
+
+        // Fallback calibrado a la posición visual del arma en pantalla (offset en mano + cañón)
+        if (playerCamera != null)
+        {
+            return playerCamera.transform.position
+                + playerCamera.transform.right * 0.25f
+                + playerCamera.transform.up * -0.16f
+                + playerCamera.transform.forward * 0.75f;
+        }
+
+        return transform.position;
     }
 
     public void Reload()

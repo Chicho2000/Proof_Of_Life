@@ -8,6 +8,9 @@ public class ThrowableObject : MonoBehaviour
     [Min(0f)] [SerializeField] private float minimumImpactSpeed = 1.5f;
     [SerializeField] private AudioClip impactSound = null;
 
+    [Header("Efectos Visuales")]
+    [SerializeField] private GameObject breakEffectPrefab = null;
+
     private Rigidbody body;
     private NoiseEmitter noiseEmitter;
     private Collider objectCollider;
@@ -92,6 +95,12 @@ public class ThrowableObject : MonoBehaviour
 
         if (breakOnImpact)
         {
+            if (breakEffectPrefab != null)
+            {
+                Debug.Log($"[ThrowableObject] Spawning '{breakEffectPrefab.name}' at pos={impactPosition}  platePos={transform.position}  contactCount={collision.contactCount}", this);
+                Instantiate(breakEffectPrefab, impactPosition, Quaternion.identity);
+            }
+
             Destroy(gameObject);
         }
         else

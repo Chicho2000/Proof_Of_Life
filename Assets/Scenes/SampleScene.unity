@@ -5855,6 +5855,14 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1901548858}
     m_Modifications:
+    - target: {fileID: 5866666021909216657, guid: 101aea0e26dca6c429bbd4de713fb32b, type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 9100000, guid: f7bb0038d12323bdfac413bff44acaa0, type: 2}
+    - target: {fileID: 5866666021909216657, guid: 101aea0e26dca6c429bbd4de713fb32b, type: 3}
+      propertyPath: m_ApplyRootMotion
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 3159650235303737281, guid: 2af7d90953760d2cdb8328c98b46e39b, type: 3}
       propertyPath: m_Name
       value: Humanoid
@@ -5930,14 +5938,6 @@ PrefabInstance:
     - target: {fileID: 8550298448845719217, guid: 2af7d90953760d2cdb8328c98b46e39b, type: 3}
       propertyPath: m_AABB.m_Extent.z
       value: 0.19904807
-      objectReference: {fileID: 0}
-    - target: {fileID: 5866666021909216657, guid: 101aea0e26dca6c429bbd4de713fb32b, type: 3}
-      propertyPath: m_Controller
-      value: 
-      objectReference: {fileID: 9100000, guid: f7bb0038d12323bdfac413bff44acaa0, type: 2}
-    - target: {fileID: 5866666021909216657, guid: 101aea0e26dca6c429bbd4de713fb32b, type: 3}
-      propertyPath: m_ApplyRootMotion
-      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -8440,6 +8440,14 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 39539284}
     m_Modifications:
+    - target: {fileID: 5866666021909216657, guid: 101aea0e26dca6c429bbd4de713fb32b, type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 9100000, guid: f7bb0038d12323bdfac413bff44acaa0, type: 2}
+    - target: {fileID: 5866666021909216657, guid: 101aea0e26dca6c429bbd4de713fb32b, type: 3}
+      propertyPath: m_ApplyRootMotion
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 3159650235303737281, guid: 2af7d90953760d2cdb8328c98b46e39b, type: 3}
       propertyPath: m_Name
       value: Humanoid
@@ -8507,14 +8515,6 @@ PrefabInstance:
     - target: {fileID: 8550298448845719217, guid: 2af7d90953760d2cdb8328c98b46e39b, type: 3}
       propertyPath: m_AABB.m_Extent.z
       value: 0.19904807
-      objectReference: {fileID: 0}
-    - target: {fileID: 5866666021909216657, guid: 101aea0e26dca6c429bbd4de713fb32b, type: 3}
-      propertyPath: m_Controller
-      value: 
-      objectReference: {fileID: 9100000, guid: f7bb0038d12323bdfac413bff44acaa0, type: 2}
-    - target: {fileID: 5866666021909216657, guid: 101aea0e26dca6c429bbd4de713fb32b, type: 3}
-      propertyPath: m_ApplyRootMotion
-      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -11871,6 +11871,8 @@ MonoBehaviour:
   shootSound: {fileID: 8300000, guid: 88580c45aea4ea2408e9afae0a0fd7b7, type: 3}
   reloadSound: {fileID: 8300000, guid: e5e46e413ae532845ada92bf789aeb97, type: 3}
   emptyAmmoSound: {fileID: 8300000, guid: 50c06b79d173c694b91b7f74f35c4a37, type: 3}
+  bulletTracerPrefab: {fileID: 1407824960522901740, guid: 360fb607a26a78e459dd1015d0076238, type: 3}
+  firePoint: {fileID: 0}
   maxAmmo: 12
   currentAmmo: 12
   fiberWireRange: 2.2
