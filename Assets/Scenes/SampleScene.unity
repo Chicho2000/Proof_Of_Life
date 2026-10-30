@@ -3991,7 +3991,7 @@ MonoBehaviour:
   exitPoint: {fileID: 0}
   cameraPoint: {fileID: 1517258702}
   detectionRadius: 3.5
-  hideSound: {fileID: 0}
+  hideSound: {fileID: 8300000, guid: 6760d531ccbe4e04e8621b9757e75047, type: 3}
   storedBodies: []
   isPlayerInside: 0
 --- !u!1 &596510044
@@ -5169,6 +5169,8 @@ MonoBehaviour:
   isLocked: 1
   isOpen: 0
   pickTime: 3
+  lockpickSound: {fileID: 8300000, guid: 287bf8941d9e40940b5218eb9e35f361, type: 3}
+  doorOpenSound: {fileID: 8300000, guid: 7a9b88be55f0bfe49a8361f120a919ef, type: 3}
   openAngle: 90
 --- !u!4 &789078868
 Transform:
@@ -7150,7 +7152,7 @@ MonoBehaviour:
   exitPoint: {fileID: 0}
   cameraPoint: {fileID: 630344448}
   detectionRadius: 3.5
-  hideSound: {fileID: 0}
+  hideSound: {fileID: 8300000, guid: 6760d531ccbe4e04e8621b9757e75047, type: 3}
   storedBodies: []
   isPlayerInside: 0
 --- !u!1 &1080517018
@@ -9206,6 +9208,37 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 566481610}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1523108038
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1523108039}
+  m_Layer: 0
+  m_Name: HidingViewCameraPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1523108039
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1523108038}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 1, z: 0, w: -0.00000004371139}
+  m_LocalPosition: {x: -0.35, y: 1.55, z: 0.05}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 355809990}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!224 &1526334819 stripped
 RectTransform:
@@ -12109,6 +12142,8 @@ MonoBehaviour:
   isLocked: 1
   isOpen: 0
   pickTime: 3
+  lockpickSound: {fileID: 8300000, guid: 287bf8941d9e40940b5218eb9e35f361, type: 3}
+  doorOpenSound: {fileID: 8300000, guid: 7a9b88be55f0bfe49a8361f120a919ef, type: 3}
   openAngle: 90
 --- !u!1 &1819787545
 GameObject:
@@ -12561,8 +12596,8 @@ MonoBehaviour:
   maxLookYaw: 75
   maxLookPitch: 35
   mouseSensitivity: 2
-  enterSound: {fileID: 8300000, guid: 91df508b35b7ce842abe423b42388699, type: 3}
-  exitSound: {fileID: 8300000, guid: 91df508b35b7ce842abe423b42388699, type: 3}
+  enterSound: {fileID: 0}
+  exitSound: {fileID: 0}
 --- !u!224 &1904930883 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 3617354344388327507, guid: 944ed236dc00a1a43a363cb564605aad, type: 3}
@@ -14631,6 +14666,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 7040067454972181686, guid: 160ffeb2b360f3246a6eb54f6688927c, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1434332862}
+    - targetCorrespondingSourceObject: {fileID: 7040067454972181686, guid: 160ffeb2b360f3246a6eb54f6688927c, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1523108039}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 160ffeb2b360f3246a6eb54f6688927c, type: 3}
 --- !u!1 &2095795854
