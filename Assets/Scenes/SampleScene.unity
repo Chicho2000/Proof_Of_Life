@@ -716,6 +716,7 @@ MonoBehaviour:
   attackSound: {fileID: 8300000, guid: 10d35d4de6439a74099101f4ca16097c, type: 3}
   detectionSystem: {fileID: 44803122}
   suspicionSystem: {fileID: 0}
+  armedImmediateAlertRange: 4
   investigateDuration: 5
   alertPatrolSpeed: 3.2
 --- !u!114 &44803120
@@ -2665,7 +2666,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: -23.185, y: -0.1, z: 37.355}
-  m_LocalScale: {x: 10, y: -0.2, z: 15}
+  m_LocalScale: {x: 10, y: 0.2, z: 15}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1081290884}
@@ -7403,7 +7404,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: -8.087841, y: -0.1, z: 29.60092}
-  m_LocalScale: {x: 20, y: -0.2, z: 30}
+  m_LocalScale: {x: 20, y: 0.2, z: 30}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1081290884}
@@ -8092,7 +8093,7 @@ MonoBehaviour:
   toggleKey: 113
   dropKey: 103
   unlockCursorWhenOpen: 1
-  pauseGameWhenOpen: 0
+  pauseGameWhenOpen: 1
   closeOnEscape: 1
   uiSlots: []
   dropButton: {fileID: 0}
@@ -10337,6 +10338,7 @@ MonoBehaviour:
   attackSound: {fileID: 8300000, guid: 10d35d4de6439a74099101f4ca16097c, type: 3}
   detectionSystem: {fileID: 1712067206}
   suspicionSystem: {fileID: 0}
+  armedImmediateAlertRange: 4
   investigateDuration: 5
   alertPatrolSpeed: 3.2
 --- !u!114 &1712067204
@@ -10771,6 +10773,7 @@ MonoBehaviour:
   attackSound: {fileID: 8300000, guid: 10d35d4de6439a74099101f4ca16097c, type: 3}
   detectionSystem: {fileID: 0}
   suspicionSystem: {fileID: 0}
+  armedImmediateAlertRange: 4
   investigateDuration: 5
   alertPatrolSpeed: 3.2
 --- !u!114 &1725933849
@@ -10926,6 +10929,9 @@ MonoBehaviour:
   paddingSuperior: 16
   paddingInferior: 20
   nombreNPC: Guardia Elite
+  frasePredeterminada:
+  duracionPredeterminada: 3
+  hablarAlIniciar: 0
 --- !u!1 &1736885552
 GameObject:
   m_ObjectHideFlags: 0
@@ -11895,7 +11901,7 @@ MonoBehaviour:
   jumpHeight: 1.5
   standingHeight: 2
   crouchingHeight: 1.2
-  standingCameraY: 1.65
+  standingCameraY: 1.75
   crouchingCameraY: 1
   crouchTransitionSpeed: 8
   ceilingCheckRadius: 0.35
@@ -11908,6 +11914,9 @@ MonoBehaviour:
   minLookX: -80
   maxLookX: 80
   animator: {fileID: 1900641253}
+  rightArmLayerName: Hand layer
+  rightArmLayerWeight: 1
+  hideCharacterWhileCrouching: 1
 --- !u!114 &1901548860
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -11964,7 +11973,7 @@ MonoBehaviour:
   headshotDamage: 100
   torsoDamage: 34
   shotCooldown: 0.45
-  reloadDuration: 2.25
+  reloadDuration: 3
   shootSound: {fileID: 8300000, guid: 88580c45aea4ea2408e9afae0a0fd7b7, type: 3}
   reloadSound: {fileID: 8300000, guid: e5e46e413ae532845ada92bf789aeb97, type: 3}
   emptyAmmoSound: {fileID: 8300000, guid: 50c06b79d173c694b91b7f74f35c4a37, type: 3}
@@ -11990,6 +11999,8 @@ MonoBehaviour:
   maxHealth: 100
   currentHealth: 100
   invulnerabilityDuration: 0.5
+  regenerationDelay: 5
+  regenerationPerSecond: 8
   hurtSound: {fileID: 0}
   deathSound: {fileID: 0}
 --- !u!114 &1901548864
@@ -14095,7 +14106,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &2095795855
 Transform:
   m_ObjectHideFlags: 0
@@ -15157,6 +15168,8 @@ MonoBehaviour:
   inHandPositionOffset: {x: 0.25, y: -0.2, z: 0.45}
   inHandRotationOffset: {x: 0, y: 0, z: 0}
   inHandScale: {x: 50, y: 50, z: 50}
+  characterHandPositionOffset: {x: 0, y: 0, z: 0}
+  characterHandRotationOffset: {x: 0, y: 0, z: 0}
   pickupSound: {fileID: 0}
 --- !u!65 &4195942315516893634
 BoxCollider:

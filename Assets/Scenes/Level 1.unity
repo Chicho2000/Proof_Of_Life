@@ -2690,7 +2690,7 @@ MonoBehaviour:
   headshotDamage: 100
   torsoDamage: 34
   shotCooldown: 0.45
-  reloadDuration: 2.25
+  reloadDuration: 3
   shootSound: {fileID: 8300000, guid: 88580c45aea4ea2408e9afae0a0fd7b7, type: 3}
   reloadSound: {fileID: 0}
   emptyAmmoSound: {fileID: 0}
@@ -2759,7 +2759,7 @@ MonoBehaviour:
   jumpHeight: 1.5
   standingHeight: 2
   crouchingHeight: 1.2
-  standingCameraY: 1.65
+  standingCameraY: 1.75
   crouchingCameraY: 1
   crouchTransitionSpeed: 8
   ceilingCheckRadius: 0.35
@@ -3581,7 +3581,7 @@ MonoBehaviour:
   toggleKey: 113
   dropKey: 103
   unlockCursorWhenOpen: 1
-  pauseGameWhenOpen: 0
+  pauseGameWhenOpen: 1
   closeOnEscape: 1
   uiSlots: []
   dropButton: {fileID: 0}
@@ -31259,7 +31259,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &2145962283
 Transform:
   m_ObjectHideFlags: 0
