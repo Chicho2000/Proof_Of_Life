@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.Serialization;
 using TMPro;
 
 public class InteractionPromptUI : MonoBehaviour
@@ -8,9 +9,30 @@ public class InteractionPromptUI : MonoBehaviour
     [SerializeField] private GameObject promptContainer;
     [SerializeField] private TMP_Text promptText;
 
-    [Header("Referencias UI - Barra de Progreso (Ganzuado / Acciones)")]
+    [Header("Barra de Progreso - Ganzúa (Horizontal)")]
+    [Tooltip("Contenedor raíz de la barra de ganzuado")]
+    [FormerlySerializedAs("progressContainer")]
+    [SerializeField] private GameObject lockpickProgressContainer;
+
+    [Tooltip("Imagen de relleno horizontal (ej. barra o sprite de GanzuaBarra)")]
+    [FormerlySerializedAs("progressBarFill")]
+    [SerializeField] private Image lockpickProgressBarFill;
+
+    // Campos de compatibilidad serializada con versiones previas
+    [HideInInspector]
     [SerializeField] private GameObject progressContainer;
+    [HideInInspector]
     [SerializeField] private Image progressBarFill;
+
+    [Header("Barra de Progreso - Decodificador (Vertical)")]
+    [Tooltip("Contenedor raíz de la barra de la pantalla del decodificador")]
+    [SerializeField] private GameObject decoderProgressContainer;
+
+    [Tooltip("Imagen de relleno vertical que llena la pantalla del decodificador")]
+    [SerializeField] private Image decoderProgressBarFill;
+
+    [Tooltip("Texto opcional de estado en pantalla del decodificador (ej. DECODIFICANDO...)")]
+    [SerializeField] private TMP_Text decoderStatusText;
 
     [Header("Referencia al Jugador")]
     [SerializeField] private PlayerInteraction playerInteraction;
@@ -18,6 +40,12 @@ public class InteractionPromptUI : MonoBehaviour
     private DoorInteractable activeDoor;
     private SecurityPanelInteractable activeSecurityPanel;
     private float warningTimer = 0f;
+
+    // Propiedades públicas para compatibilidad o acceso externo
+    public GameObject LockpickProgressContainer => lockpickProgressContainer != null ? lockpickProgressContainer : progressContainer;
+    public Image LockpickProgressBarFill => lockpickProgressBarFill != null ? lockpickProgressBarFill : progressBarFill;
+    public GameObject DecoderProgressContainer => decoderProgressContainer;
+    public Image DecoderProgressBarFill => decoderProgressBarFill;
 
     private void Awake()
     {
@@ -31,12 +59,13 @@ public class InteractionPromptUI : MonoBehaviour
             promptContainer = gameObject;
         }
 
-        ResetProgressBar();
+        ResolveProgressBars();
+        ResetAllProgressBars();
     }
 
     private void Start()
     {
-        ResetProgressBar();
+        ResetAllProgressBars();
 
         if (playerInteraction != null)
         {
@@ -55,6 +84,147 @@ public class InteractionPromptUI : MonoBehaviour
         {
             playerInteraction.OnInteractableChanged -= HandleInteractableChanged;
         }
+    }
+
+    private void ResolveProgressBars()
+    {
+        // 1. Resolver y configurar barra de ganzúa (horizontal)
+        if (lockpickProgressContainer == null)
+        {
+            lockpickProgressContainer = progressContainer;
+        }
+        if (lockpickProgressBarFill == null)
+        {
+            lockpickProgressBarFill = progressBarFill;
+        }
+
+        if (lockpickProgressContainer == null)
+        {
+            Transform bg = transform.Find("Progress_Bar_Bg");
+            if (bg != null) lockpickProgressContainer = bg.gameObject;
+        }
+
+        if (lockpickProgressBarFill == null && lockpickProgressContainer != null)
+        {
+            lockpickProgressBarFill = lockpickProgressContainer.GetComponentInChildren<Image>();
+        }
+
+        if (lockpickProgressBarFill != null)
+        {
+            lockpickProgressBarFill.type = Image.Type.Filled;
+            lockpickProgressBarFill.fillMethod = Image.FillMethod.Horizontal;
+            lockpickProgressBarFill.fillOrigin = (int)Image.OriginHorizontal.Left;
+        }
+
+        // 2. Resolver y configurar barra del decodificador (vertical)
+        if (decoderProgressContainer == null)
+        {
+            Transform decTr = transform.Find("Decoder_Progress_Container");
+            if (decTr == null) decTr = transform.Find("Decoder_Progress_Bar");
+            if (decTr == null && promptContainer != null)
+            {
+                decTr = promptContainer.transform.Find("Decoder_Progress_Container");
+                if (decTr == null) decTr = promptContainer.transform.Find("Decoder_Progress_Bar");
+            }
+
+            if (decTr != null)
+            {
+                decoderProgressContainer = decTr.gameObject;
+                if (decoderProgressBarFill == null)
+                {
+                    decoderProgressBarFill = decoderProgressContainer.GetComponentInChildren<Image>();
+                }
+            }
+        }
+
+        // Si no existe ningún objeto para el decodificador, generar la pantalla vertical automáticamente
+        if (decoderProgressContainer == null)
+        {
+            CreateDefaultDecoderBar();
+        }
+
+        if (decoderProgressBarFill != null)
+        {
+            decoderProgressBarFill.type = Image.Type.Filled;
+            decoderProgressBarFill.fillMethod = Image.FillMethod.Vertical;
+            decoderProgressBarFill.fillOrigin = (int)Image.OriginVertical.Bottom;
+        }
+    }
+
+    private void CreateDefaultDecoderBar()
+    {
+        Transform parentTransform = promptContainer != null ? promptContainer.transform : transform;
+
+        GameObject containerObj = new GameObject("Decoder_Progress_Container", typeof(RectTransform));
+        containerObj.transform.SetParent(parentTransform, false);
+
+        RectTransform containerRect = containerObj.GetComponent<RectTransform>();
+        containerRect.anchorMin = new Vector2(0.5f, 0f);
+        containerRect.anchorMax = new Vector2(0.5f, 0f);
+        containerRect.pivot = new Vector2(0.5f, 0.5f);
+        containerRect.anchoredPosition = new Vector2(0f, 75f);
+        containerRect.sizeDelta = new Vector2(65f, 100f);
+
+        // Fondo de pantalla del decodificador (estilo terminal oscura con borde)
+        Image bgImg = containerObj.AddComponent<Image>();
+        bgImg.color = new Color(0.05f, 0.08f, 0.12f, 0.95f);
+        Image sourceFill = LockpickProgressBarFill;
+        if (sourceFill != null && sourceFill.sprite != null)
+        {
+            bgImg.sprite = sourceFill.sprite;
+        }
+
+        Outline outline = containerObj.AddComponent<Outline>();
+        outline.effectColor = new Color(0.18f, 0.8f, 0.44f, 0.8f);
+        outline.effectDistance = new Vector2(1.5f, -1.5f);
+
+        // Barra de relleno vertical dentro de la pantalla
+        GameObject fillObj = new GameObject("Decoder_Progress_Fill", typeof(RectTransform));
+        fillObj.transform.SetParent(containerObj.transform, false);
+
+        RectTransform fillRect = fillObj.GetComponent<RectTransform>();
+        fillRect.anchorMin = Vector2.zero;
+        fillRect.anchorMax = Vector2.one;
+        fillRect.offsetMin = new Vector2(4f, 4f);
+        fillRect.offsetMax = new Vector2(-4f, -4f);
+
+        Image fillImg = fillObj.AddComponent<Image>();
+        fillImg.color = new Color(0.18f, 0.92f, 0.48f, 0.95f);
+        if (sourceFill != null && sourceFill.sprite != null)
+        {
+            fillImg.sprite = sourceFill.sprite;
+        }
+        fillImg.type = Image.Type.Filled;
+        fillImg.fillMethod = Image.FillMethod.Vertical;
+        fillImg.fillOrigin = (int)Image.OriginVertical.Bottom;
+        fillImg.fillAmount = 0f;
+
+        // Texto de estado en la parte superior de la pantalla del decodificador
+        GameObject textObj = new GameObject("Decoder_Status_Text", typeof(RectTransform));
+        textObj.transform.SetParent(containerObj.transform, false);
+
+        RectTransform textRect = textObj.GetComponent<RectTransform>();
+        textRect.anchorMin = new Vector2(0f, 1f);
+        textRect.anchorMax = new Vector2(1f, 1f);
+        textRect.pivot = new Vector2(0.5f, 1f);
+        textRect.anchoredPosition = new Vector2(0f, -4f);
+        textRect.sizeDelta = new Vector2(0f, 18f);
+
+        TextMeshProUGUI statusTMP = textObj.AddComponent<TextMeshProUGUI>();
+        statusTMP.text = "DECODING";
+        statusTMP.fontSize = 9f;
+        statusTMP.alignment = TextAlignmentOptions.Center;
+        statusTMP.color = new Color(0.9f, 1f, 0.9f, 0.95f);
+        if (promptText != null && promptText.font != null)
+        {
+            statusTMP.font = promptText.font;
+        }
+
+        decoderProgressContainer = containerObj;
+        decoderProgressBarFill = fillImg;
+        decoderStatusText = statusTMP;
+
+        containerObj.SetActive(false);
     }
 
     private void Update()
@@ -79,18 +249,16 @@ public class InteractionPromptUI : MonoBehaviour
         // Si hay una puerta enfocada y el jugador está manteniendo E para ganzuear
         if (activeDoor != null && activeDoor.IsPicking())
         {
-            ShowProgress(activeDoor.GetPickProgressNormalized());
+            ShowLockpickProgress(activeDoor.GetPickProgressNormalized());
         }
+        // Si hay un panel de seguridad enfocado y el jugador está manteniendo E para hackear con el decodificador
         else if (activeSecurityPanel != null && activeSecurityPanel.IsHacking())
         {
-            ShowProgress(activeSecurityPanel.GetHackProgressNormalized());
+            ShowDecoderProgress(activeSecurityPanel.GetHackProgressNormalized());
         }
         else
         {
-            if (progressContainer != null && progressContainer.activeSelf)
-            {
-                ResetProgressBar();
-            }
+            ResetAllProgressBars();
         }
 
         if (warningTimer <= 0f && playerInteraction != null &&
@@ -110,7 +278,7 @@ public class InteractionPromptUI : MonoBehaviour
     {
         activeDoor = interactable as DoorInteractable;
         activeSecurityPanel = interactable as SecurityPanelInteractable;
-        ResetProgressBar();
+        ResetAllProgressBars();
 
         if (interactable != null && (interactable.canInteract || interactable is HideSpot))
         {
@@ -146,30 +314,93 @@ public class InteractionPromptUI : MonoBehaviour
         }
     }
 
-    public void ShowProgress(float progressNormalized)
+    public void ShowLockpickProgress(float progressNormalized)
     {
-        if (progressContainer != null)
+        HideDecoderProgress();
+
+        GameObject container = LockpickProgressContainer;
+        if (container != null && !container.activeSelf)
         {
-            progressContainer.SetActive(true);
+            container.SetActive(true);
         }
 
-        if (progressBarFill != null)
+        Image fill = LockpickProgressBarFill;
+        if (fill != null)
         {
-            progressBarFill.fillAmount = Mathf.Clamp01(progressNormalized);
+            fill.fillAmount = Mathf.Clamp01(progressNormalized);
         }
     }
 
-    private void ResetProgressBar()
+    public void ShowDecoderProgress(float progressNormalized)
     {
-        if (progressBarFill != null)
+        HideLockpickProgress();
+
+        if (decoderProgressContainer != null && !decoderProgressContainer.activeSelf)
         {
-            progressBarFill.fillAmount = 0f;
+            decoderProgressContainer.SetActive(true);
         }
 
-        if (progressContainer != null)
+        if (decoderProgressBarFill != null)
         {
-            progressContainer.SetActive(false);
+            decoderProgressBarFill.fillAmount = Mathf.Clamp01(progressNormalized);
         }
+
+        if (decoderStatusText != null)
+        {
+            int percent = Mathf.RoundToInt(Mathf.Clamp01(progressNormalized) * 100f);
+            decoderStatusText.text = $"DECODING... {percent}%";
+        }
+    }
+
+    public void ShowProgress(float progressNormalized)
+    {
+        if (activeSecurityPanel != null && activeSecurityPanel.IsHacking())
+        {
+            ShowDecoderProgress(progressNormalized);
+        }
+        else
+        {
+            ShowLockpickProgress(progressNormalized);
+        }
+    }
+
+    public void ResetAllProgressBars()
+    {
+        HideLockpickProgress();
+        HideDecoderProgress();
+    }
+
+    private void HideLockpickProgress()
+    {
+        Image fill = LockpickProgressBarFill;
+        if (fill != null)
+        {
+            fill.fillAmount = 0f;
+        }
+
+        GameObject container = LockpickProgressContainer;
+        if (container != null && container.activeSelf)
+        {
+            container.SetActive(false);
+        }
+    }
+
+    private void HideDecoderProgress()
+    {
+        if (decoderProgressBarFill != null)
+        {
+            decoderProgressBarFill.fillAmount = 0f;
+        }
+
+        if (decoderProgressContainer != null && decoderProgressContainer.activeSelf)
+        {
+            decoderProgressContainer.SetActive(false);
+        }
+    }
+
+    public void ResetProgressBar()
+    {
+        ResetAllProgressBars();
     }
 
     public void HideAll()
@@ -179,6 +410,6 @@ public class InteractionPromptUI : MonoBehaviour
             promptContainer.SetActive(false);
         }
 
-        ResetProgressBar();
+        ResetAllProgressBars();
     }
 }
