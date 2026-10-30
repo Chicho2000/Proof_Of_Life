@@ -123,7 +123,7 @@ MonoBehaviour:
   inHandScale: {x: 1, y: 1, z: 1}
   characterHandPositionOffset: {x: -0.000309, y: 0.001721, z: 0.000639}
   characterHandRotationOffset: {x: 64.781, y: 104.819, z: 148.921}
-  pickupSound: {fileID: 0}
+  pickupSound: {fileID: 8300000, guid: 5cfce54e676ddf842b157ee0715de761, type: 3}
 --- !u!54 &3288136574747359857
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -180,6 +180,7 @@ MonoBehaviour:
   breakOnImpact: 0
   minimumImpactSpeed: 0.5
   impactSound: {fileID: 8300000, guid: 11a7c0456380b984da695cc3fa8e3948, type: 3}
+  breakEffectPrefab: {fileID: 0}
 --- !u!114 &8313967967906766435
 MonoBehaviour:
   m_ObjectHideFlags: 0

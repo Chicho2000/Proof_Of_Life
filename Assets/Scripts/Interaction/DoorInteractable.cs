@@ -10,6 +10,10 @@ public class DoorInteractable : Interactable
     [Header("Lockpick")]
     public float pickTime = 3f;
 
+    [Header("Audio")]
+    [SerializeField] private AudioClip lockpickSound;
+    [SerializeField] private AudioClip doorOpenSound;
+
     [Header("Rotación")]
     [SerializeField] private float openAngle = 90f;
 
@@ -18,12 +22,27 @@ public class DoorInteractable : Interactable
     private PlayerInteraction playerInteraction;
     private PlayerHotbar playerHotbar;
     private NavMeshObstacle navObstacle;
+    private AudioSource lockpickAudioSource;
 
     private void Start()
     {
         navObstacle = GetComponentInChildren<NavMeshObstacle>();
+        SetupAudioSource();
         UpdatePrompt();
         UpdateNavMesh();
+    }
+
+    private void SetupAudioSource()
+    {
+        lockpickAudioSource = GetComponent<AudioSource>();
+        if (lockpickAudioSource == null)
+        {
+            lockpickAudioSource = gameObject.AddComponent<AudioSource>();
+            lockpickAudioSource.spatialBlend = 1f;
+            lockpickAudioSource.playOnAwake = false;
+            lockpickAudioSource.rolloffMode = AudioRolloffMode.Linear;
+            lockpickAudioSource.maxDistance = 15f;
+        }
     }
 
     public override void Interact(GameObject interactor)
@@ -53,6 +72,21 @@ public class DoorInteractable : Interactable
             isPicking = true;
             pickProgress = 0f;
             Debug.Log("Empezando a ganzuear...");
+
+            if (lockpickSound != null)
+            {
+                if (lockpickAudioSource == null)
+                {
+                    SetupAudioSource();
+                }
+
+                if (lockpickAudioSource != null)
+                {
+                    lockpickAudioSource.clip = lockpickSound;
+                    lockpickAudioSource.loop = true;
+                    lockpickAudioSource.Play();
+                }
+            }
         }
     }
 
@@ -162,6 +196,7 @@ public class DoorInteractable : Interactable
         pickProgress = 0f;
         playerInteraction = null;
         playerHotbar = null;
+        StopLockpickSound();
         Debug.Log("Puerta ganzuada con éxito");
         ToggleOpen();
     }
@@ -172,7 +207,16 @@ public class DoorInteractable : Interactable
         pickProgress = 0f;
         playerInteraction = null;
         playerHotbar = null;
+        StopLockpickSound();
         Debug.Log("Ganzúa cancelada");
+    }
+
+    private void StopLockpickSound()
+    {
+        if (lockpickAudioSource != null && lockpickAudioSource.isPlaying)
+        {
+            lockpickAudioSource.Stop();
+        }
     }
 
     public void OpenDoor()
@@ -190,6 +234,9 @@ public class DoorInteractable : Interactable
         UpdateNavMesh();
 
         transform.Rotate(0f, isOpen ? openAngle : -openAngle, 0f);
+
+        if (isOpen && doorOpenSound != null)
+            AudioSource.PlayClipAtPoint(doorOpenSound, transform.position);
 
         Debug.Log(isOpen ? "Puerta abierta" : "Puerta cerrada");
     }
@@ -220,5 +267,10 @@ public class DoorInteractable : Interactable
         {
             CancelPicking();
         }
+    }
+
+    private void OnDisable()
+    {
+        StopLockpickSound();
     }
 }
