@@ -57,6 +57,7 @@ public class AmmoUI : MonoBehaviour
         if (playerCombat != null)
         {
             playerCombat.OnAmmoChanged += HandleAmmoChanged;
+            playerCombat.OnReloadStateChanged += HandleReloadStateChanged;
         }
 
         if (playerHotbar != null)
@@ -71,6 +72,7 @@ public class AmmoUI : MonoBehaviour
         if (playerCombat != null)
         {
             playerCombat.OnAmmoChanged -= HandleAmmoChanged;
+            playerCombat.OnReloadStateChanged -= HandleReloadStateChanged;
         }
 
         if (playerHotbar != null)
@@ -129,14 +131,24 @@ public class AmmoUI : MonoBehaviour
         if (reloadPromptText != null)
         {
             bool isPistol = IsPistolEquipped();
-            if (isPistol && current <= 0)
+            if (isPistol && (current <= 0 || (playerCombat != null && playerCombat.IsReloading)))
             {
+                reloadPromptText.text = playerCombat != null && playerCombat.IsReloading
+                    ? "RECARGANDO..." : "R PARA RECARGAR";
                 reloadPromptText.gameObject.SetActive(true);
             }
             else
             {
                 reloadPromptText.gameObject.SetActive(false);
             }
+        }
+    }
+
+    private void HandleReloadStateChanged(bool reloading)
+    {
+        if (playerCombat != null)
+        {
+            HandleAmmoChanged(playerCombat.GetCurrentAmmo(), playerCombat.GetMaxAmmo());
         }
     }
 

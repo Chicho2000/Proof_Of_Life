@@ -13,7 +13,7 @@ public class PlayerCombat : MonoBehaviour
     [SerializeField] private int headshotDamage = 100;
     [SerializeField] private int torsoDamage = 34;
     [SerializeField, Min(0.05f)] private float shotCooldown = 0.45f;
-    [SerializeField, Min(0.1f)] private float reloadDuration = 2.25f;
+    [SerializeField, Min(0.1f)] private float reloadDuration = 3f;
     [SerializeField] private AudioClip shootSound;
     [SerializeField] private AudioClip reloadSound;
     [SerializeField] private AudioClip emptyAmmoSound;
@@ -39,6 +39,16 @@ public class PlayerCombat : MonoBehaviour
     private Camera playerCamera;
     private float nextShotTime;
     private bool isReloading;
+    public bool IsReloading => isReloading;
+    public event System.Action<bool> OnReloadStateChanged;
+
+    private void OnDisable()
+    {
+        if (!isReloading) return;
+        StopAllCoroutines();
+        isReloading = false;
+        OnReloadStateChanged?.Invoke(false);
+    }
 
     private void Awake()
     {
@@ -69,7 +79,9 @@ public class PlayerCombat : MonoBehaviour
 
     private void Update()
     {
-        if (Cursor.lockState != CursorLockMode.Locked || Time.timeScale <= 0f)
+        if (Cursor.lockState != CursorLockMode.Locked || Time.timeScale <= 0f
+            || BodyInteractable.IsDraggingAnyBody
+            || (playerHotbar != null && !playerHotbar.CanUseItems))
         {
             return;
         }
@@ -83,7 +95,7 @@ public class PlayerCombat : MonoBehaviour
                 {
                     Shoot();
                 }
-                else if (currentAmmo <= 0)
+                else if (currentAmmo <= 0 && !isReloading)
                 {
                     if (emptyAmmoSound != null)
                     {
@@ -254,7 +266,9 @@ public class PlayerCombat : MonoBehaviour
 
     public void Reload()
     {
-        if (currentAmmo == maxAmmo || isReloading)
+        if (currentAmmo == maxAmmo || isReloading || BodyInteractable.IsDraggingAnyBody
+            || (playerHotbar != null && !playerHotbar.CanUseItems)
+            || !IsSilencedPistolEquipped())
         {
             return;
         }
@@ -265,6 +279,7 @@ public class PlayerCombat : MonoBehaviour
     private IEnumerator ReloadRoutine()
     {
         isReloading = true;
+        OnReloadStateChanged?.Invoke(true);
         Debug.Log("Pistola Silenciada: Recargando...");
 
         if (reloadSound != null)
@@ -277,6 +292,7 @@ public class PlayerCombat : MonoBehaviour
 
         currentAmmo = maxAmmo;
         isReloading = false;
+        OnReloadStateChanged?.Invoke(false);
         Debug.Log("Pistola Silenciada: Recargada. Municion completa: " + currentAmmo + "/" + maxAmmo);
 
         if (OnAmmoChanged != null)

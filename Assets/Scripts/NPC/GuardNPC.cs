@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -25,6 +26,7 @@ public class GuardNPC : NPCBase
     [Header("Configuración de Detección y Sospecha")]
     [SerializeField] private DetectionSystem detectionSystem;
     [SerializeField] private NPCSuspicionSystem suspicionSystem;
+    [SerializeField, Min(0f)] private float armedImmediateAlertRange = 4f;
 
     [Header("Investigacion de ruido")]
     [Min(0f)] [SerializeField] private float investigateDuration = 5f;
@@ -32,7 +34,7 @@ public class GuardNPC : NPCBase
     [Header("Configuración de Alerta")]
     [SerializeField] private float alertPatrolSpeed = 3.2f;
 
-    public static event System.Action<Vector3> OnDeadBodyDiscovered;
+    public static event System.Action<GuardNPC, Vector3> OnDeadBodyDiscovered;
 
     private Transform playerTarget;
     private PlayerHealth playerHealth;
@@ -40,6 +42,7 @@ public class GuardNPC : NPCBase
     private float patrolWaitTimer;
     private bool hasPatrolDestination;
     private bool isWaitingAtPatrolPoint;
+    private readonly HashSet<BodyInteractable> discoveredBodies = new HashSet<BodyInteractable>();
 
 
     protected override void Awake()
@@ -234,7 +237,26 @@ public class GuardNPC : NPCBase
 
     private void TickDetection()
     {
+        CheckForArmedPlayer();
         CheckForDeadBodies();
+    }
+
+    private void CheckForArmedPlayer()
+    {
+        if (currentState == NPCState.Dead || playerTarget == null || playerHealth == null
+            || playerHealth.IsDead || detectionSystem == null || suspicionSystem == null
+            || BodyInteractable.IsDraggingAnyBody
+            || armedImmediateAlertRange <= 0f || (AlarmManager.Instance != null && AlarmManager.Instance.IsAlarmActive)) return;
+
+        PlayerHotbar hotbar = playerTarget.GetComponent<PlayerHotbar>();
+        ItemInteractable item = hotbar != null ? hotbar.GetSelectedItem() : null;
+        if (item == null || (item.ItemType != ItemType.SilencedPistol && item.ItemType != ItemType.FiberWire)) return;
+
+        if (Vector3.Distance(transform.position, playerTarget.position) <= armedImmediateAlertRange
+            && detectionSystem.CanDetectTarget(playerTarget, true))
+        {
+            suspicionSystem.TriggerInstantAlert();
+        }
     }
 
     private void CheckForDeadBodies()
@@ -249,21 +271,16 @@ public class GuardNPC : NPCBase
             BodyInteractable body = BodyInteractable.ActiveBodies[i];
             if (CanDiscoverBody(body) && CanSeeBody(body))
             {
+                discoveredBodies.Add(body);
                 body.IsDiscovered = true;
                 body.LastDiscoveredTime = Time.time;
                 body.InvestigatingGuard = this;
                 Debug.Log($"[GuardNPC] {gameObject.name} descubrió un cuerpo en el suelo ({body.NPCName})! Entrando en SOSPECHA Y ALERTA.");
                 Vector3 bodyPos = body.GetVisualPosition();
 
-                SetState(NPCState.Alert);
-                if (suspicionSystem != null)
-                {
-                    suspicionSystem.StartInvestigation(bodyPos, 5.0f, 1.0f);
-                }
-
                 if (OnDeadBodyDiscovered != null)
                 {
-                    OnDeadBodyDiscovered(bodyPos);
+                    OnDeadBodyDiscovered(this, bodyPos);
                 }
                 break;
             }
@@ -316,28 +333,7 @@ public class GuardNPC : NPCBase
             return false;
         }
 
-        if (!body.IsDiscovered)
-        {
-            return true;
-        }
-
-        if (suspicionSystem != null && suspicionSystem.IsInvestigating)
-        {
-            return false;
-        }
-
-        if (currentState == NPCState.Suspicious || currentState == NPCState.Investigate)
-        {
-            return false;
-        }
-
-        if (body.InvestigatingGuard != null && body.InvestigatingGuard.GetCurrentState() == NPCState.Investigate)
-        {
-            return false;
-        }
-
-        float elapsed = Time.time - body.LastDiscoveredTime;
-        return (elapsed >= 1.0f && elapsed < 4.5f) || elapsed >= 8.0f;
+        return !discoveredBodies.Contains(body);
     }
 
     private bool HasLineOfSightToBody(Vector3 originPos, Vector3 targetPoint, BodyInteractable body)
@@ -388,12 +384,14 @@ public class GuardNPC : NPCBase
         return true;
     }
 
-    private void HandleDeadBodyDiscovered(Vector3 bodyPosition)
+    private void HandleDeadBodyDiscovered(GuardNPC discoverer, Vector3 bodyPosition)
     {
         if (currentState == NPCState.Dead || currentState == NPCState.Chase || currentState == NPCState.Attack)
         {
             return;
         }
+
+        if (discoverer != this && Vector3.Distance(transform.position, bodyPosition) > 10f) return;
 
         if (currentState != NPCState.Investigate && currentState != NPCState.Suspicious)
         {
@@ -405,14 +403,10 @@ public class GuardNPC : NPCBase
             suspicionSystem.SetReturnState(NPCState.Alert);
         }
 
-        // Solo el guardia que lo vio o los guardias cercanos (<= 10m) se desplazan a inspeccionar el cuerpo
-        if (suspicionSystem != null && !suspicionSystem.IsInvestigating)
+        // Los guardias cercanos abandonan cualquier investigacion de ruido para revisar el cuerpo.
+        if (suspicionSystem != null)
         {
-            float distanceToBody = Vector3.Distance(transform.position, bodyPosition);
-            if (distanceToBody <= 10.0f)
-            {
-                suspicionSystem.StartInvestigation(bodyPosition, 5.0f, 1.0f);
-            }
+            suspicionSystem.StartInvestigation(bodyPosition, 5.0f, 1.0f);
         }
     }
 

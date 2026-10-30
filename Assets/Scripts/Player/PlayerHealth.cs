@@ -12,6 +12,11 @@ public class PlayerHealth : MonoBehaviour
     [SerializeField] private float invulnerabilityDuration = 0.5f;
     private float lastDamageTime = -999f;
 
+    [Header("Regeneracion")]
+    [SerializeField, Min(0f)] private float regenerationDelay = 5f;
+    [SerializeField, Min(0f)] private float regenerationPerSecond = 8f;
+    private float regenerationProgress;
+
     [Header("Audio")]
     [SerializeField] private AudioClip hurtSound;
     [SerializeField] private AudioClip deathSound;
@@ -93,6 +98,19 @@ public class PlayerHealth : MonoBehaviour
         }
     }
 
+    private void Update()
+    {
+        if (isDead || currentHealth >= maxHealth || regenerationPerSecond <= 0f
+            || Time.time < lastDamageTime + regenerationDelay) return;
+
+        regenerationProgress += regenerationPerSecond * Time.deltaTime;
+        int amount = Mathf.FloorToInt(regenerationProgress);
+        if (amount <= 0) return;
+
+        regenerationProgress -= amount;
+        Heal(amount);
+    }
+
     /// <summary>
     /// Aplica daño al jugador sin origen específico de posición.
     /// </summary>
@@ -123,6 +141,7 @@ public class PlayerHealth : MonoBehaviour
         }
 
         lastDamageTime = Time.time;
+        regenerationProgress = 0f;
         currentHealth = Mathf.Max(0, currentHealth - damage);
 
         Debug.Log($"[PlayerHealth] Jugador recibió {damage} de daño. Salud restante: {currentHealth}/{maxHealth}");
@@ -175,8 +194,10 @@ public class PlayerHealth : MonoBehaviour
     {
         if (isDead || healAmount <= 0) return;
 
+        int previousHealth = currentHealth;
         currentHealth = Mathf.Min(maxHealth, currentHealth + healAmount);
-        Debug.Log($"[PlayerHealth] Jugador curado +{healAmount}. Salud actual: {currentHealth}/{maxHealth}");
+        healAmount = currentHealth - previousHealth;
+        if (healAmount <= 0) return;
 
         if (OnHealed != null)
         {
@@ -251,6 +272,8 @@ public class PlayerHealth : MonoBehaviour
     {
         isDead = false;
         currentHealth = maxHealth;
+        regenerationProgress = 0f;
+        lastDamageTime = -999f;
 
         FPSPlayerController movement = GetComponent<FPSPlayerController>();
         if (movement != null) movement.enabled = true;
