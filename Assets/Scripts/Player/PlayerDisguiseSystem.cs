@@ -22,9 +22,19 @@ public class PlayerDisguiseSystem : MonoBehaviour
         get { return currentDisguise; }
     }
 
+    [Header("Audio")]
+    [SerializeField] private AudioClip changeDisguiseSound;
+
     public void EquipDisguise(DisguiseType newDisguise)
     {
+        if (currentDisguise == newDisguise)
+            return;
+
         currentDisguise = newDisguise;
+
+        if (changeDisguiseSound != null)
+            AudioSource.PlayClipAtPoint(changeDisguiseSound, transform.position);
+
         Debug.Log($"[PlayerDisguiseSystem] Disfraz cambiado a: {newDisguise}");
         OnDisguiseChanged?.Invoke(currentDisguise);
         OnDisguiseChangedStatic?.Invoke(currentDisguise);

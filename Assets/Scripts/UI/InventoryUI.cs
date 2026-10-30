@@ -253,6 +253,7 @@ public class InventoryUI : MonoBehaviour
 
     public void SetInventoryOpen(bool open)
     {
+	bool stateChanged = isOpen != open;
         isOpen = open;
         hoveredSlotIndex = -1;
 
@@ -304,8 +305,11 @@ public class InventoryUI : MonoBehaviour
             {
                 Time.timeScale = 0f;
             }
-
-            PlaySound(openSound);
+	    
+	    if (stateChanged)
+	    {
+            	PlaySound(openSound);
+	    }
         }
         else
         {
@@ -323,8 +327,11 @@ public class InventoryUI : MonoBehaviour
             {
                 Time.timeScale = 1f;
             }
-
-            PlaySound(closeSound);
+	
+	    if (stateChanged)
+	    {
+            	PlaySound(closeSound);
+	    }
         }
 
         OnInventoryToggled?.Invoke(open);

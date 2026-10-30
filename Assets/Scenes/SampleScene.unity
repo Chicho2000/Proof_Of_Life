@@ -820,7 +820,7 @@ MonoBehaviour:
   canRotateTowardsTarget: 1
   canInvestigateMovement: 1
   suspicionSound: {fileID: 0}
-  alertSound: {fileID: 0}
+  alertSound: {fileID: 8300000, guid: d1284fb0d8917d644b5ef64b8e2a65f9, type: 3}
   soundVolume: 0.85
 --- !u!1 &47173416
 GameObject:
@@ -8098,8 +8098,8 @@ MonoBehaviour:
   dropButton: {fileID: 0}
   itemDescriptionTMP: {fileID: 0}
   itemTitleTMP: {fileID: 0}
-  openSound: {fileID: 0}
-  closeSound: {fileID: 0}
+  openSound: {fileID: 8300000, guid: 7bd9006a934672046b53795598cf1fce, type: 3}
+  closeSound: {fileID: 8300000, guid: 7bd9006a934672046b53795598cf1fce, type: 3}
   selectSound: {fileID: 0}
   dropSound: {fileID: 0}
 --- !u!114 &1260916681
@@ -10441,7 +10441,7 @@ MonoBehaviour:
   canRotateTowardsTarget: 1
   canInvestigateMovement: 1
   suspicionSound: {fileID: 0}
-  alertSound: {fileID: 0}
+  alertSound: {fileID: 8300000, guid: d1284fb0d8917d644b5ef64b8e2a65f9, type: 3}
   soundVolume: 0.85
 --- !u!1 &1717301554
 GameObject:
@@ -10794,7 +10794,7 @@ MonoBehaviour:
   canRotateTowardsTarget: 1
   canInvestigateMovement: 1
   suspicionSound: {fileID: 0}
-  alertSound: {fileID: 0}
+  alertSound: {fileID: 8300000, guid: d1284fb0d8917d644b5ef64b8e2a65f9, type: 3}
   soundVolume: 0.85
 --- !u!114 &1725933850
 MonoBehaviour:
@@ -12005,6 +12005,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerDisguiseSystem
   currentDisguise: 0
+  changeDisguiseSound: {fileID: 8300000, guid: 14e13b955be1f7441ae27264987fb2d1, type: 3}
 --- !u!114 &1901548865
 MonoBehaviour:
   m_ObjectHideFlags: 0
