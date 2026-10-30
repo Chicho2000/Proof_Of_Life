@@ -44,7 +44,7 @@ public class PlayerThrowController : MonoBehaviour
     private void Update()
     {
         if (Cursor.lockState != CursorLockMode.Locked || Time.timeScale <= 0f
-            || BodyInteractable.IsDraggingAnyBody)
+            || BodyInteractable.IsDraggingAnyBody || !hotbar.CanUseItems)
         {
             CancelCharge();
             return;

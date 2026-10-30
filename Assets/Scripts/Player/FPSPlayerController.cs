@@ -13,7 +13,7 @@ public class FPSPlayerController : MonoBehaviour
     [Header("Crouch")]
     [SerializeField] private float standingHeight = 2f;
     [SerializeField] private float crouchingHeight = 1.2f;
-    [SerializeField] private float standingCameraY = 1.65f;
+    [SerializeField] private float standingCameraY = 1.75f;
     [SerializeField] private float crouchingCameraY = 1f;
     [SerializeField] private float crouchTransitionSpeed = 8f;
     [SerializeField] private float ceilingCheckRadius = 0.35f;
@@ -28,16 +28,28 @@ public class FPSPlayerController : MonoBehaviour
 
     [Header("Animation")]
     [SerializeField] private Animator animator;
+    [SerializeField] private string rightArmLayerName = "Hand layer";
+    [Range(0f, 1f)] [SerializeField] private float rightArmLayerWeight = 1f;
+    [SerializeField] private bool hideCharacterWhileCrouching = true;
 
     private CharacterController controller;
     private Vector3 velocity;
     private Vector3 standingControllerCenter;
     private float cameraPitch;
     private bool isCrouching;
+    private Renderer[] characterRenderers;
+
+    public bool IsCrouching => isCrouching;
+    public Animator CharacterAnimator => animator;
 
     private void Awake()
     {
         controller = GetComponent<CharacterController>();
+
+        if (animator == null)
+        {
+            animator = GetComponentInChildren<Animator>(true);
+        }
 
         if (cameraTransform == null)
         {
@@ -47,6 +59,9 @@ public class FPSPlayerController : MonoBehaviour
         }
 
         InitializeCrouchDimensions();
+        CacheCharacterRenderers();
+        ApplyRightArmLayerWeight();
+        ApplyCrouchPresentation();
 
         // Asegurar que el jugador siempre cuente con sus componentes esenciales
         if (GetComponent<PlayerCombat>() == null)
@@ -158,6 +173,7 @@ public class FPSPlayerController : MonoBehaviour
 
     private void UpdateCrouch()
     {
+        bool wasCrouching = isCrouching;
         bool crouchRequested = Input.GetKey(KeyCode.LeftControl);
 
         if (crouchRequested)
@@ -189,6 +205,53 @@ public class FPSPlayerController : MonoBehaviour
             Vector3 cameraPosition = cameraTransform.localPosition;
             cameraPosition.y = Mathf.MoveTowards(cameraPosition.y, targetCameraY, transitionStep);
             cameraTransform.localPosition = cameraPosition;
+        }
+
+        if (wasCrouching != isCrouching)
+        {
+            ApplyCrouchPresentation();
+        }
+    }
+
+    private void CacheCharacterRenderers()
+    {
+        characterRenderers = animator != null
+            ? animator.GetComponentsInChildren<Renderer>(true)
+            : System.Array.Empty<Renderer>();
+    }
+
+    private void ApplyRightArmLayerWeight()
+    {
+        if (animator == null || string.IsNullOrWhiteSpace(rightArmLayerName)) return;
+
+        int layerIndex = animator.GetLayerIndex(rightArmLayerName);
+        if (layerIndex >= 0)
+        {
+            animator.SetLayerWeight(layerIndex, rightArmLayerWeight);
+        }
+        else
+        {
+            Debug.LogWarning($"[FPSPlayerController] No se encontró la capa '{rightArmLayerName}' en el Animator.", this);
+        }
+    }
+
+    private void ApplyCrouchPresentation()
+    {
+        if (hideCharacterWhileCrouching)
+        {
+            foreach (Renderer characterRenderer in characterRenderers)
+            {
+                if (characterRenderer != null)
+                {
+                    characterRenderer.enabled = !isCrouching;
+                }
+            }
+        }
+
+        PlayerHotbar hotbar = GetComponent<PlayerHotbar>();
+        if (hotbar != null)
+        {
+            hotbar.RefreshInHandVisualVisibility();
         }
     }
 

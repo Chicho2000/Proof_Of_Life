@@ -31,7 +31,8 @@ public class PauseMenuUI : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Escape) || Input.GetKeyDown(KeyCode.P))
         {
             // Si el inventario está abierto, la tecla Escape cierra primero el inventario
-            if (Input.GetKeyDown(KeyCode.Escape) && InventoryUI.Instance != null && InventoryUI.Instance.IsInventoryOpen)
+            if (Input.GetKeyDown(KeyCode.Escape) && InventoryUI.Instance != null
+                && (InventoryUI.Instance.IsInventoryOpen || InventoryUI.Instance.WasClosedThisFrame))
             {
                 InventoryUI.Instance.CloseInventory();
                 return;

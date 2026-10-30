@@ -24,6 +24,11 @@ public class ItemInteractable : Interactable
     [SerializeField] private Vector3 inHandRotationOffset = Vector3.zero;
     [SerializeField] private Vector3 inHandScale = Vector3.one;
 
+    [Header("Ajuste en la mano del personaje")]
+    [Tooltip("Ajuste local cuando el visual se sujeta al hueso RightHand del avatar.")]
+    [SerializeField] private Vector3 characterHandPositionOffset = Vector3.zero;
+    [SerializeField] private Vector3 characterHandRotationOffset = Vector3.zero;
+
     [Header("Feedback Audio/Visual")]
     [SerializeField] private AudioClip pickupSound;
 
@@ -42,6 +47,8 @@ public class ItemInteractable : Interactable
     public Vector3 InHandPositionOffset => inHandPositionOffset;
     public Vector3 InHandRotationOffset => inHandRotationOffset;
     public Vector3 InHandScale => inHandScale;
+    public Vector3 CharacterHandPositionOffset => characterHandPositionOffset;
+    public Vector3 CharacterHandRotationOffset => characterHandRotationOffset;
     public void Initialize(int newAmount = 1)
     {
         amount = Mathf.Max(1, newAmount);

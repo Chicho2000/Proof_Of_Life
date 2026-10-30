@@ -109,7 +109,7 @@ public class InventoryUI : MonoBehaviour
     [SerializeField] private bool unlockCursorWhenOpen = true;
 
     [Tooltip("Pausa el tiempo de juego mientras el inventario está abierto")]
-    [SerializeField] private bool pauseGameWhenOpen = false;
+    [SerializeField] private bool pauseGameWhenOpen = true;
 
     [Tooltip("Cierra el inventario al presionar Escape")]
     [SerializeField] private bool closeOnEscape = true;
@@ -140,6 +140,8 @@ public class InventoryUI : MonoBehaviour
 
     private bool isOpen = false;
     public bool IsInventoryOpen => isOpen;
+    private int lastClosedFrame = -1;
+    public bool WasClosedThisFrame => lastClosedFrame == Time.frameCount;
 
     private void Awake()
     {
@@ -253,7 +255,9 @@ public class InventoryUI : MonoBehaviour
 
     public void SetInventoryOpen(bool open)
     {
+	if (open && BodyInteractable.IsDraggingAnyBody) return;
 	bool stateChanged = isOpen != open;
+        if (stateChanged && !open) lastClosedFrame = Time.frameCount;
         isOpen = open;
         hoveredSlotIndex = -1;
 
@@ -301,7 +305,7 @@ public class InventoryUI : MonoBehaviour
                 Cursor.visible = true;
             }
 
-            if (pauseGameWhenOpen)
+            if (pauseGameWhenOpen && stateChanged)
             {
                 Time.timeScale = 0f;
             }
@@ -313,17 +317,13 @@ public class InventoryUI : MonoBehaviour
         }
         else
         {
-            if (unlockCursorWhenOpen)
+            if (unlockCursorWhenOpen && stateChanged)
             {
-                // Restaurar el cursor solo si el juego sigue corriendo
-                if (Time.timeScale > 0f)
-                {
-                    Cursor.lockState = CursorLockMode.Locked;
-                    Cursor.visible = false;
-                }
+                Cursor.lockState = CursorLockMode.Locked;
+                Cursor.visible = false;
             }
 
-            if (pauseGameWhenOpen)
+            if (pauseGameWhenOpen && stateChanged)
             {
                 Time.timeScale = 1f;
             }
@@ -578,7 +578,7 @@ public class InventoryUI : MonoBehaviour
     private void ConfirmSelectedSlot()
     {
         if (!Input.GetKeyDown(KeyCode.Return) && !Input.GetKeyDown(KeyCode.KeypadEnter)) return;
-        if (playerHotbar == null) return;
+        if (playerHotbar == null || !playerHotbar.CanUseItems) return;
 
         HotbarSlot selectedSlot = playerHotbar.GetSlot(playerHotbar.SelectedSlotIndex);
         if (selectedSlot != null && !selectedSlot.IsEmpty)
@@ -589,6 +589,8 @@ public class InventoryUI : MonoBehaviour
 
     private void SelectSlotFromInventory(int slotIndex)
     {
+        if (playerHotbar == null || !playerHotbar.CanUseItems) return;
+
         SelectSlot(slotIndex);
 
         HotbarSlot selectedSlot = playerHotbar != null ? playerHotbar.GetSlot(slotIndex) : null;

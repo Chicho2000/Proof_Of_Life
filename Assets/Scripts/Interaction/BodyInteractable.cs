@@ -83,6 +83,7 @@ public class BodyInteractable : Interactable
         if (CurrentCarriedBody == this)
         {
             CurrentCarriedBody = null;
+            RefreshHeldItemVisual();
         }
 
         if (ActiveBodies.Contains(this))
@@ -178,6 +179,11 @@ public class BodyInteractable : Interactable
         isBeingCarried = true;
         CurrentCarriedBody = this;
         carrier = interactor.transform;
+        PlayerHotbar hotbar = interactor.GetComponent<PlayerHotbar>();
+        if (hotbar != null)
+        {
+            hotbar.RefreshInHandVisualVisibility();
+        }
         playerCamera = interactor.GetComponentInChildren<Camera>();
         if (playerCamera == null) playerCamera = Camera.main;
 
@@ -212,6 +218,7 @@ public class BodyInteractable : Interactable
         {
             CurrentCarriedBody = null;
         }
+        RefreshHeldItemVisual();
 
         carrier = null;
         IsDiscovered = false;
@@ -255,6 +262,7 @@ public class BodyInteractable : Interactable
             {
                 CurrentCarriedBody = null;
             }
+            RefreshHeldItemVisual();
         }
 
         isHidden = true;
@@ -280,6 +288,16 @@ public class BodyInteractable : Interactable
 
         // Desactivar el GameObject para que quede completamente oculto
         gameObject.SetActive(false);
+    }
+
+    private void RefreshHeldItemVisual()
+    {
+        if (carrier == null) return;
+        PlayerHotbar hotbar = carrier.GetComponent<PlayerHotbar>();
+        if (hotbar != null)
+        {
+            hotbar.RefreshInHandVisualVisibility();
+        }
     }
 
     private void Update()

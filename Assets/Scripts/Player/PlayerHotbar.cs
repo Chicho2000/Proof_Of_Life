@@ -67,6 +67,8 @@ public class PlayerHotbar : MonoBehaviour
     [SerializeField] private Transform handSocket;
     private GameObject currentInHandObject;
     private ItemInteractable currentInHandItem;
+    private FPSPlayerController playerController;
+    private bool usesCharacterHandSocket;
 
     [Header("Soltar Ítems")]
     [SerializeField] private KeyCode dropKey = KeyCode.G;
@@ -83,9 +85,12 @@ public class PlayerHotbar : MonoBehaviour
     public int SelectedSlotIndex => selectedSlotIndex;
     public Transform HandSocket => handSocket;
     public GameObject CurrentInHandObject => currentInHandObject;
+    public bool CanUseItems => !BodyInteractable.IsDraggingAnyBody
+        && (playerController == null || !playerController.IsCrouching);
 
     private void Awake()
     {
+        playerController = GetComponent<FPSPlayerController>();
         InitializeSlots();
         InitializeHandSocket();
     }
@@ -133,17 +138,23 @@ public class PlayerHotbar : MonoBehaviour
 
     private void InitializeHandSocket()
     {
-        if (handSocket == null)
-        {
-            Camera mainCam = Camera.main;
-            if (mainCam == null)
-            {
-                mainCam = GetComponentInChildren<Camera>();
-            }
+        if (handSocket != null) return;
 
-            if (mainCam != null)
+        if (playerController == null)
+        {
+            playerController = GetComponent<FPSPlayerController>();
+        }
+
+        Animator characterAnimator = playerController != null
+            ? playerController.CharacterAnimator
+            : GetComponentInChildren<Animator>(true);
+
+        if (characterAnimator != null && characterAnimator.isHuman)
+        {
+            Transform rightHand = characterAnimator.GetBoneTransform(HumanBodyBones.RightHand);
+            if (rightHand != null)
             {
-                Transform existingSocket = mainCam.transform.Find("HandSocket");
+                Transform existingSocket = rightHand.Find("HandSocket");
                 if (existingSocket != null)
                 {
                     handSocket = existingSocket;
@@ -151,17 +162,44 @@ public class PlayerHotbar : MonoBehaviour
                 else
                 {
                     GameObject socketObj = new GameObject("HandSocket");
-                    socketObj.transform.SetParent(mainCam.transform, false);
+                    socketObj.transform.SetParent(rightHand, false);
                     socketObj.transform.localPosition = Vector3.zero;
                     socketObj.transform.localRotation = Quaternion.identity;
                     handSocket = socketObj.transform;
                 }
+
+                usesCharacterHandSocket = true;
+                return;
+            }
+        }
+
+        Camera mainCam = Camera.main;
+        if (mainCam == null)
+        {
+            mainCam = GetComponentInChildren<Camera>();
+        }
+
+        if (mainCam != null)
+        {
+            Transform existingSocket = mainCam.transform.Find("HandSocket");
+            if (existingSocket != null)
+            {
+                handSocket = existingSocket;
+            }
+            else
+            {
+                GameObject socketObj = new GameObject("HandSocket");
+                socketObj.transform.SetParent(mainCam.transform, false);
+                socketObj.transform.localPosition = Vector3.zero;
+                socketObj.transform.localRotation = Quaternion.identity;
+                handSocket = socketObj.transform;
             }
         }
     }
 
     private void HandleNumericInput()
     {
+        if (!CanUseItems) return;
         for (int i = 0; i < slotCount; i++)
         {
             KeyCode key = KeyCode.Alpha1 + i;
@@ -175,6 +213,7 @@ public class PlayerHotbar : MonoBehaviour
 
     private void HandleScrollInput()
     {
+        if (!CanUseItems) return;
         float scroll = Input.GetAxis("Mouse ScrollWheel");
         if (Mathf.Abs(scroll) > 0.01f)
         {
@@ -208,6 +247,7 @@ public class PlayerHotbar : MonoBehaviour
 
     public bool DropSelectedItem()
     {
+        if (!CanUseItems || BodyInteractable.ShouldBlockItemDropThisFrame) return false;
         HotbarSlot selectedSlot = GetSlot(selectedSlotIndex);
         if (selectedSlot == null || selectedSlot.IsEmpty)
         {
@@ -400,6 +440,7 @@ public class PlayerHotbar : MonoBehaviour
     public void SelectSlot(int index)
     {
         if (index < 0 || index >= slotCount) return;
+        if (!CanUseItems) return;
 
         selectedSlotIndex = index;
         UpdateInHandVisual();
@@ -420,6 +461,7 @@ public class PlayerHotbar : MonoBehaviour
 
         if (currentInHandItem == selectedItem && currentInHandObject != null)
         {
+            RefreshInHandVisualVisibility();
             return;
         }
 
@@ -445,9 +487,15 @@ public class PlayerHotbar : MonoBehaviour
                 if (currentInHandObject != null)
                 {
                     currentInHandItem = selectedItem;
-                    currentInHandObject.transform.localPosition = selectedItem.InHandPositionOffset;
-                    currentInHandObject.transform.localRotation = Quaternion.Euler(selectedItem.InHandRotationOffset);
-                    currentInHandObject.transform.localScale = selectedItem.InHandScale;
+                    currentInHandObject.transform.localPosition = usesCharacterHandSocket
+                        ? selectedItem.CharacterHandPositionOffset
+                        : selectedItem.InHandPositionOffset;
+                    currentInHandObject.transform.localRotation = Quaternion.Euler(usesCharacterHandSocket
+                        ? selectedItem.CharacterHandRotationOffset
+                        : selectedItem.InHandRotationOffset);
+                    currentInHandObject.transform.localScale = usesCharacterHandSocket
+                        ? GetScaleCompensatedForHand(selectedItem.InHandScale)
+                        : selectedItem.InHandScale;
 
                     // Desactivar colliders e interactables en el ítem sostenido para evitar interferencias
                     foreach (var col in currentInHandObject.GetComponentsInChildren<Collider>(true))
@@ -459,7 +507,7 @@ public class PlayerHotbar : MonoBehaviour
                         interactable.enabled = false;
                     }
 
-                    currentInHandObject.SetActive(true);
+                    RefreshInHandVisualVisibility();
                 }
             }
             catch (System.Exception ex)
@@ -467,6 +515,26 @@ public class PlayerHotbar : MonoBehaviour
                 Debug.LogWarning($"[Hotbar] No se pudo instanciar el visual en mano de '{selectedItem.ItemName}': {ex.Message}");
             }
         }
+    }
+
+    public void RefreshInHandVisualVisibility()
+    {
+        if (currentInHandObject != null)
+        {
+            currentInHandObject.SetActive(CanUseItems);
+        }
+    }
+
+    private Vector3 GetScaleCompensatedForHand(Vector3 desiredWorldScale)
+    {
+        if (handSocket == null) return desiredWorldScale;
+
+        Vector3 parentScale = handSocket.lossyScale;
+        return new Vector3(
+            desiredWorldScale.x / Mathf.Max(0.0001f, Mathf.Abs(parentScale.x)),
+            desiredWorldScale.y / Mathf.Max(0.0001f, Mathf.Abs(parentScale.y)),
+            desiredWorldScale.z / Mathf.Max(0.0001f, Mathf.Abs(parentScale.z))
+        );
     }
 
     public ItemInteractable GetSelectedItem()

@@ -68,6 +68,11 @@ public class PlayerInteraction : MonoBehaviour
         if (Physics.Raycast(ray, out RaycastHit hit, interactionRange, ~0, QueryTriggerInteraction.Ignore))
         {
             detected = hit.collider.GetComponentInParent<Interactable>();
+            if (BodyInteractable.IsDraggingAnyBody && detected != null
+                && !(detected is HideSpot) && detected != BodyInteractable.CurrentCarriedBody)
+            {
+                detected = null;
+            }
         }
 
         // Si el interactable actual fue destruido o recogido

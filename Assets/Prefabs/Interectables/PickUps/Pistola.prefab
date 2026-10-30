@@ -116,4 +116,6 @@ MonoBehaviour:
   inHandPositionOffset: {x: 0.25, y: -0.2, z: 0.45}
   inHandRotationOffset: {x: 0, y: 0, z: 0}
   inHandScale: {x: 0.6, y: 0.6, z: 0.6}
+  characterHandPositionOffset: {x: 0.0001, y: 0.0009, z: 0.0002}
+  characterHandRotationOffset: {x: -102, y: 90, z: 0}
   pickupSound: {fileID: 0}
