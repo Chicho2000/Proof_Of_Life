@@ -31,14 +31,11 @@ public class DialogoNPC : MonoBehaviour
     private Camera camaraPrincipal;
     private float offsetInferiorLocalY = 0f;
 
-    [Header("Textos de Prueba")]
-    private string[] frasesPrueba = {
-        "Sí.",
-        "¿Qué fue ese ruido?",
-        "Seguro fue el viento...",
-        "¡ALERTA! ¡INTRUSO EN EL CALLEJÓN! PIDIENDO REFUERZOS INMEDIATOS.",
-        "Hmm..."
-    };
+    [Header("Dialogo")]
+    [TextArea(2, 4)] public string frasePredeterminada;
+    [Min(0f)] public float duracionPredeterminada = 3f;
+    public bool hablarAlIniciar;
+    private Coroutine hideRoutine;
 
     void Start()
     {
@@ -54,7 +51,8 @@ public class DialogoNPC : MonoBehaviour
             textoNombre.text = nombreNPC;
         }
 
-        StartCoroutine(RutinaDePrueba());
+        if (canvasDialogo != null) canvasDialogo.SetActive(false);
+        if (hablarAlIniciar) MostrarFrasePredeterminada();
     }
 
     void LateUpdate()
@@ -126,18 +124,32 @@ public class DialogoNPC : MonoBehaviour
         }
     }
 
-    IEnumerator RutinaDePrueba()
+    public void MostrarFrasePredeterminada()
     {
-        while (true)
-        {
-            canvasDialogo.SetActive(true);
-            string frase = frasesPrueba[Random.Range(0, frasesPrueba.Length)];
-            ActualizarCajaDialogo(frase);
+        MostrarFrase(frasePredeterminada, duracionPredeterminada);
+    }
 
-            yield return new WaitForSeconds(3f);
+    public void MostrarFrase(string frase, float duracion = 3f)
+    {
+        if (canvasDialogo == null || string.IsNullOrWhiteSpace(frase)) return;
+        if (hideRoutine != null) StopCoroutine(hideRoutine);
+        hideRoutine = null;
+        canvasDialogo.SetActive(true);
+        ActualizarCajaDialogo(frase);
+        if (duracion > 0f) hideRoutine = StartCoroutine(OcultarDespuesDe(duracion));
+    }
 
-            canvasDialogo.SetActive(false);
-            yield return new WaitForSeconds(1f);
-        }
+    public void OcultarFrase()
+    {
+        if (hideRoutine != null) StopCoroutine(hideRoutine);
+        hideRoutine = null;
+        if (canvasDialogo != null) canvasDialogo.SetActive(false);
+    }
+
+    private IEnumerator OcultarDespuesDe(float segundos)
+    {
+        yield return new WaitForSeconds(segundos);
+        hideRoutine = null;
+        if (canvasDialogo != null) canvasDialogo.SetActive(false);
     }
 }
