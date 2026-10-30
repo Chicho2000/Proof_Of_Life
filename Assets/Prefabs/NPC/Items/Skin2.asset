@@ -13,10 +13,11 @@ MonoBehaviour:
   m_Name: Skin2
   m_EditorClassIdentifier: Assembly-CSharp::SkinVariantData
   heads:
-  - {fileID: 2100000, guid: 757dafc92206a0d8583f8df4a9e7cda2, type: 2}
-  - {fileID: 2100000, guid: 8ca3c5b934a006d02be5c0f1c5f06433, type: 2}
   - {fileID: 2100000, guid: 77d953446d5211d03bc4b8730b6bf887, type: 2}
+  - {fileID: 2100000, guid: 757dafc92206a0d8583f8df4a9e7cda2, type: 2}
   - {fileID: 2100000, guid: 22b0234eb30c0c192a2583e76ada9f49, type: 2}
   - {fileID: 2100000, guid: 32197da3e1cddf3c1a4a864e1026ce9e, type: 2}
   - {fileID: 2100000, guid: cd0bb3b4ce0b0154b8f8b4d8a31e07c4, type: 2}
+  - {fileID: 2100000, guid: d086c200fd03c61f5adf3b7117e514ab, type: 2}
+  - {fileID: 2100000, guid: cac412895ffb384008108414d215b2a9, type: 2}
   body: {fileID: 2100000, guid: e9d870d8b1609d35197d08517d0f752d, type: 2}

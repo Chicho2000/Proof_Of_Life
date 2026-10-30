@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SkinVariantData
   heads:
   - {fileID: 2100000, guid: f3b05eb4ba04247708dd314855178c66, type: 2}
+  - {fileID: 2100000, guid: 8ca3c5b934a006d02be5c0f1c5f06433, type: 2}
   - {fileID: 2100000, guid: e0df8ec1505a6a683b642173dcaaf3b0, type: 2}
   - {fileID: 2100000, guid: b10b84182788768678d9fadde8fdd056, type: 2}
   - {fileID: 2100000, guid: 0ffb2ec67dce6ce949300b57269b95d5, type: 2}
