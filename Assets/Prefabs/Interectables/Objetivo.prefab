@@ -141,8 +141,8 @@ MonoBehaviour:
   inHandPositionOffset: {x: 0.25, y: -0.2, z: 0.45}
   inHandRotationOffset: {x: 0, y: 0, z: 0}
   inHandScale: {x: 50, y: 50, z: 50}
-  characterHandPositionOffset: {x: 0, y: 0, z: 0}
-  characterHandRotationOffset: {x: 0, y: 0, z: 0}
+  characterHandPositionOffset: {x: 0, y: 0.0008, z: 0.0002}
+  characterHandRotationOffset: {x: 0, y: 0, z: -90}
   pickupSound: {fileID: 0}
 --- !u!1 &8114669494059024464
 GameObject:
