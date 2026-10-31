@@ -800,10 +800,10 @@ public class GuardNPC : NPCBase
                 animators[i].SetFloat("SpeedX", 0f);
                 animators[i].SetFloat("SpeedY", speed);
 
-                // Si el animator tiene capas adicionales (como 'Hand layer' con Hand EXtend), asegurar peso en 0
-                if (animators[i].layerCount > 1)
+                int handLayer = animators[i].GetLayerIndex("Hand layer");
+                if (handLayer >= 0)
                 {
-                    animators[i].SetLayerWeight(1, 0f);
+                    animators[i].SetLayerWeight(handLayer, 0f);
                 }
             }
         }
