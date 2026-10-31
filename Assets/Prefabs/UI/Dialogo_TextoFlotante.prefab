@@ -18,7 +18,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &7535030061428627976
 RectTransform:
   m_ObjectHideFlags: 0
@@ -170,7 +170,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Guardia Elite
+  m_text:
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: ecd9402f1789fb944b4e7f4bb3f2456e, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: ecd9402f1789fb944b4e7f4bb3f2456e, type: 2}
@@ -307,7 +307,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: New Text
+  m_text:
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: ecd9402f1789fb944b4e7f4bb3f2456e, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: ecd9402f1789fb944b4e7f4bb3f2456e, type: 2}

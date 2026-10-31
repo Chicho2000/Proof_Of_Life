@@ -5,13 +5,14 @@ using System.Collections;
 public class DialogoNPC : MonoBehaviour
 {
     [Header("Referencias UI")]
-    public GameObject canvasDialogo;
-    public TMP_Text textoNombre;
-    public TMP_Text textoDialogo;
-    public RectTransform barraLateral;
-    public RectTransform fondoOscuro;
+    [HideInInspector] public GameObject canvasDialogo;
+    [HideInInspector] public TMP_Text textoNombre;
+    [HideInInspector] public TMP_Text textoDialogo;
+    [HideInInspector] public RectTransform barraLateral;
+    [HideInInspector] public RectTransform fondoOscuro;
 
     [Header("Posicionamiento y Escala")]
+    [Tooltip("Opcional: si queda vacío, se usa la cabeza del humanoide base.")]
     public Transform headReference;
     [HideInInspector] public float alturaExtra = 0.5f;
     [Tooltip("Distancia desde el headReference hasta el borde INFERIOR del cartel")]
