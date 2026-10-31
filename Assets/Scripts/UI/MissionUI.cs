@@ -9,18 +9,27 @@ public class MissionUI : MonoBehaviour
 {
     // -- 1. Briefing ----------------------------------------------------------
     [Header("1. Briefing")]
-    [SerializeField] private GameObject missionBriefRoot;  // Assign "Mission_Brief" in Inspector
+    [SerializeField] private GameObject missionBriefRoot;  // Mission_Brief
     [SerializeField] private bool  showBriefingOnStart = true;
+    [SerializeField] private bool  showControlsFirst   = true;
     [SerializeField] private Color btnSelectedColor    = new Color(0.96f, 0.62f, 0.04f, 1f);
     [SerializeField] private Color btnNormalColor      = new Color(0.22f, 0.25f, 0.32f, 1f);
 
-    // Wired at runtime via transform.Find()
-    private TMP_Text texto_Titulo;
-    private TMP_Text texto_Descripcion;
-    private TMP_Text texto_Objetivos;
-    private Button   boton_Extraccion;
-    private Button   boton_Eliminacion;
-    private Button   boton_IniciarMision;
+    // -- 1a. Pagina de Controles -----------------------------------------------
+    [Header("1a. Pagina de Controles")]
+    [SerializeField] private GameObject controlesPage;          // Controles_Page
+    [SerializeField] private Button     btnContinuarControles;  // Boton "Continuar" (dentro de Controles_Page)
+
+    // -- 1b. Pagina de Briefing ------------------------------------------------
+    [Header("1b. Pagina de Briefing")]
+    [SerializeField] private GameObject briefingPage;           // Briefing_Page
+    [SerializeField] private TMP_Text   texto_Titulo;           // Titulo (dentro de Briefing_Page)
+    [SerializeField] private TMP_Text   texto_Descripcion;      // Briefing_Descripcion
+    [SerializeField] private TMP_Text   texto_Objetivos;        // Briefing_Objetivos
+    [SerializeField] private Button     boton_Extraccion;       // Boton de mision Extraccion
+    [SerializeField] private Button     boton_Eliminacion;      // Boton de mision Eliminacion
+    [SerializeField] private Button     boton_IniciarMision;    // Boton Iniciar Mision
+    [SerializeField] private Button     btnVolverControles;     // Boton para volver a Controles
 
     private bool esModoEliminacion = false;
 
@@ -55,7 +64,6 @@ public class MissionUI : MonoBehaviour
     private void Awake()
     {
         EnsureEventSystem();
-        WireBriefingFromRoot();
         AutoFindEndScreenRefs();
     }
 
@@ -139,29 +147,34 @@ public class MissionUI : MonoBehaviour
     }
 
     // -- Briefing -------------------------------------------------------------
-
-    /// <summary>Locates every briefing widget inside Mission_Brief by name.</summary>
-    private void WireBriefingFromRoot()
-    {
-        if (missionBriefRoot == null) return;
-        Transform root = missionBriefRoot.transform;
-
-        texto_Titulo        = root.Find("Titulo")                 ?.GetComponent<TMP_Text>();
-        texto_Descripcion   = root.Find("Briefing_Descripcion")   ?.GetComponent<TMP_Text>();
-        texto_Objetivos     = root.Find("Briefing_Objetivos")     ?.GetComponent<TMP_Text>();
-        boton_Extraccion    = root.Find("Boton_Mision_Extraccion") ?.GetComponent<Button>();
-        boton_Eliminacion   = root.Find("Boton_Mision_Eliminacion")?.GetComponent<Button>();
-        boton_IniciarMision = root.Find("Boton_IniciarMision")    ?.GetComponent<Button>();
-    }
-
     private void ShowBriefing()
     {
         Time.timeScale = 0f;
         missionBriefRoot.SetActive(true);
         if (objectivesPanel != null) objectivesPanel.SetActive(false);
-        SeleccionarMisionExtraccion();      // default selection
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible   = true;
+
+        if (showControlsFirst && controlesPage != null)
+            ShowControlsPage();
+        else
+            ShowBriefingPage();
+    }
+
+    private void ShowControlsPage()
+    {
+        if (controlesPage != null) controlesPage.SetActive(true);
+        if (briefingPage  != null) briefingPage.SetActive(false);
+    }
+
+    private void ShowBriefingPage()
+    {
+        if (controlesPage != null) controlesPage.SetActive(false);
+        if (briefingPage  != null) briefingPage.SetActive(true);
+
+        // Mantiene la mision elegida al ir y volver
+        if (esModoEliminacion) SeleccionarMisionEliminacion();
+        else                   SeleccionarMisionExtraccion();
     }
 
     private void SeleccionarMisionExtraccion()
@@ -205,7 +218,9 @@ public class MissionUI : MonoBehaviour
 
     private static void SetButtonColor(Button btn, Color color)
     {
-        if (btn != null) btn.GetComponent<Image>().color = color;
+        if (btn == null) return;
+        Image img = btn.GetComponent<Image>();
+        if (img != null) img.color = color;
     }
 
     private void StartGameplay()
@@ -307,6 +322,9 @@ public class MissionUI : MonoBehaviour
     // --- BOTONES Y ACCIONES ---
     private void SetupButtonListeners()
     {
+        if (btnContinuarControles != null) btnContinuarControles.onClick.AddListener(ShowBriefingPage);
+        if (btnVolverControles != null) btnVolverControles.onClick.AddListener(ShowControlsPage);
+
         if (boton_IniciarMision != null) boton_IniciarMision.onClick.AddListener(StartGameplay);
         if (boton_Extraccion != null) boton_Extraccion.onClick.AddListener(SeleccionarMisionExtraccion);
         if (boton_Eliminacion != null) boton_Eliminacion.onClick.AddListener(SeleccionarMisionEliminacion);
