@@ -67,7 +67,13 @@ public class PlayerInteraction : MonoBehaviour
 
         if (Physics.Raycast(ray, out RaycastHit hit, interactionRange, ~0, QueryTriggerInteraction.Ignore))
         {
-            detected = hit.collider.GetComponentInParent<Interactable>();
+            // Una hoja puede conservar el script de puerta simple junto al de cerradura.
+            // Priorizar la cerradura evita que E abra la puerta sin ganzúa.
+            detected = hit.collider.GetComponentInParent<DoorInteractable>();
+            if (detected == null)
+            {
+                detected = hit.collider.GetComponentInParent<Interactable>();
+            }
             if (BodyInteractable.IsDraggingAnyBody && detected != null
                 && !(detected is HideSpot) && detected != BodyInteractable.CurrentCarriedBody)
             {
