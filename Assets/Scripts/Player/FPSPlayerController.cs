@@ -40,6 +40,7 @@ public class FPSPlayerController : MonoBehaviour
     private Renderer[] characterRenderers;
 
     public bool IsCrouching => isCrouching;
+    public bool IsMovingForArmPose { get; private set; }
     public Animator CharacterAnimator => animator;
 
     private void Awake()
@@ -61,6 +62,7 @@ public class FPSPlayerController : MonoBehaviour
         InitializeCrouchDimensions();
         CacheCharacterRenderers();
         ApplyRightArmLayerWeight();
+        InitializeRightArmPoseLock();
         ApplyCrouchPresentation();
 
         // Asegurar que el jugador siempre cuente con sus componentes esenciales
@@ -235,6 +237,15 @@ public class FPSPlayerController : MonoBehaviour
         }
     }
 
+    private void InitializeRightArmPoseLock()
+    {
+        if (animator == null || !animator.isHuman) return;
+
+        PlayerRightArmPoseLock poseLock = animator.GetComponent<PlayerRightArmPoseLock>();
+        if (poseLock == null) poseLock = animator.gameObject.AddComponent<PlayerRightArmPoseLock>();
+        poseLock.Initialize(this);
+    }
+
     private void ApplyCrouchPresentation()
     {
         if (hideCharacterWhileCrouching)
@@ -292,9 +303,9 @@ public class FPSPlayerController : MonoBehaviour
 
     private void UpdateAnimator(float inputX, float inputZ, bool isRunning, bool isGrounded)
     {
-        if (animator == null) return;
-
         bool isMoving = Mathf.Abs(inputX) > 0.1f || Mathf.Abs(inputZ) > 0.1f;
+        IsMovingForArmPose = isMoving || !isGrounded;
+        if (animator == null) return;
 
         float speedY = 0f;
 
