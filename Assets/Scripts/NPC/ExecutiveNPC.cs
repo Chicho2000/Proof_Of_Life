@@ -6,6 +6,7 @@ using UnityEngine.AI;
 public class ExecutiveNPC : NPCBase
 {
     private const string FleeWaypointsContainerName = "Flee_Waypoints";
+    private const string CivilianExitName = "CivilianExit";
 
     [Header("Configuración de Huida")]
     [SerializeField] private float fleeSpeed = 5f;
@@ -155,25 +156,14 @@ public class ExecutiveNPC : NPCBase
         }
 
         float arrivalDistance = Mathf.Max(agent.stoppingDistance, reachThreshold);
-        if (agent.remainingDistance <= arrivalDistance)
+        if (agent.pathStatus == NavMeshPathStatus.PathComplete
+            && agent.remainingDistance <= arrivalDistance
+            && Vector3.Distance(agent.nextPosition, currentPoint.position) <= arrivalDistance)
         {
             AdvanceToNextPoint();
         }
 
-        CheckAndOpenNearbyDoors();
-    }
-
-    private void CheckAndOpenNearbyDoors()
-    {
-        Collider[] hits = Physics.OverlapSphere(transform.position, 1.8f);
-        for (int i = 0; i < hits.Length; i++)
-        {
-            DoorInteractable door = hits[i].GetComponentInParent<DoorInteractable>();
-            if (door != null && !door.isOpen && !door.isLocked)
-            {
-                door.OpenDoor();
-            }
-        }
+        OpenNearbyDoors();
     }
 
     private void AdvanceToNextPoint()
@@ -246,7 +236,7 @@ public class ExecutiveNPC : NPCBase
         {
             Debug.LogWarning(
                 $"[ExecutiveNPC] {gameObject.name} no tiene puntos de huida. " +
-                $"Asigná Flee Points en el Inspector o creá '{FleeWaypointsContainerName}'."
+                $"Asigná Flee Points en el Inspector o creá '{CivilianExitName}' en la escena."
             );
             return;
         }
@@ -278,6 +268,13 @@ public class ExecutiveNPC : NPCBase
 
         if (fleePoints.Count > 0)
         {
+            return;
+        }
+
+        GameObject civilianExit = GameObject.Find(CivilianExitName);
+        if (civilianExit != null)
+        {
+            fleePoints.Add(civilianExit.transform);
             return;
         }
 

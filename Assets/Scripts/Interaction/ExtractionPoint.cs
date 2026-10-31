@@ -52,7 +52,39 @@ public class ExtractionPoint : Interactable
 
     private void Awake()
     {
-        interactionPrompt = "Extraer (Requiere USB en mano)";
+        interactionPrompt = requireEquippedInHand ? "Extraer (Requiere USB en mano)" : "Extraer";
+
+        if (allowTriggerExtraction && GetComponent<BoxCollider>() == null)
+        {
+            Renderer[] renderers = GetComponentsInChildren<Renderer>();
+            if (renderers.Length > 0)
+            {
+                Vector3 min = new Vector3(float.PositiveInfinity, float.PositiveInfinity, float.PositiveInfinity);
+                Vector3 max = new Vector3(float.NegativeInfinity, float.NegativeInfinity, float.NegativeInfinity);
+                foreach (Renderer itemRenderer in renderers)
+                {
+                    Bounds worldBounds = itemRenderer.bounds;
+                    for (int x = -1; x <= 1; x += 2)
+                    for (int y = -1; y <= 1; y += 2)
+                    for (int z = -1; z <= 1; z += 2)
+                    {
+                        Vector3 worldCorner = worldBounds.center + Vector3.Scale(worldBounds.extents, new Vector3(x, y, z));
+                        Vector3 localCorner = transform.InverseTransformPoint(worldCorner);
+                        min = Vector3.Min(min, localCorner);
+                        max = Vector3.Max(max, localCorner);
+                    }
+                }
+
+                BoxCollider hitbox = gameObject.AddComponent<BoxCollider>();
+                hitbox.center = (min + max) * 0.5f;
+                hitbox.size = max - min + new Vector3(0.3f, 0.2f, 0.3f);
+                hitbox.isTrigger = true;
+            }
+            else
+            {
+                Debug.LogWarning("[ExtractionPoint] No se pudo crear la hitbox: asigna un BoxCollider trigger al objeto de extraccion.", this);
+            }
+        }
     }
 
     private void Start()
@@ -96,7 +128,7 @@ public class ExtractionPoint : Interactable
             bool isEquipped = IsUsbEquipped(hotbar);
             bool hasInInventory = HasUsbInInventory(hotbar);
 
-            if (isEquipped)
+            if (isEquipped || (hasInInventory && !requireEquippedInHand))
             {
                 interactionPrompt = "Extraer <color=#22C55E>[USB listo]</color>";
             }
