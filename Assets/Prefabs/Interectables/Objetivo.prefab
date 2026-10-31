@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &3714224290401263304
+--- !u!1 &2122152453000809466
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,11 +8,11 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 5682716546069002719}
-  - component: {fileID: 8093945348505612405}
-  - component: {fileID: 1685972890974037979}
-  - component: {fileID: 615176673749404432}
-  - component: {fileID: 5879246900903407358}
+  - component: {fileID: 1561540836187412193}
+  - component: {fileID: 9039260742676277775}
+  - component: {fileID: 1662162122401260345}
+  - component: {fileID: 2516264266117258564}
+  - component: {fileID: 3503777638608132595}
   m_Layer: 0
   m_Name: drive
   m_TagString: Untagged
@@ -20,36 +20,36 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &5682716546069002719
+--- !u!4 &1561540836187412193
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3714224290401263304}
+  m_GameObject: {fileID: 2122152453000809466}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.7071068, y: -0, z: -0, w: 0.7071067}
-  m_LocalPosition: {x: -2.139267, y: 1.4605196, z: -1.6118302}
+  m_LocalRotation: {x: -0.43607906, y: -0.55662835, z: -0.55662835, w: 0.43607894}
+  m_LocalPosition: {x: -3.1301584, y: 1.452, z: -1.7959228}
   m_LocalScale: {x: 100, y: 100, z: 100}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 3522271997234471041}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!33 &8093945348505612405
+  m_Father: {fileID: 7915460017876717099}
+  m_LocalEulerAnglesHint: {x: -90, y: 0, z: -103.848}
+--- !u!33 &9039260742676277775
 MeshFilter:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3714224290401263304}
+  m_GameObject: {fileID: 2122152453000809466}
   m_Mesh: {fileID: -5495902117074765545, guid: a083f79ac6277184f836b45808fefb89, type: 3}
---- !u!23 &1685972890974037979
+--- !u!23 &1662162122401260345
 MeshRenderer:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3714224290401263304}
+  m_GameObject: {fileID: 2122152453000809466}
   m_Enabled: 1
   m_CastShadows: 1
   m_ReceiveShadows: 1
@@ -92,13 +92,13 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!65 &615176673749404432
+--- !u!65 &2516264266117258564
 BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3714224290401263304}
+  m_GameObject: {fileID: 2122152453000809466}
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
@@ -113,13 +113,13 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.00040921554, y: 0.0012000549, z: 0.00021038749}
   m_Center: {x: 0, y: -0.00014139307, z: 0}
---- !u!114 &5879246900903407358
+--- !u!114 &3503777638608132595
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3714224290401263304}
+  m_GameObject: {fileID: 2122152453000809466}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f14bfaf11523dfe4395b709470f8c7e1, type: 3}
@@ -136,13 +136,15 @@ MonoBehaviour:
   isStackable: 0
   maxStack: 1
   amount: 1
-  worldPrefab: {fileID: 3714224290401263304, guid: 8b8a2ddc489cd4544b12fa8fd1ebf328, type: 3}
+  worldPrefab: {fileID: 0}
   inHandPrefab: {fileID: 919132149155446097, guid: a083f79ac6277184f836b45808fefb89, type: 3}
   inHandPositionOffset: {x: 0.25, y: -0.2, z: 0.45}
   inHandRotationOffset: {x: 0, y: 0, z: 0}
   inHandScale: {x: 50, y: 50, z: 50}
+  characterHandPositionOffset: {x: 0, y: 0, z: 0}
+  characterHandRotationOffset: {x: 0, y: 0, z: 0}
   pickupSound: {fileID: 0}
---- !u!1 &9200538608764776198
+--- !u!1 &8114669494059024464
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -150,8 +152,8 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 3522271997234471041}
-  - component: {fileID: 3880361392224321858}
+  - component: {fileID: 7915460017876717099}
+  - component: {fileID: 6889201732881646362}
   m_Layer: 0
   m_Name: Objetivo
   m_TagString: Untagged
@@ -159,29 +161,29 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &3522271997234471041
+--- !u!4 &7915460017876717099
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 9200538608764776198}
+  m_GameObject: {fileID: 8114669494059024464}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -11.75991, y: 0.1, z: 5.33}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 5682716546069002719}
+  - {fileID: 1561540836187412193}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &3880361392224321858
+--- !u!114 &6889201732881646362
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 9200538608764776198}
+  m_GameObject: {fileID: 8114669494059024464}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3b17177cf7a98634397eceadb4fb6475, type: 3}
@@ -190,7 +192,7 @@ MonoBehaviour:
   objectiveTitle: Robar USB
   objectiveDescription: Encuentra el USB con los datos confidenciales.
   isOptional: 0
-  targetItem: {fileID: 5879246900903407358}
+  targetItem: {fileID: 0}
   targetItemType: 6
   requireRetainedInInventory: 1
   worldPickupItem: {fileID: 0}
