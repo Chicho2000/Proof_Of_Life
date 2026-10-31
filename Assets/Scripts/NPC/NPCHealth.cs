@@ -36,6 +36,13 @@ public class NPCHealth : MonoBehaviour
     public bool IsDead => isDead;
     public Vector3 Forward => facingReference != null ? facingReference.forward : transform.forward;
 
+    public void SetMaxHealth(int value)
+    {
+        maxHealth = Mathf.Max(1, value);
+        currentHealth = maxHealth;
+        OnHealthChanged?.Invoke(currentHealth, maxHealth);
+    }
+
     private void Awake()
     {
         currentHealth = maxHealth;

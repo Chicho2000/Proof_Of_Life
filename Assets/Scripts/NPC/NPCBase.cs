@@ -55,6 +55,32 @@ public abstract class NPCBase : MonoBehaviour
         return agent != null && agent.enabled && agent.isOnNavMesh;
     }
 
+    protected void OpenNearbyDoors()
+    {
+        if (!CanUseAgent() || agent.isStopped) return;
+
+        Collider[] nearby = Physics.OverlapSphere(transform.position, 1.8f);
+        foreach (Collider collider in nearby)
+        {
+            DoorInteractable lockedDoor = collider.GetComponentInParent<DoorInteractable>();
+            if (lockedDoor != null)
+            {
+                lockedDoor.OpenDoor(); // Los NPC pueden pasar aunque la cerradura siga bloqueada para el jugador.
+                continue;
+            }
+
+            Puertas_Der rightDoor = collider.GetComponentInParent<Puertas_Der>();
+            if (rightDoor != null)
+            {
+                rightDoor.OpenDoor();
+                continue;
+            }
+
+            Puertas_Izq leftDoor = collider.GetComponentInParent<Puertas_Izq>();
+            if (leftDoor != null) leftDoor.OpenDoor();
+        }
+    }
+
     protected virtual void Awake()
     {
         agent = GetComponent<NavMeshAgent>();

@@ -2,6 +2,13 @@ using UnityEngine;
 
 public class DetectionSystem : MonoBehaviour
 {
+    public enum TargetDetectionPolicy
+    {
+        Standard,
+        VisiblePistolOnly,
+        RestrictedAreaOrWeapon
+    }
+
     public enum DisguiseAuthorization
     {
         AllowGuardAndElite, // Autoriza disfraces de Guardia común y de Élite (Cámaras estándar, Guardia normal)
@@ -21,6 +28,9 @@ public class DetectionSystem : MonoBehaviour
 
     [Header("Permisos de Disfraz")]
     [SerializeField] private DisguiseAuthorization disguiseAuthorization = DisguiseAuthorization.AllowGuardAndElite;
+
+    [Header("Regla de sospecha visual")]
+    [SerializeField] private TargetDetectionPolicy targetDetectionPolicy = TargetDetectionPolicy.Standard;
 
     [Header("Gizmos")]
     [SerializeField] private Color gizmoColor = Color.cyan;
@@ -49,6 +59,12 @@ public class DetectionSystem : MonoBehaviour
         set => disguiseAuthorization = value;
     }
 
+    public TargetDetectionPolicy DetectionPolicy
+    {
+        get => targetDetectionPolicy;
+        set => targetDetectionPolicy = value;
+    }
+
     public LayerMask ObstacleMask => obstacleMask;
     public Transform DetectionOrigin => detectionOrigin != null ? detectionOrigin : transform;
     public Color GizmoColor
@@ -59,7 +75,14 @@ public class DetectionSystem : MonoBehaviour
 
     public bool CanDetectTarget(Transform target, bool ignoreDisguise = false)
     {
-        if (target == null || (!ignoreDisguise && IsTargetDisguised(target)) || IsTargetHidden(target))
+        if (target == null || IsTargetHidden(target) || !PassesTargetPolicy(target))
+        {
+            return false;
+        }
+
+        bool restrictedAccess = targetDetectionPolicy == TargetDetectionPolicy.RestrictedAreaOrWeapon
+            && PlayerAccessState.IsRestricted(target);
+        if (!ignoreDisguise && !restrictedAccess && IsTargetDisguised(target))
         {
             return false;
         }
@@ -128,6 +151,30 @@ public class DetectionSystem : MonoBehaviour
 
         DrawDetectionRay(originPos, visiblePoint - originPos, canSee ? Color.green : Color.red);
         return canSee;
+    }
+
+    private bool PassesTargetPolicy(Transform target)
+    {
+        switch (targetDetectionPolicy)
+        {
+            case TargetDetectionPolicy.VisiblePistolOnly:
+                return HasEquippedItem(target, ItemType.SilencedPistol);
+
+            case TargetDetectionPolicy.RestrictedAreaOrWeapon:
+                return PlayerAccessState.IsRestricted(target)
+                    || HasEquippedItem(target, ItemType.SilencedPistol)
+                    || HasEquippedItem(target, ItemType.FiberWire);
+
+            default:
+                return true;
+        }
+    }
+
+    private static bool HasEquippedItem(Transform target, ItemType itemType)
+    {
+        PlayerHotbar hotbar = target.GetComponentInParent<PlayerHotbar>();
+        ItemInteractable item = hotbar != null ? hotbar.GetSelectedItem() : null;
+        return item != null && item.ItemType == itemType;
     }
 
     private bool HasLineOfSight(Vector3 originPos, Vector3 targetPoint, Transform target)

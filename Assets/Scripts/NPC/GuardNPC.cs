@@ -6,6 +6,8 @@ using UnityEngine.AI;
 [RequireComponent(typeof(DetectionSystem))]
 public class GuardNPC : NPCBase
 {
+    private const float AttackGestureDuration = 0.4f;
+
     [Header("Configuración de Patrulla")]
     [SerializeField] private Transform[] patrolPoints = new Transform[0];
     [SerializeField] private float patrolSpeed = 2f;
@@ -42,6 +44,7 @@ public class GuardNPC : NPCBase
     private float patrolWaitTimer;
     private bool hasPatrolDestination;
     private bool isWaitingAtPatrolPoint;
+    private float nextDoorCheckTime;
     private readonly HashSet<BodyInteractable> discoveredBodies = new HashSet<BodyInteractable>();
 
 
@@ -127,6 +130,11 @@ public class GuardNPC : NPCBase
 
         TickDetection();
         TickState();
+        if (Time.time >= nextDoorCheckTime)
+        {
+            OpenNearbyDoors();
+            nextDoorCheckTime = Time.time + 0.25f;
+        }
         UpdateAnimation();
     }
 
@@ -793,6 +801,11 @@ public class GuardNPC : NPCBase
             speed = currentState == NPCState.Chase ? 2f : 1f;
         }
 
+        float gestureProgress = (Time.time - lastAttackTime) / AttackGestureDuration;
+        float gestureWeight = currentState != NPCState.Dead && gestureProgress >= 0f && gestureProgress < 1f
+            ? Mathf.Sin(gestureProgress * Mathf.PI)
+            : 0f;
+
         for (int i = 0; i < animators.Length; i++)
         {
             if (animators[i] != null)
@@ -803,7 +816,7 @@ public class GuardNPC : NPCBase
                 int handLayer = animators[i].GetLayerIndex("Hand layer");
                 if (handLayer >= 0)
                 {
-                    animators[i].SetLayerWeight(handLayer, 0f);
+                    animators[i].SetLayerWeight(handLayer, gestureWeight);
                 }
             }
         }

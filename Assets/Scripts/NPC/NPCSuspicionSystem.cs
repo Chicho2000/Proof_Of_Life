@@ -602,6 +602,12 @@ public class NPCSuspicionSystem : MonoBehaviour
                 continue;
             }
 
+            // Los civiles solo se asustan gradualmente al ver la pistola o al sonar la alarma.
+            if (system.npcBase is CivilianNPC)
+            {
+                continue;
+            }
+
             if ((system.npcHealth != null && system.npcHealth.IsDead)
                 || (system.npcBase != null && system.npcBase.GetCurrentState() == NPCState.Dead))
             {

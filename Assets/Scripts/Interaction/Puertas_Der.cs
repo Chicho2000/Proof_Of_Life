@@ -33,6 +33,11 @@ public class Puertas_Der : Interactable
         rotationCoroutine = StartCoroutine(RotateDoor(targetRotation));
     }
 
+    public void OpenDoor()
+    {
+        if (!isOpen) Interact(null);
+    }
+
     private IEnumerator RotateDoor(Quaternion targetRotation)
     {
         Quaternion initialRotation = transform.localRotation;
