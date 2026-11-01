@@ -84,6 +84,10 @@ PrefabInstance:
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: 3cfb36a024624bd6b857f7dda72fe0fa, type: 2}
+    - target: {fileID: -5326730688104404983, guid: 0c81e1dcaa7c20d5a8cc280ca1dc4a4b, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 3cfb36a024624bd6b857f7dda72fe0fa, type: 2}
     - target: {fileID: 919132149155446097, guid: 0c81e1dcaa7c20d5a8cc280ca1dc4a4b, type: 3}
       propertyPath: m_Name
       value: Chaleco

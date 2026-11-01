@@ -92,6 +92,14 @@ PrefabInstance:
       propertyPath: m_Name
       value: Casco
       objectReference: {fileID: 0}
+    - target: {fileID: 9173078291042267164, guid: d6f9a6208c82d1f1fb1f21759a7040b7, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: bfa62a3477aa62e2d8d467368cafa6c6, type: 2}
+    - target: {fileID: 9173078291042267164, guid: d6f9a6208c82d1f1fb1f21759a7040b7, type: 3}
+      propertyPath: 'm_Materials.Array.data[1]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 51d7e5d45de0ea0f7bed4e09dacca24e, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
