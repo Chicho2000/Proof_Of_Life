@@ -319,6 +319,24 @@ public class MissionUI : MonoBehaviour
         Cursor.visible = true;
     }
 
+    /// <summary>
+    /// Llamado por TitleScreenUI al arrancar para evitar que el briefing
+    /// se muestre solo antes de que el jugador haga clic en Iniciar.
+    /// </summary>
+    public void SetShowBriefingOnStart(bool value)
+    {
+        showBriefingOnStart = value;
+    }
+
+    /// <summary>
+    /// Llamado por TitleScreenUI cuando el jugador hace clic en Iniciar.
+    /// Abre el briefing exactamente igual que si showBriefingOnStart fuera true.
+    /// </summary>
+    public void ShowBriefingFromTitle()
+    {
+        ShowBriefing();
+    }
+
     // --- BOTONES Y ACCIONES ---
     private void SetupButtonListeners()
     {
